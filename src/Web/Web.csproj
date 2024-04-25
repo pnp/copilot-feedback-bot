@@ -1,0 +1,50 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <InvariantGlobalization>false</InvariantGlobalization>
+    <UserSecretsId>ae8ee577-91bc-4ce6-826b-554211828541</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Remove="Bots\Cards\Templates\BotDiagFinished.json" />
+    <Content Remove="Bots\Cards\Templates\BotFirstIntro.json" />
+    <Content Remove="Bots\Cards\Templates\BotReactionCommon.json" />
+    <Content Remove="Bots\Cards\Templates\BotReactionHappy.json" />
+    <Content Remove="Bots\Cards\Templates\BotReactionMeh.json" />
+    <Content Remove="Bots\Cards\Templates\BotResumeConversationIntro.json" />
+    <Content Remove="Bots\Cards\Templates\CopilotFileActionSurvey.json" />
+    <Content Remove="Bots\Cards\Templates\CopilotTeamsActionSurvey.json" />
+    <Content Remove="Bots\Cards\Templates\SurveyCommonBody.json" />
+    <Content Remove="Bots\Cards\Templates\SurveyFollowUpQuestions.json" />
+    <Content Remove="Bots\Cards\Templates\SurveyNoAction.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Bots\Cards\Templates\BotDiagFinished.json" />
+    <EmbeddedResource Include="Bots\Cards\Templates\SurveyFollowUpQuestions.json" />
+    <EmbeddedResource Include="Bots\Cards\Templates\BotFirstIntro.json" />
+    <EmbeddedResource Include="Bots\Cards\Templates\BotReactionHappy.json" />
+    <EmbeddedResource Include="Bots\Cards\Templates\BotReactionCommon.json" />
+    <EmbeddedResource Include="Bots\Cards\Templates\BotReactionMeh.json" />
+    <EmbeddedResource Include="Bots\Cards\Templates\BotResumeConversationIntro.json" />
+    <EmbeddedResource Include="Bots\Cards\Templates\CopilotFileActionSurvey.json" />
+    <EmbeddedResource Include="Bots\Cards\Templates\SurveyCommonBody.json" />
+    <EmbeddedResource Include="Bots\Cards\Templates\SurveyNoAction.json" />
+    <EmbeddedResource Include="Bots\Cards\Templates\CopilotTeamsActionSurvey.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.22.0" />
+    <PackageReference Include="Microsoft.Bot.Builder.Dialogs" Version="4.22.3" />
+    <PackageReference Include="Microsoft.Bot.Builder.Integration.AspNet.Core" Version="4.22.3" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Common.Engine\Common.Engine.csproj" />
+  </ItemGroup>
+
+</Project>

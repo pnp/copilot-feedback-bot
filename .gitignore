@@ -1,0 +1,11 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/.github/workflows/feedbackbotdgittest1.yml
+/.vs
+/src/Functions/Properties/serviceDependencies.copilotfeedback-function-ag - Zip Deploy.json
+__azurite*
+/Teams App/*.zip
+src/Web/Properties/ServiceDependencies/copilotfeedback-ag - Web Deploy/*.*
+src/Functions/Properties/ServiceDependencies/copilotfeedback-function-ag - Zip Deploy/*.*

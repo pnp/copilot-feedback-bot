@@ -1,0 +1,59 @@
+name: Build and deploy .NET web + webjob to Web App name feedbackbot_AZURE_WEBAPP_NAME using profile found in secret feedbackbot_PUBLISH_PROFILE
+on:
+  push:
+    branches:
+    - main
+env:
+  AZURE_WEBAPP_PACKAGE_PATH_WEB: Web\publish
+  AZURE_WEBAPP_PACKAGE_PATH_WEBJOB: Web\publish\app_data\Jobs\Triggered\ActivityImporter.ConsoleApp
+  CONFIGURATION: Release
+  DOTNET_CORE_VERSION: 8.0.x
+  WORKING_DIRECTORY_WEB: src\Web
+  WORKING_DIRECTORY_WEBJOB: src\ActivityImporter.ConsoleApp
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: ${{ env.DOTNET_CORE_VERSION }}
+    - name: Restore Web
+      run: dotnet restore "${{ env.WORKING_DIRECTORY_WEB }}"
+    - name: Build Web
+      run: dotnet build "${{ env.WORKING_DIRECTORY_WEB }}" --configuration ${{ env.CONFIGURATION }} --no-restore
+    - name: Test
+      run: dotnet test "${{ env.WORKING_DIRECTORY_WEB }}" --no-build
+    - name: Publish Web
+      run: dotnet publish "${{ env.WORKING_DIRECTORY_WEB }}" --configuration ${{ env.CONFIGURATION }} --no-build --output "${{ env.AZURE_WEBAPP_PACKAGE_PATH_WEB }}"
+
+    - name: Restore WebJob
+      run: dotnet restore "${{ env.WORKING_DIRECTORY_WEBJOB }}"
+    - name: Build WebJob
+      run: dotnet build "${{ env.WORKING_DIRECTORY_WEBJOB }}" --configuration ${{ env.CONFIGURATION }} --no-restore
+    - name: Publish WebJob
+      run: dotnet publish "${{ env.WORKING_DIRECTORY_WEBJOB }}" --configuration ${{ env.CONFIGURATION }} --no-build --output "${{ env.AZURE_WEBAPP_PACKAGE_PATH_WEBJOB }}"
+
+    - name: Publish WebJob & Web Artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: webjobandweb
+        path: | 
+            ${{ env.AZURE_WEBAPP_PACKAGE_PATH_WEB }}
+            ${{ env.AZURE_WEBAPP_PACKAGE_PATH_WEBJOB }}
+  deploy:
+    runs-on: windows-latest
+    needs: build
+    steps:
+    - name: Download webjobandweb artifact from build job
+      uses: actions/download-artifact@v3
+      with:
+        name: webjobandweb
+        path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH_WEB }}
+    - name: Deploy webjob and web to Azure WebApp
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: ${{ env.feedbackbot_AZURE_WEBAPP_NAME }}
+        publish-profile: ${{ secrets.feedbackbot_PUBLISH_PROFILE }}
+        package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH_WEB }}

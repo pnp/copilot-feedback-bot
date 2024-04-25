@@ -1,0 +1,126 @@
+{
+  "type": "AdaptiveCard",
+  "version": "1.3",
+  "body": [
+
+    {
+      "type": "ColumnSet",
+      "spacing": "Medium",
+      "columns": [
+        {
+          "type": "Column",
+          "selectAction": {
+            "type": "Action.Submit",
+            "data": { "rating": "${SurveyAnswerRating1}" }
+          },
+          "items": [
+            {
+              "type": "TextBlock",
+              "horizontalAlignment": "Center",
+              "text": "😖",
+              "size": "large"
+            },
+            {
+              "type": "TextBlock",
+              "horizontalAlignment": "Center",
+              "text": "${SurveyAnswerRating1}"
+            }
+          ],
+          "width": "stretch"
+        },
+        {
+          "type": "Column",
+          "selectAction": {
+            "type": "Action.Submit",
+            "data": { "rating": "${SurveyAnswerRating2}" }
+          },
+          "items": [
+            {
+              "type": "TextBlock",
+              "horizontalAlignment": "Center",
+              "text": "😞",
+              "size": "large"
+            },
+            {
+              "type": "TextBlock",
+              "horizontalAlignment": "Center",
+              "text": "${SurveyAnswerRating2}"
+            }
+          ],
+          "width": "stretch"
+        },
+        {
+          "type": "Column",
+          "selectAction": {
+            "type": "Action.Submit",
+            "data": { "rating": "${SurveyAnswerRating3}" }
+          },
+          "items": [
+            {
+              "type": "TextBlock",
+              "horizontalAlignment": "Center",
+              "text": "😐",
+              "size": "large"
+            },
+            {
+              "type": "TextBlock",
+              "horizontalAlignment": "Center",
+              "text": "${SurveyAnswerRating3}"
+            }
+          ],
+          "width": "stretch"
+        },
+        {
+          "type": "Column",
+          "selectAction": {
+            "type": "Action.Submit",
+            "data": { "rating": "${SurveyAnswerRating4}" }
+          },
+          "items": [
+            {
+              "type": "TextBlock",
+              "horizontalAlignment": "Center",
+              "text": "🙂",
+              "size": "large"
+            },
+            {
+              "type": "TextBlock",
+              "horizontalAlignment": "Center",
+              "text": "${SurveyAnswerRating4}"
+            }
+          ],
+          "width": "stretch"
+        },
+        {
+          "type": "Column",
+          "selectAction": {
+            "type": "Action.Submit",
+            "data": { "rating": "${SurveyAnswerRating5}" }
+          },
+          "items": [
+            {
+              "type": "TextBlock",
+              "horizontalAlignment": "Center",
+              "text": "😁",
+              "size": "large"
+            },
+            {
+              "type": "TextBlock",
+              "horizontalAlignment": "Center",
+              "text": "${SurveyAnswerRating5}"
+            }
+          ],
+          "width": "stretch"
+        }
+      ]
+    }
+  ],
+  "actions": [
+    {
+      "type": "Action.Submit",
+      "title": "Stop bothering me 🛑",
+      "data": "${SurveyAnswerStop}"
+    }
+  ],
+  "$schema": "http://adaptivecards.io/schemas/adaptive-card.json"
+}

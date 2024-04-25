@@ -1,0 +1,46 @@
+name: Build and deploy .NET Functions application to App name feedbackbot_AZURE_FUNCTIONS_NAME using profile in secret feedbackbot_PUBLISH_PROFILE_FUNCTIONS
+on:
+  push:
+    branches:
+    - main
+env:
+  AZURE_FUNC_PACKAGE_PATH: Functions\publish
+  CONFIGURATION: Release
+  DOTNET_CORE_VERSION: 8.0.x
+  WORKING_DIRECTORY_FUNC: src\Functions
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: ${{ env.DOTNET_CORE_VERSION }}
+    - name: Restore Functions App
+      run: dotnet restore "${{ env.WORKING_DIRECTORY_FUNC }}"
+    - name: Build Functions App
+      run: dotnet build "${{ env.WORKING_DIRECTORY_FUNC }}" --configuration ${{ env.CONFIGURATION }} --no-restore
+    - name: Publish Functions App
+      run: dotnet publish "${{ env.WORKING_DIRECTORY_FUNC }}" --configuration ${{ env.CONFIGURATION }} --no-build --output "${{ env.AZURE_FUNC_PACKAGE_PATH }}"
+
+    - name: Publish function
+      uses: actions/upload-artifact@v3
+      with:
+        name: func
+        path: ${{ env.AZURE_FUNC_PACKAGE_PATH }}
+  deploy:
+    runs-on: windows-latest
+    needs: build
+    steps:
+    - name: Download Functions App artifact from build job
+      uses: actions/download-artifact@v3
+      with:
+        name: func
+        path: ${{ env.AZURE_FUNC_PACKAGE_PATH }}
+    - name: Deploy Functions App to Azure WebApp
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: ${{ env.feedbackbot_AZURE_FUNCTIONS_NAME }}
+        publish-profile: ${{ secrets.feedbackbot_PUBLISH_PROFILE_FUNCTIONS }}
+        package: ${{ env.AZURE_FUNC_PACKAGE_PATH }}

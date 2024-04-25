@@ -1,0 +1,44 @@
+{
+    "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.16/MicrosoftTeams.schema.json",
+    "version": "1.0.0",
+    "manifestVersion": "1.16",
+    "id": "e2cc65ef-2390-4579-b950-83b01dcae815",
+    "packageName": "com.copilotfeedback.bot",
+    "name": {
+        "short": "Copilot Feedback bot",
+        "full": "Copilot Feedback bot - get real value feedback for copilot usage"
+    },
+    "developer": {
+        "name": "Sam Betts",
+        "mpnId": "",
+        "websiteUrl": "https://github.com/sambetts",
+        "privacyUrl": "https://github.com/sambetts",
+        "termsOfUseUrl": "https://github.com/sambetts"
+    },
+    "description": {
+        "short": "Copilot Feedback bot - get real value feedback for copilot usage",
+        "full": "Copilot Feedback bot surveys users how their interactions with M365 Copilot was to compile full and realistic value stats"
+    },
+    "icons": {
+        "outline": "outline.png",
+        "color": "color.png"
+    },
+    "accentColor": "#335484",
+    "bots": [
+        {
+            "botId": "e2cc65ef-2390-4579-b950-83b01dcae815",
+            "scopes": [
+                "personal"
+              ],
+            "isNotificationOnly": false,
+            "supportsFiles": false
+        }
+    ],
+    "permissions": [
+        "identity",
+        "messageTeamMembers"
+    ],
+    "validDomains": [
+        "token.botframework.com"
+    ]
+}
