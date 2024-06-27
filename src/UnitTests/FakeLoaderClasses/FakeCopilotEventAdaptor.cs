@@ -5,9 +5,9 @@ namespace UnitTests.FakeLoaderClasses;
 
 public class FakeCopilotEventAdaptor : ICopilotMetadataLoader
 {
-    public Task<MeetingMetadata> GetMeetingInfo(string meetingId, string userGuid)
+    public Task<MeetingMetadata?> GetMeetingInfo(string meetingId, string userGuid)
     {
-        return Task.FromResult(new MeetingMetadata
+        return Task.FromResult<MeetingMetadata?>(new MeetingMetadata
         {
             MeetingId = "test",
             CreatedUTC = DateTime.UtcNow,

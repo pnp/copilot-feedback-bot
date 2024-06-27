@@ -10,7 +10,7 @@
 	<ItemGroup>
 		<PackageReference Include="Azure.AI.TextAnalytics" Version="5.3.0" />
 		<PackageReference Include="Azure.Core" Version="1.39.0" />
-		<PackageReference Include="Azure.Identity" Version="1.11.2" />
+		<PackageReference Include="Azure.Identity" Version="1.11.4" />
 		<PackageReference Include="Azure.Security.KeyVault.Certificates" Version="4.6.0" />
 		<PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
 		<PackageReference Include="EntityFramework" Version="6.4.4" />

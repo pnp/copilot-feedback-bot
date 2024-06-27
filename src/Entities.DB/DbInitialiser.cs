@@ -79,8 +79,8 @@ public class DbInitialiser
         var user = context.Users.FirstOrDefault(u => u.UserPrincipalName == forUpn);
         if (user == null)
         {
-            logger.LogWarning("No user found for fake copilot data");
-            return;
+            logger.LogWarning($"Creating new user with UPN {forUpn}");
+            user = new User { UserPrincipalName = forUpn };
         }
         context.Add(new CopilotEventMetadataMeeting
         {
