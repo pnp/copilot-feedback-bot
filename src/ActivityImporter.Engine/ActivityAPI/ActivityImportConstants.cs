@@ -22,21 +22,28 @@ public static class ActivityImportConstants
 #endif
 
 
+
 #if DEBUG
     public const string STAGING_TABLE_COPILOT_SP = "debug_import_staging_copilot_sp";
 #else
-    public const string STAGING_TABLE_COPILOT_SP = "##debug_import_staging_copilot_sp";
+        public const string STAGING_TABLE_COPILOT_SP = "##debug_import_staging_copilot_sp";
 #endif
 
 #if DEBUG
     public const string STAGING_TABLE_COPILOT_TEAMS = "debug_import_staging_copilot_teams";
 #else
-    public const string STAGING_TABLE_COPILOT_TEAMS = "##debug_import_staging_copilot_teams";
+        public const string STAGING_TABLE_COPILOT_TEAMS = "##debug_import_staging_copilot_teams";
 #endif
 
 #if DEBUG
     public const string STAGING_TABLE_COPILOT_SIMPLE = "debug_import_staging_copilot_simple";
-#else 
-    public const string STAGING_TABLE_COPILOT_SIMPLE = "##debug_import_staging_copilot_simple";
+#else
+        public const string STAGING_TABLE_COPILOT_SIMPLE = "##debug_import_staging_copilot_simple";
+#endif
+
+#if DEBUG
+    public const string STAGING_TABLE_COPILOT_CHATONLY = "debug_import_staging_copilot_chatonly";
+#else
+        public const string STAGING_TABLE_COPILOT_CHATONLY = "##debug_import_staging_copilot_teams";
 #endif
 }

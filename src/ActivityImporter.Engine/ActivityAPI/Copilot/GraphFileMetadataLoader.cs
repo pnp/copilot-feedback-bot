@@ -76,13 +76,13 @@ public class GraphFileMetadataLoader : ICopilotMetadataLoader
         {
             throw new ArgumentOutOfRangeException("SharePointIds.ListId");
         }
-        var driveItemId = StringUtils.GetDriveItemId(copilotDocContextId);
+        ListItem? item;
+        var site = await _siteGraphCache.GetResourceOrNullIfNotExists(spSiteId);
 
+        var driveItemId = StringUtils.GetDriveItemId(copilotDocContextId);
         if (driveItemId != null)
         {
-            var site = await _siteGraphCache.GetResourceOrNullIfNotExists(spSiteId);
 
-            ListItem? item;
             try
             {
                 item = await _graphServiceClient.Sites[spSiteId].Lists[spListId].Items[driveItemId]
@@ -98,6 +98,30 @@ public class GraphFileMetadataLoader : ICopilotMetadataLoader
         }
         else
         {
+            // We might have a direct URL as the copilot context ID, so we need to search for the item in the list.
+            // Example: https://contoso-my.sharepoint.com/personal/alex_contoso_onmicrosoft_com/Documents/MyDoc.docx
+            try
+            {
+                // Currently we can't filter by webUrl, so we have to get all items and filter client side
+                var listItems = await _graphServiceClient.Sites[spSiteId].Lists[spListId].Items
+                    .GetAsync(op => op.QueryParameters.Select = ["id","webUrl"]);
+                if (listItems?.Value != null)
+                {
+                    foreach (var i in listItems.Value)
+                    {
+                        if (i.WebUrl == copilotDocContextId)
+                        {
+                            return new SpoDocumentFileInfo(i, site);
+                        }
+                    }
+                }
+            }
+            catch (ODataError ex) 
+            {
+                _logger.LogWarning(ex, "Error getting items info for list {spListId} on site {siteUrl}", spListId, siteUrl);
+                return null;
+            }
+
             _logger.LogWarning("No driveItemId found in copilotDocContextId {copilotDocContextId}", copilotDocContextId);
             return null;
         }
@@ -139,10 +163,10 @@ public class GraphFileMetadataLoader : ICopilotMetadataLoader
         {
             siteDrive = await _graphServiceClient.Sites[siteAddress].Drive.GetAsync(o => o.QueryParameters.Select = DRIVE_FIELDS) ?? throw new ArgumentOutOfRangeException(siteAddress);
         }
-        catch (ODataError ex)
+        catch (ODataError)
         {
-            _logger.LogWarning(ex, $"Error {ex.ResponseStatusCode} getting drive info for site {siteUrl}", siteUrl);
-            // Test below if the site exists
+            // We can't get the drive via the site address, for some reason. Most of the time we can, but sometimes it doesn't work...
+            // Load just the site and then try getting the drive using the loaded site ID
         }
 
         if (siteDrive == null)
@@ -160,9 +184,26 @@ public class GraphFileMetadataLoader : ICopilotMetadataLoader
 
             if (site != null)
             {
-                // Site exists but no drive for some reason
-                _logger.LogWarning("Site found but no drive found for site {siteUrl}", siteUrl);
-                return null;
+                try
+                {
+                    // Try one more time using site ID
+                    siteDrive = await _graphServiceClient.Sites[site.Id].Drive.GetAsync(o => o.QueryParameters.Select = DRIVE_FIELDS) ?? throw new ArgumentOutOfRangeException(siteAddress);
+                }
+                catch (ODataError)
+                {
+                    // Ignore. Handle logging below
+                }
+
+                if (siteDrive == null)
+                {
+                    // Site exists but no drive for some reason
+                    _logger.LogWarning($"No drive found for site ID {site.Id}");
+                    return null;
+                }
+                else
+                {
+                    return siteDrive;
+                }
             }
             else
             {

@@ -7,6 +7,20 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="ActivityAPI\Copilot\SQL\insert_activity_from_staging_table.sql" />
+    <None Remove="ActivityAPI\Copilot\SQL\insert_chat_only_copilot_events_from_staging_table.sql" />
+    <None Remove="ActivityAPI\Copilot\SQL\insert_sp_copilot_events_from_staging_table.sql" />
+    <None Remove="ActivityAPI\Copilot\SQL\insert_teams_copilot_events_from_staging_table.sql" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="ActivityAPI\Copilot\SQL\insert_activity_from_staging_table.sql" />
+    <EmbeddedResource Include="ActivityAPI\Copilot\SQL\insert_chat_only_copilot_events_from_staging_table.sql" />
+    <EmbeddedResource Include="ActivityAPI\Copilot\SQL\insert_sp_copilot_events_from_staging_table.sql" />
+    <EmbeddedResource Include="ActivityAPI\Copilot\SQL\insert_teams_copilot_events_from_staging_table.sql" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Azure.Messaging.ServiceBus" Version="7.17.5" />
     <PackageReference Include="Microsoft.Graph" Version="5.49.0" />
   </ItemGroup>

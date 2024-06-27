@@ -1,4 +1,5 @@
 ﻿using ActivityImporter.Engine.ActivityAPI.Models;
+using Common.DataUtils;
 using Common.DataUtils.Sql.Inserts;
 using Common.Engine.Config;
 using Entities.DB;
@@ -134,7 +135,11 @@ public class ActivityReportSqlPersistenceManager : IActivityReportPersistenceMan
         Console.WriteLine("\nDEBUG: Merging activity staging table...");
 #endif
         // Merge to normal tables
-        var mergeSQL = Properties.Resources.insert_activity_from_staging_table.Replace("${STAGING_TABLE_ACTIVITY}", ActivityImportConstants.STAGING_TABLE_ACTIVITY_SP);
+
+        var rr = new ProjectResourceReader(System.Reflection.Assembly.GetExecutingAssembly());
+        var sqlOriginal = rr.ReadResourceString("ActivityImporter.Engine.ActivityAPI.Copilot.SQL.insert_activity_from_staging_table.sql");
+
+        var mergeSQL = sqlOriginal.Replace("${STAGING_TABLE_ACTIVITY}", ActivityImportConstants.STAGING_TABLE_ACTIVITY_SP);
         await logsToInsert.SaveToStagingTable(mergeSQL);
 
         #region Add Extra Metadata

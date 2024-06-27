@@ -17,6 +17,8 @@ public class StringUtils
         return meetingId;
     }
 
+    // Example copilotDocContextId in: https://contoso-my.sharepoint.com/personal/alex_contoso_onmicrosoft_com/_layouts/15/Doc.aspx?sourcedoc=%7B1F9103E2-34CF-4560-8458-BD3296201FA9%7D&file=Document19.docx&action=default&mobileredirect=true
+    // Out: 1F9103E2-34CF-4560-8458-BD3296201FA9 - the drive item ID
     public static string? GetDriveItemId(string copilotDocContextId)
     {
         var uri = new Uri(copilotDocContextId);
@@ -28,9 +30,19 @@ public class StringUtils
         }
         return sourcedoc.Replace("{", "").Replace("}", "");
     }
+
+
+    /// <summary>
+    /// Hack for https://github.com/dotnet/runtime/issues/21626
+    /// </summary>
+    public static bool IsValidAbsoluteUrl(string? url)
+    {
+        return Uri.TryCreate(url, UriKind.Absolute, out _);
+    }
+
     public static string? GetSiteUrl(string copilotDocContextId)
     {
-        if (!Uri.IsWellFormedUriString(copilotDocContextId, UriKind.Absolute))
+        if (!IsValidAbsoluteUrl(copilotDocContextId))
         {
             return null;
         }
