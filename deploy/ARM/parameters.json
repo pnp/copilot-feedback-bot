@@ -1,0 +1,33 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "app_service_name": {
+            "value": "feedbackbotdev"
+        },
+        "app_service_plan_name": {
+            "value": "pscopilotfeedbackbotdev"
+        },
+        "function_app_service_name": { // Must not be the same as 'app_service_name'
+            "value": "psfeedbackbotfunc"
+        },
+        "function_app_service_plan_name": { // Must not be the same as 'app_service_plan_name'
+            "value": "pscopilotfeedbackbotfunc"
+        },
+        "sql_server_name": {
+            "value": "psfeedbackbotdev-server"
+        },
+        "storage_account_name": {
+            "value": "pscopilotfeedbackbotdev"
+        },
+        "administratorLogin": {
+            "value": "sqladmin" 
+        },
+        "administratorLoginPassword": {
+            "value": "Corp123!" 
+        },
+        "location": {
+            "value": "westeurope" 
+        }
+    }
+}
