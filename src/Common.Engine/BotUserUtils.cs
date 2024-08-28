@@ -16,13 +16,13 @@ public static class BotUserUtils
     {
         return await GetBotUserAsync(context.Activity.From, _botConfig, _graphServiceClient);
     }
-    public static async Task<BotUser> GetBotUserAsync(ChannelAccount channelUser, BotConfig _botConfig, GraphServiceClient _graphServiceClient)
+    public static async Task<BotUser> GetBotUserAsync(ChannelAccount channelUser, BotConfig botConfig, GraphServiceClient graphServiceClient)
     {
         // Testing hack
         BotUser botUser;
-        if (!string.IsNullOrEmpty(_botConfig.TestUPN))
+        if (!string.IsNullOrEmpty(botConfig.TestUPN))
         {
-            var user = await _graphServiceClient.Users[_botConfig.TestUPN].GetAsync(op => op.QueryParameters.Select = ["Id"]);
+            var user = await graphServiceClient.Users[botConfig.TestUPN].GetAsync(op => op.QueryParameters.Select = ["Id"]);
             botUser = new BotUser { UserId = user!.Id!, IsAzureAdUserId = true };
         }
         else
