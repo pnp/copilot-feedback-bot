@@ -29,6 +29,10 @@
         "location": {
             "type": "string",
             "defaultValue": "West Europe"
+        },
+        "git_branch": {
+            "type": "String", 
+            "defaultValue": "main"
         }
     },
     "variables": {},
@@ -218,6 +222,17 @@
             },
             "resources": [
                 {
+                    "apiVersion": "2015-08-01",
+                    "name": "appsettings",
+                    "type": "config",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Web/sites', parameters('app_service_name'))]"
+                    ],
+                    "properties": {
+                        "SITE_ROLE": "app"
+                    }
+                },
+                {
                     "apiVersion": "2016-08-01",
                     "name": "web",
                     "type": "sourcecontrols",
@@ -226,7 +241,7 @@
                     ],
                     "properties": {
                         "RepoUrl": "https://github.com/pnp/Microsoft365-Analytics-Insights.git",
-                        "branch": "main",
+                        "branch": "[parameters('git_branch')]",
                         "IsManualIntegration": true
                     }
                 }
@@ -301,7 +316,33 @@
                 "redundancyMode": "None",
                 "storageAccountRequired": false,
                 "keyVaultReferenceIdentity": "SystemAssigned"
-            }
+            },
+            "resources": [
+                {
+                    "apiVersion": "2015-08-01",
+                    "name": "appsettings",
+                    "type": "config",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Web/sites', parameters('app_service_name'))]"
+                    ],
+                    "properties": {
+                        "SITE_ROLE": "function"
+                    }
+                },
+                {
+                    "apiVersion": "2016-08-01",
+                    "name": "web",
+                    "type": "sourcecontrols",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Web/sites', parameters('app_service_name'))]"
+                    ],
+                    "properties": {
+                        "RepoUrl": "https://github.com/pnp/Microsoft365-Analytics-Insights.git",
+                        "branch": "[parameters('git_branch')]",
+                        "IsManualIntegration": true
+                    }
+                }
+            ]
         }
     ]
 }
