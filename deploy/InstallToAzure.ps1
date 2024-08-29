@@ -31,6 +31,13 @@ function ProcessScriptWithConfig ($configFileName) {
 		return
 	}
 
+	# Validate ARM params
+	$parameters = Get-Content ($scriptPath + "\" + $config.ARMParametersFile) -Raw -ErrorAction Stop | ConvertFrom-Json
+	if ($null -eq $parameters) {
+		Write-Host "Error: ARM parameters file not found or valid JSon." -ForegroundColor Red
+		return
+	}
+
 	# Get the list of all subscriptions
 	$subscriptions = Get-AzSubscription
 
@@ -54,13 +61,30 @@ function ProcessScriptWithConfig ($configFileName) {
 	if ($null -eq $resourceGroup) {
 		# Create the resource group if it doesn't exist
 		New-AzResourceGroup -Name $config.ResourceGroupName -Location $config.ResourceGroupLocation
-		Write-Host "Resource group '" + ($config.ResourceGroupName) + "' created in location '" + $config.ResourceGroupLocation + "'." -ForegroundColor Yellow
+		Write-Host "Resource group '"($config.ResourceGroupName) "' created in location '" + $config.ResourceGroupLocation + "'." -ForegroundColor Yellow
 	}
  else {
-		Write-Host "Resource group '" + ($config.ResourceGroupName) + "' already exists." -ForegroundColor Green
+		Write-Host "Resource group '"($config.ResourceGroupName)"' already exists." -ForegroundColor Green
 	}
 
 	InstallAzComponents($config)
+}
+
+function Get-AppServiceNameArmTemplateValue {
+	param (
+		$config
+	)
+	return Get-ArmTemplateValue $config "app_service_name"
+}
+function Get-ArmTemplateValue {
+	param (
+		$config,
+		$parameterName
+	)
+
+	$parametersContent = Get-Content ($scriptPath + "\" + $config.ARMParametersFile) -Raw -ErrorAction Stop | ConvertFrom-Json
+
+	return $parametersContent.parameters.$parameterName.value
 }
 
 function InstallAzComponents {
@@ -74,17 +98,15 @@ function InstallAzComponents {
 
 	# Deploy the ARM template
 	Write-Host "Deploying ARM template..." -ForegroundColor Yellow
-	New-AzResourceGroupDeployment `
-		-ResourceGroupName $config.ResourceGroupName `
-		-TemplateFile $templateFilePath `
-		-TemplateParameterFile $config.ARMParametersFile `
-		-Name $deploymentName -Verbose
+	$armDeploy = New-AzResourceGroupDeployment -ResourceGroupName $config.ResourceGroupName -TemplateFile $templateFilePath -TemplateParameterFile $config.ARMParametersFile -Name $deploymentName -Verbose
+	if ($armDeploy.ProvisioningState -eq "Succeeded") {
+		Write-Host "ARM template deployment succeeded." -ForegroundColor Green
+	}
+	else {
+		Write-Host "ARM template deployment failed. See resource-group deployment tab for details." -ForegroundColor Red
+		return
+	}
 
-
-	# Configure deployment from GitHub
-	Set-AzWebApp -ResourceGroupName $config.ResourceGroupName -Name $appServiceName -SourceControlName "GitHub" -RepoUrl $repoUrl -Branch $branch -GitHubAction
-	Write-Output "Deployment from GitHub repository '$repoUrl' on branch '$branch' configured for App Service '$appServiceName'."
-	return
 
 	# Create a WebJob
 	$webJobProperties = @{
@@ -137,20 +159,25 @@ function ValidateConfig {
 
 $scriptPath = Get-ScriptDirectory
 # Install the things
+$moduleInstalled = $false
+
 if ($PSVersionTable.PSVersion.Major -lt 7) {
-	Write-Host "Unsupported PowerShell version detected. This script only supports PowerShell 7 - https://pnp.github.io/powershell/articles/installation.html" -ForegroundColor red
+	if (Get-InstalledModule -Name Az -ErrorAction SilentlyContinue) {
+		$moduleInstalled = $true
+	}
 }
 else {
-	
-	# Install PS module? https://learn.microsoft.com/en-us/powershell/azure/install-azure-powershell
 	if (Get-Module -ListAvailable -Name Az) {
-		Write-Host "Az PowerShell is installed."
+		$moduleInstalled = $true
 	} 
-	else {
-		Write-Host "Az PowerShell not installed. Installing now for current user..."
-		Install-Module -Name Az -Repository PSGallery -Force
-	}
+}
 
+if (-not $moduleInstalled) {
+	Write-Host "Az PowerShell module not found. Please install it using 'Install-Module -Name Az -AllowClobber -Scope CurrentUser'." -ForegroundColor Red
+}
+else {
+	write-host "Az PowerShell module found. Checking for Azure login context..."
+	
 	# Check if there is an Azure context
 	$context = Get-AzContext
 
