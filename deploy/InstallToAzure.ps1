@@ -82,6 +82,15 @@ function Get-ArmTemplateValue {
 		$parameterName
 	)
 
+	if ($null -eq $config) {
+		Write-Host "Error: Configuration object is null." -ForegroundColor Red
+		return
+	}
+	if ($null -eq $config.ARMParametersFile) {
+		Write-Host "Error: ARMParametersFile value is null." -ForegroundColor Red
+		return
+	}
+
 	$parametersContent = Get-Content ($scriptPath + "\" + $config.ARMParametersFile) -Raw -ErrorAction Stop | ConvertFrom-Json
 
 	return $parametersContent.parameters.$parameterName.value
@@ -91,6 +100,12 @@ function InstallAzComponents {
 	param (
 		$config
 	)
+
+	Write-Host "Removing previous deployments..." -ForegroundColor Yellow
+	$webAppName = Get-AppServiceNameArmTemplateValue $config
+	Invoke-AzRestMethod -Method PATCH -Path "/subscriptions/$($config.SubcriptionId)/resourceGroups/$($config.ResourceGroupName)/providers/Microsoft.Web/sites/$webAppName/config/web?api-version=2023-12-01" `
+		 -Payload (@{ properties = @{ scmType = "None" } } | ConvertTo-Json)
+
 
 	# Variables
 	$templateFilePath = "ARM\template.json"
@@ -106,6 +121,10 @@ function InstallAzComponents {
 		Write-Host "ARM template deployment failed. See resource-group deployment tab for details." -ForegroundColor Red
 		return
 	}
+
+	Write-Host "Syncing repo..." -ForegroundColor Yellow
+	Invoke-AzRestMethod -Method POST -Path "/subscriptions/$($config.SubcriptionId)/resourceGroups/$($config.ResourceGroupName)/providers/Microsoft.Web/sites/$webAppName/sync?api-version=2023-12-01" `
+		 -Payload (@{ properties = @{ scmType = "None" } } | ConvertTo-Json)
 
 
 	# Create a WebJob
