@@ -70,16 +70,22 @@ function ProcessScriptWithConfig ($configFileName) {
 	InstallAzComponents($config)
 }
 
-function Get-AppServiceNameArmTemplateValue {
-	param (
-		$config
-	)
+function Get-SqlServerArmTemplateValue { param ( $config )
+	return Get-ArmTemplateValue $config "sql_server_name"
+}
+function Get-SqlDbArmTemplateValue { param ( $config )
+	return Get-ArmTemplateValue $config "sql_database_name"
+}
+function Get-RedisArmTemplateValue { param ( $config )
+	return Get-ArmTemplateValue $config "redis_account_name"
+}
+function Get-StorageArmTemplateValue { param ( $config )
+	return Get-ArmTemplateValue $config "storage_account_name"
+}
+function Get-AppServiceNameArmTemplateValue { param ( $config )
 	return Get-ArmTemplateValue $config "app_service_name"
 }
-function Get-FunctionAppServiceNameArmTemplateValue {
-	param (
-		$config
-	)
+function Get-FunctionAppServiceNameArmTemplateValue { param ( $config )
 	return Get-ArmTemplateValue $config "function_app_service_name"
 }
 function Get-ArmTemplateValue {
@@ -115,14 +121,9 @@ function InstallAzComponents {
 	$_ = Invoke-AzRestMethod -Method PATCH -Path "/subscriptions/$($config.SubcriptionId)/resourceGroups/$($config.ResourceGroupName)/providers/Microsoft.Web/sites/$funcWebAppName/config/web?api-version=2023-12-01" `
 		 -Payload (@{ properties = @{ scmType = "None" } } | ConvertTo-Json)
 
-
-	# Variables
-	$templateFilePath = "ARM\template.json"
-	$deploymentName = "FeedbackBotDeployment"
-
 	# Deploy the ARM template
 	Write-Host "Deploying ARM template..." -ForegroundColor Yellow
-	$armDeploy = New-AzResourceGroupDeployment -ResourceGroupName $config.ResourceGroupName -TemplateFile $templateFilePath -TemplateParameterFile $config.ARMParametersFile -Name $deploymentName -Verbose
+	$armDeploy = New-AzResourceGroupDeployment -ResourceGroupName $config.ResourceGroupName -TemplateFile "ARM\template.json" -TemplateParameterFile $config.ARMParametersFile -Name "FeedbackBotDeployment" -Verbose
 	if ($armDeploy.ProvisioningState -eq "Succeeded") {
 		Write-Host "ARM template deployment succeeded." -ForegroundColor Green
 	}
@@ -131,24 +132,39 @@ function InstallAzComponents {
 		return
 	}
 
-	# Create a WebJob
-	$webJobProperties = @{
-		name       = $webJobName
-		type       = "continuous"
-		runCommand = "run.cmd"
-	}
+	
+	$webAppName = Get-AppServiceNameArmTemplateValue $config
+	$funcWebAppName = Get-FunctionAppServiceNameArmTemplateValue $config
+	
+	# Configure app services environment variables
+	Write-Host "Configuring app services environment variables..." -ForegroundColor Yellow
+	$webApp = Get-AzWebApp -ResourceGroupName $config.ResourceGroupName -Name $webAppName
+	$funcWebApp = Get-AzWebApp -ResourceGroupName $config.ResourceGroupName -Name $funcWebAppName
 
-	$webJobFileContent = Get-Content -Path $webJobFilePath -Raw
-	$webJobEncodedContent = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($webJobFileContent))
+	$redis = get-azredis -ResourceGroupName $config.ResourceGroupName -Name (Get-RedisArmTemplateValue $config)
+	$storage = Get-AzStorageAccount -ResourceGroupName $config.ResourceGroupName -Name (Get-StorageArmTemplateValue $config)
+	$sqlServer = Get-AzSqlServer -ResourceGroupName $config.ResourceGroupName -ServerName (Get-SqlServerArmTemplateValue $config)
+	$sqlDb = Get-AzSqlDatabase -ResourceGroupName $config.ResourceGroupName -ServerName $sqlServer.ServerName -DatabaseName (Get-SqlDbArmTemplateValue $config)
+	
 
-	$webJobPayload = @{
-		properties = $webJobProperties
-		file       = $webJobEncodedContent
-	}
+	UpdateAzWebAppSettings $webApp $config
+	UpdateAzWebAppSettings $funcWebApp $config
+}
 
-	Invoke-RestMethod -Uri "https://management.azure.com/subscriptions/{subscriptionId}/resourceGroups/" + $config.ResourceGroupName + "/providers/Microsoft.Web/sites/$webAppName/webjobs/$webJobName?api-version=2018-02-01" -Method Put -Body ($webJobPayload | ConvertTo-Json) -ContentType "application/json" -Headers @{
-		Authorization = "Bearer $(Get-AzAccessToken -ResourceUrl https://management.azure.com/).Token"
-	}
+function UpdateAzWebAppSettings {
+	param (
+		$webApp,
+		$config
+	)
+
+	$webAppSettings = @{}
+
+	$webAppSettings["AppCatalogTeamAppId"] = $config.AppCatalogTeamAppId
+	$webAppSettings["AuthConfig:ClientId"] = $config.ClientId
+	$webAppSettings["AuthConfig:ClientSecret"] = $config.ClientSecret
+	$webAppSettings["AuthConfig:TenantId"] = $config.TenantId
+
+	Set-AzWebApp -ResourceGroupName $webApp.ResourceGroup -Name $webApp.Name -AppSettings $webAppSettings
 }
 
 function ValidateConfig {

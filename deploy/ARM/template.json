@@ -17,6 +17,12 @@
         "sql_server_name": {
             "type": "String"
         },
+        "sql_database_name": {
+            "type": "String"
+        },
+        "redis_account_name": {
+            "type": "String"
+        },
         "storage_account_name": {
             "type": "String"
         },
@@ -75,7 +81,7 @@
         {
             "type": "Microsoft.Sql/servers/databases",
             "apiVersion": "2023-08-01-preview",
-            "name": "[concat(parameters('sql_server_name'), '/DB')]",
+            "name": "[concat(parameters('sql_server_name'), '/', parameters('sql_database_name'))]",
             "location": "[parameters('location')]",
             "dependsOn": [
                 "[resourceId('Microsoft.Sql/servers', parameters('sql_server_name'))]"
@@ -97,6 +103,28 @@
                 "isLedgerOn": false,
                 "availabilityZone": "NoPreference"
             }
+        },
+
+        {
+            "name": "[parameters('redis_account_name')]",
+            "type": "Microsoft.Cache/redis",
+            "apiVersion": "2024-04-01-preview",
+            "location": "westeurope",
+            "dependsOn": [],
+            "properties": {
+                "sku": {
+                    "name": "Basic",
+                    "family": "C",
+                    "capacity": 0
+                },
+                "redisConfiguration": {
+                    "aad-enabled": "true"
+                },
+                "enableNonSslPort": false,
+                "redisVersion": "6",
+                "disableAccessKeyAuthentication": false
+            },
+            "tags": {}
         },
 
         {
@@ -306,7 +334,10 @@
                         "[resourceId('Microsoft.Web/sites', parameters('function_app_service_name'))]"
                     ],
                     "properties": {
-                        "SITE_ROLE": "function"
+                        "SITE_ROLE": "function",
+                        "PROJECT": "src/Functions/Functions.csproj",
+                        "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
+                        "FUNCTIONS_EXTENSION_VERSION": "~4"
                     }
                 },
                 {

@@ -17,7 +17,13 @@
         "sql_server_name": {
             "value": "psfeedbackbotdev-server"
         },
+        "sql_database_name": {
+            "value": "DB"
+        },
         "storage_account_name": {
+            "value": "pscopilotfeedbackbotdev"
+        },
+        "redis_account_name": {
             "value": "pscopilotfeedbackbotdev"
         },
         "administratorLogin": {
