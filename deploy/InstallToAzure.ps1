@@ -76,6 +76,12 @@ function Get-AppServiceNameArmTemplateValue {
 	)
 	return Get-ArmTemplateValue $config "app_service_name"
 }
+function Get-FunctionAppServiceNameArmTemplateValue {
+	param (
+		$config
+	)
+	return Get-ArmTemplateValue $config "function_app_service_name"
+}
 function Get-ArmTemplateValue {
 	param (
 		$config,
@@ -103,7 +109,10 @@ function InstallAzComponents {
 
 	Write-Host "Removing previous deployments..." -ForegroundColor Yellow
 	$webAppName = Get-AppServiceNameArmTemplateValue $config
-	Invoke-AzRestMethod -Method PATCH -Path "/subscriptions/$($config.SubcriptionId)/resourceGroups/$($config.ResourceGroupName)/providers/Microsoft.Web/sites/$webAppName/config/web?api-version=2023-12-01" `
+	$funcWebAppName = Get-FunctionAppServiceNameArmTemplateValue $config
+	$_ = Invoke-AzRestMethod -Method PATCH -Path "/subscriptions/$($config.SubcriptionId)/resourceGroups/$($config.ResourceGroupName)/providers/Microsoft.Web/sites/$webAppName/config/web?api-version=2023-12-01" `
+		 -Payload (@{ properties = @{ scmType = "None" } } | ConvertTo-Json)
+	$_ = Invoke-AzRestMethod -Method PATCH -Path "/subscriptions/$($config.SubcriptionId)/resourceGroups/$($config.ResourceGroupName)/providers/Microsoft.Web/sites/$funcWebAppName/config/web?api-version=2023-12-01" `
 		 -Payload (@{ properties = @{ scmType = "None" } } | ConvertTo-Json)
 
 
@@ -121,11 +130,6 @@ function InstallAzComponents {
 		Write-Host "ARM template deployment failed. See resource-group deployment tab for details." -ForegroundColor Red
 		return
 	}
-
-	Write-Host "Syncing repo..." -ForegroundColor Yellow
-	Invoke-AzRestMethod -Method POST -Path "/subscriptions/$($config.SubcriptionId)/resourceGroups/$($config.ResourceGroupName)/providers/Microsoft.Web/sites/$webAppName/sync?api-version=2023-12-01" `
-		 -Payload (@{ properties = @{ scmType = "None" } } | ConvertTo-Json)
-
 
 	# Create a WebJob
 	$webJobProperties = @{
