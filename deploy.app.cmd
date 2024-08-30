@@ -80,7 +80,7 @@ pushd "%DEPLOYMENT_SOURCE%\src\Web"
 
 :: 4. Build and publish
 echo Building the application
-call :ExecuteCmd dotnet publish "%DEPLOYMENT_SOURCE%\src\Web\Web.sln" --output "%DEPLOYMENT_TEMP%" --configuration Release -property:KuduDeployment=1
+call :ExecuteCmd dotnet publish "%DEPLOYMENT_SOURCE%\src\Web\Web.csproj" --output "%DEPLOYMENT_TEMP%" --configuration Release -property:KuduDeployment=1
 IF !ERRORLEVEL! NEQ 0 goto error
 
 :: 5. KuduSync
