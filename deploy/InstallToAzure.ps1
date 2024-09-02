@@ -73,9 +73,13 @@ function ProcessScriptWithConfig ($configFileName) {
 function Get-SqlServerArmTemplateValue { param ( $config )
 	return Get-ArmTemplateValue $config "sql_server_name"
 }
+function Get-SqlServerPasswordTemplateValue { param ( $config )
+	return Get-ArmTemplateValue $config "administratorLoginPassword"
+}
 function Get-SqlDbArmTemplateValue { param ( $config )
 	return Get-ArmTemplateValue $config "sql_database_name"
 }
+
 function Get-RedisArmTemplateValue { param ( $config )
 	return Get-ArmTemplateValue $config "redis_account_name"
 }
@@ -113,7 +117,7 @@ function InstallAzComponents {
 		$config
 	)
 
-	Write-Host "Removing previous deployments..." -ForegroundColor Yellow
+	Write-Host "Removing previous App Service deployments..." -ForegroundColor Yellow
 	$webAppName = Get-AppServiceNameArmTemplateValue $config
 	$funcWebAppName = Get-FunctionAppServiceNameArmTemplateValue $config
 	$_ = Invoke-AzRestMethod -Method PATCH -Path "/subscriptions/$($config.SubcriptionId)/resourceGroups/$($config.ResourceGroupName)/providers/Microsoft.Web/sites/$webAppName/config/web?api-version=2023-12-01" `
@@ -123,7 +127,9 @@ function InstallAzComponents {
 
 	# Deploy the ARM template
 	Write-Host "Deploying ARM template..." -ForegroundColor Yellow
-	$armDeploy = New-AzResourceGroupDeployment -ResourceGroupName $config.ResourceGroupName -TemplateFile "ARM\template.json" -TemplateParameterFile $config.ARMParametersFile -Name "FeedbackBotDeployment" -Verbose
+	$templateLocation = "$scriptPath\ARM\template.json"
+	$paramsLocation = $scriptPath + "\" + $config.ARMParametersFile
+	$armDeploy = New-AzResourceGroupDeployment -ResourceGroupName $config.ResourceGroupName -TemplateFile $templateLocation -TemplateParameterFile $paramsLocation -Name "FeedbackBotDeployment" -Verbose
 	if ($armDeploy.ProvisioningState -eq "Succeeded") {
 		Write-Host "ARM template deployment succeeded." -ForegroundColor Green
 	}
@@ -137,24 +143,42 @@ function InstallAzComponents {
 	$funcWebAppName = Get-FunctionAppServiceNameArmTemplateValue $config
 	
 	# Configure app services environment variables
-	Write-Host "Configuring app services environment variables..." -ForegroundColor Yellow
+	Write-Host "Reading app services environment variables..." -ForegroundColor Yellow
 	$webApp = Get-AzWebApp -ResourceGroupName $config.ResourceGroupName -Name $webAppName
 	$funcWebApp = Get-AzWebApp -ResourceGroupName $config.ResourceGroupName -Name $funcWebAppName
 
-	$redis = get-azredis -ResourceGroupName $config.ResourceGroupName -Name (Get-RedisArmTemplateValue $config)
-	$storage = Get-AzStorageAccount -ResourceGroupName $config.ResourceGroupName -Name (Get-StorageArmTemplateValue $config)
+	$redisName = Get-RedisArmTemplateValue $config
+	$redis = Get-AzRedisCache -ResourceGroupName $config.ResourceGroupName -Name $redisName
+	$redisKeys = Get-AzRedisCacheKey -ResourceGroupName $config.ResourceGroupName -Name $redisName
+
+	$storageName = Get-StorageArmTemplateValue $config
+	$storage = Get-AzStorageAccount -ResourceGroupName $config.ResourceGroupName -Name $storageName
+	$storageKeys = Get-AzStorageAccountKey -ResourceGroupName $config.ResourceGroupName -Name $storageName
+
+
 	$sqlServer = Get-AzSqlServer -ResourceGroupName $config.ResourceGroupName -ServerName (Get-SqlServerArmTemplateValue $config)
 	$sqlDb = Get-AzSqlDatabase -ResourceGroupName $config.ResourceGroupName -ServerName $sqlServer.ServerName -DatabaseName (Get-SqlDbArmTemplateValue $config)
 	
+	Write-Host "Configuring app services environment variables..." -ForegroundColor Yellow
+	$sqlConnectionString = "Server=tcp:$($sqlServer.ServerName).database.windows.net,1433;Initial Catalog=$($sqlDb.DatabaseName);Persist Security Info=False;User ID=$($sqlServer.ServerName);Password=$(Get-SqlServerPasswordTemplateValue $config);MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
+	$redisConnectionString = "$($redis.HostName),abortConnect=false,ssl=true,password=$($redisKeys.PrimaryKey)"
+	$storageConnectionString = "DefaultEndpointsProtocol=https;AccountName=$($storage.StorageAccountName);AccountKey=$($storageKeys[0].Value);EndpointSuffix=core.windows.net"
 
-	UpdateAzWebAppSettings $webApp $config
-	UpdateAzWebAppSettings $funcWebApp $config
+	Write-host "SQL Connection String: $sqlConnectionString"
+	Write-host "Redis Connection String: $redisConnectionString"
+	Write-host "Storage Connection String: $storageConnectionString"
+	
+	UpdateAzWebAppSettings $webApp $config $sqlConnectionString $redisConnectionString $storageConnectionString
+	UpdateAzWebAppSettings $funcWebApp $config $sqlConnectionString $redisConnectionString $storageConnectionString
+
+	Write-Host "Solution installed successfully." -ForegroundColor Green
 }
 
 function UpdateAzWebAppSettings {
 	param (
 		$webApp,
-		$config
+		$config,
+		$sqlConnectionString, $redisConnectionString, $storageConnectionString
 	)
 
 	$webAppSettings = @{}
@@ -164,7 +188,26 @@ function UpdateAzWebAppSettings {
 	$webAppSettings["AuthConfig:ClientSecret"] = $config.ClientSecret
 	$webAppSettings["AuthConfig:TenantId"] = $config.TenantId
 
-	Set-AzWebApp -ResourceGroupName $webApp.ResourceGroup -Name $webApp.Name -AppSettings $webAppSettings
+	$webAppSettings["MicrosoftAppId"] = $config.ClientId
+	$webAppSettings["MicrosoftAppPassword"] = $config.ClientSecret
+
+	$webAppSettings["AppCatalogTeamAppId"] = [System.Guid]::Empty.ToString()
+
+	$connectionStrings = @{
+		"SQL" = @{
+			"Type" = "SQLAzure"
+			"Value" = $sqlConnectionString
+		}
+		"Redis" = @{
+			"Type" = "Custom"
+			"Value" = $redisConnectionString
+		}
+		"Storage" = @{
+			"Type" = "Custom"
+			"Value" = $storageConnectionString
+		}
+	}
+	$app = Set-AzWebApp -ResourceGroupName $webApp.ResourceGroup -Name $webApp.Name -AppSettings $webAppSettings -ConnectionStrings $connectionStrings
 }
 
 function ValidateConfig {
@@ -197,9 +240,8 @@ function ValidateConfig {
 }
 
 $scriptPath = Get-ScriptDirectory
-# Install the things
+# Install the Az module if it's not already installed
 $moduleInstalled = $false
-
 if ($PSVersionTable.PSVersion.Major -lt 7) {
 	if (Get-InstalledModule -Name Az -ErrorAction SilentlyContinue) {
 		$moduleInstalled = $true
