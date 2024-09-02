@@ -1,7 +1,0 @@
-{
-  "EnvironmentName": "Dev Config File",
-  "ARMParametersFile": "ARM\\parameters.json",
-  "ResourceGroupName": "DevResourceGroup",
-  "ResourceGroupLocation": "westeurope",
-  "SubcriptionId": "a0a08ecb-a4cb-4e5f-9330-4a229202688a"
-}
