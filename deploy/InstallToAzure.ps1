@@ -14,8 +14,96 @@ function Get-ScriptDirectory {
 	Split-Path $Invocation.MyCommand.Path
 }
 
+
+function Get-SqlServerArmTemplateValue {
+ param ( $config )
+	return Get-ArmTemplateValue $config "sql_server_name"
+}
+function Get-SqlServerPasswordTemplateValue {
+ param ( $config )
+	return Get-ArmTemplateValue $config "administratorLoginPassword"
+}
+function Get-SqlDbArmTemplateValue {
+ param ( $config )
+	return Get-ArmTemplateValue $config "sql_database_name"
+}
+
+function Get-RedisArmTemplateValue {
+ param ( $config )
+	return Get-ArmTemplateValue $config "redis_account_name"
+}
+function Get-StorageArmTemplateValue {
+ param ( $config )
+	return Get-ArmTemplateValue $config "storage_account_name"
+}
+function Get-AppServiceNameArmTemplateValue {
+ param ( $config )
+	return Get-ArmTemplateValue $config "app_service_name"
+}
+function Get-FunctionAppServiceNameArmTemplateValue {
+ param ( $config )
+	return Get-ArmTemplateValue $config "function_app_service_name"
+}
+function Get-ArmTemplateValue {
+	param (
+		$config,
+		$parameterName
+	)
+
+	if ($null -eq $config) {
+		Write-Host "Error: Configuration object is null." -ForegroundColor Red
+		return
+	}
+	if ($null -eq $config.ARMParametersFile) {
+		Write-Host "Error: ARMParametersFile value is null." -ForegroundColor Red
+		return
+	}
+
+	$parametersContent = Get-Content ($scriptPath + "\" + $config.ARMParametersFile) -Raw -ErrorAction Stop | ConvertFrom-Json
+
+	return $parametersContent.parameters.$parameterName.value
+}
+
+# write information
+function WriteI {
+	param(
+		[parameter(mandatory = $true)]
+		[string]$message
+	)
+	Write-Host $message -foregroundcolor white
+}
+
+# write error
+function WriteE {
+	param(
+		[parameter(mandatory = $true)]
+		[string]$message
+	)
+	Write-Host $message -foregroundcolor red -BackgroundColor black
+}
+
+# write warning
+function WriteW {
+	param(
+		[parameter(mandatory = $true)]
+		[string]$message
+	)
+	Write-Host $message -foregroundcolor yellow -BackgroundColor black
+}
+
+# write success
+function WriteS {
+	param(
+		[parameter(mandatory = $true)]
+		[string]$message
+	)
+	Write-Host $message -foregroundcolor green -BackgroundColor black
+}
+
+
+
 # Install custom action in all sites listed in the config
-function ProcessScriptWithConfig ($configFileName) {
+function ValidateAndInstall ($configFileName) {
 
 	# Load config and sanity check
 	try {
@@ -61,87 +149,76 @@ function ProcessScriptWithConfig ($configFileName) {
 	if ($null -eq $resourceGroup) {
 		# Create the resource group if it doesn't exist
 		New-AzResourceGroup -Name $config.ResourceGroupName -Location $config.ResourceGroupLocation
-		Write-Host "Resource group '"($config.ResourceGroupName) "' created in location '" + $config.ResourceGroupLocation + "'." -ForegroundColor Yellow
+		Write-Host "Resource group '$($config.ResourceGroupName)' created in location '$($config.ResourceGroupLocation)'." -ForegroundColor Yellow
 	}
- else {
-		Write-Host "Resource group '"($config.ResourceGroupName)"' already exists." -ForegroundColor Green
+	else {
+		Write-Host "Resource group '$($config.ResourceGroupName)' already exists." -ForegroundColor Green
 	}
 
 	InstallAzComponents($config)
 }
 
-function Get-SqlServerArmTemplateValue { param ( $config )
-	return Get-ArmTemplateValue $config "sql_server_name"
-}
-function Get-SqlServerPasswordTemplateValue { param ( $config )
-	return Get-ArmTemplateValue $config "administratorLoginPassword"
-}
-function Get-SqlDbArmTemplateValue { param ( $config )
-	return Get-ArmTemplateValue $config "sql_database_name"
-}
-
-function Get-RedisArmTemplateValue { param ( $config )
-	return Get-ArmTemplateValue $config "redis_account_name"
-}
-function Get-StorageArmTemplateValue { param ( $config )
-	return Get-ArmTemplateValue $config "storage_account_name"
-}
-function Get-AppServiceNameArmTemplateValue { param ( $config )
-	return Get-ArmTemplateValue $config "app_service_name"
-}
-function Get-FunctionAppServiceNameArmTemplateValue { param ( $config )
-	return Get-ArmTemplateValue $config "function_app_service_name"
-}
-function Get-ArmTemplateValue {
+function RemoveDeployment {
 	param (
-		$config,
-		$parameterName
+		[Parameter(Mandatory = $true)] $config,
+		$webAppName
 	)
 
-	if ($null -eq $config) {
-		Write-Host "Error: Configuration object is null." -ForegroundColor Red
-		return
-	}
-	if ($null -eq $config.ARMParametersFile) {
-		Write-Host "Error: ARMParametersFile value is null." -ForegroundColor Red
-		return
-	}
+	$uri = "/subscriptions/$($config.SubcriptionId)/resourceGroups/$($config.ResourceGroupName)/providers/Microsoft.Web/sites/$webAppName/config/web?api-version=2023-12-01"
+	$responseRaw = Invoke-AzRestMethod -Method PATCH -Path $uri `
+		-Payload (@{ properties = @{ scmType = "None" } } | ConvertTo-Json) -Verbose
 
-	$parametersContent = Get-Content ($scriptPath + "\" + $config.ARMParametersFile) -Raw -ErrorAction Stop | ConvertFrom-Json
-
-	return $parametersContent.parameters.$parameterName.value
+	if ($responseRaw.StatusCode -eq 200) {
+		Write-Host "Deployment removed successfully." -ForegroundColor Green
+	}
+	else {
+		if ($responseRaw.StatusCode -eq 404) {
+			Write-Host "Deployment not found." -ForegroundColor Yellow
+		}
+		else {
+			Write-Host "Error: Deployment removal failed. Response: $($responseRaw.Content)" -ForegroundColor Red
+		}
+	}
 }
 
 function InstallAzComponents {
 	param (
-		$config
+		[Parameter(Mandatory = $true)] $config
 	)
 
 	Write-Host "Removing previous App Service deployments..." -ForegroundColor Yellow
 	$webAppName = Get-AppServiceNameArmTemplateValue $config
 	$funcWebAppName = Get-FunctionAppServiceNameArmTemplateValue $config
-	$_ = Invoke-AzRestMethod -Method PATCH -Path "/subscriptions/$($config.SubcriptionId)/resourceGroups/$($config.ResourceGroupName)/providers/Microsoft.Web/sites/$webAppName/config/web?api-version=2023-12-01" `
-		 -Payload (@{ properties = @{ scmType = "None" } } | ConvertTo-Json)
-	$_ = Invoke-AzRestMethod -Method PATCH -Path "/subscriptions/$($config.SubcriptionId)/resourceGroups/$($config.ResourceGroupName)/providers/Microsoft.Web/sites/$funcWebAppName/config/web?api-version=2023-12-01" `
-		 -Payload (@{ properties = @{ scmType = "None" } } | ConvertTo-Json)
+
+	RemoveDeployment $config $webAppName	
+	RemoveDeployment $config $funcWebAppName
+	
 
 	# Deploy the ARM template
-	Write-Host "Deploying ARM template..." -ForegroundColor Yellow
-	$templateLocation = "$scriptPath\ARM\template.json"
-	$paramsLocation = $scriptPath + "\" + $config.ARMParametersFile
-	$armDeploy = New-AzResourceGroupDeployment -ResourceGroupName $config.ResourceGroupName -TemplateFile $templateLocation -TemplateParameterFile $paramsLocation -Name "FeedbackBotDeployment" -Verbose
-	if ($armDeploy.ProvisioningState -eq "Succeeded") {
-		Write-Host "ARM template deployment succeeded." -ForegroundColor Green
-	}
-	else {
-		Write-Host "ARM template deployment failed. See resource-group deployment tab for details." -ForegroundColor Red
-		return
+	
+	$deploySuccess = DeployARMTemplate $config
+	if (-not $deploySuccess) {
+		# Wait for the code deployment to sync
+		Write-Host "Waiting for code deployment to sync..." -ForegroundColor Yellow
+
+		$appServicesNames = [System.Collections.ArrayList]@(
+			$webAppName, 
+			$funcWebAppName
+		)
+
+		# wait couple of minutes & check deployment status...
+		$appserviceCodeSyncSuccess = WaitForCodeDeploymentSync $config $appServicesNames.Clone()
+                
+		if ($appserviceCodeSyncSuccess) {
+			WriteI -message "ARM deploy failed but app service deploy jobs succeeded. Re-running deployment in 20 mins as ARM template can fail with long deploy jobs..."
+			Start-Sleep -Seconds 1200
+			DeployARMTemplate $config
+		}
+		else {
+			Throw "ERROR: Unkown ARM template deployment error."
+		}
 	}
 
-	
-	$webAppName = Get-AppServiceNameArmTemplateValue $config
-	$funcWebAppName = Get-FunctionAppServiceNameArmTemplateValue $config
-	
 	# Configure app services environment variables
 	Write-Host "Reading app services environment variables..." -ForegroundColor Yellow
 	$webApp = Get-AzWebApp -ResourceGroupName $config.ResourceGroupName -Name $webAppName
@@ -174,6 +251,27 @@ function InstallAzComponents {
 	Write-Host "Solution installed successfully." -ForegroundColor Green
 }
 
+
+function DeployARMTemplate {
+	param (
+		[Parameter(Mandatory = $true)] $config
+	)
+
+	# Deploy the ARM template
+	Write-Host "Deploying ARM template..." -ForegroundColor Yellow
+	$templateLocation = "$scriptPath\ARM\template.json"
+	$paramsLocation = $scriptPath + "\" + $config.ARMParametersFile
+	$armDeploy = New-AzResourceGroupDeployment -ResourceGroupName $config.ResourceGroupName -TemplateFile $templateLocation -TemplateParameterFile $paramsLocation -Name "FeedbackBotDeployment" -Verbose
+	if ($armDeploy.ProvisioningState -eq "Succeeded") {
+		Write-Host "ARM template deployment succeeded." -ForegroundColor Green
+		return $true
+	}
+	else {
+		Write-Host "ARM template deployment failed. " -ForegroundColor Red
+		return $false
+	}
+}
+
 function UpdateAzWebAppSettings {
 	param (
 		$webApp,
@@ -194,20 +292,63 @@ function UpdateAzWebAppSettings {
 	$webAppSettings["AppCatalogTeamAppId"] = [System.Guid]::Empty.ToString()
 
 	$connectionStrings = @{
-		"SQL" = @{
-			"Type" = "SQLAzure"
+		"SQL"     = @{
+			"Type"  = "SQLAzure"
 			"Value" = $sqlConnectionString
 		}
-		"Redis" = @{
-			"Type" = "Custom"
+		"Redis"   = @{
+			"Type"  = "Custom"
 			"Value" = $redisConnectionString
 		}
 		"Storage" = @{
-			"Type" = "Custom"
+			"Type"  = "Custom"
 			"Value" = $storageConnectionString
 		}
 	}
 	$app = Set-AzWebApp -ResourceGroupName $webApp.ResourceGroup -Name $webApp.Name -AppSettings $webAppSettings -ConnectionStrings $connectionStrings
+}
+
+function WaitForCodeDeploymentSync {
+	Param(
+		[Parameter(Mandatory = $true)] $config,
+		[Parameter(Mandatory = $true)] $appServicesNames
+	)
+
+	$appserviceCodeSyncSuccess = $true
+	while ($appServicesNames.Count -gt 0) {
+		WriteI -message "Checking source control deployment progress..."
+		For ($i = 0; $i -le $appServicesNames.Count; $i++) {
+			$appService = $appServicesNames[$i]
+			if ($null -ne $appService) {
+
+				$uri = "https://management.azure.com/subscriptions/$($config.SubcriptionId)/resourcegroups/$($config.ResourceGroupName)/providers/Microsoft.Web/sites/$appService/deployments?api-version=2019-08-01"
+				
+				$deploymentResponseRaw = Invoke-AzRestMethod -Method GET $uri
+				$deploymentResponse = $deploymentResponseRaw.Content | ConvertFrom-Json
+				$deploymentsList = $deploymentResponse.value
+				if ($deploymentsList.length -eq 0 -or $deploymentsList[0].properties.complete) {
+					$appserviceCodeSyncSuccess = $appserviceCodeSyncSuccess -and ($deploymentsList.length -eq 0 -or $deploymentsList[0].properties.status -ne 3) # 3 means sync fail
+					$appServicesNames.remove($appService)
+					Write-Host "$appService deployment has finished." -ForegroundColor Green	
+					$i--;
+				}
+			}
+		}
+
+		if ($appServicesNames.Count -gt 0) {
+			WriteI -message "Source control deployment is still in progress. Next check in 2 minutes."
+			Start-Sleep -Seconds 120
+		}
+	}
+
+
+	if ($appserviceCodeSyncSuccess) {
+		WriteI -message "Source control deployment is done."
+	}
+	else {
+		WriteE -message "Source control deployment failed."
+	}
+	return $appserviceCodeSyncSuccess
 }
 
 function ValidateConfig {
@@ -269,6 +410,6 @@ else {
 		$accountId = $context.Account.Id
 		Write-Host "Azure login context found for account '$accountId'. Installing solution..."
 		
-		ProcessScriptWithConfig($ConfigFileName)
+		ValidateAndInstall($ConfigFileName)
 	}
 }

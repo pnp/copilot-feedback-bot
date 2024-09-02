@@ -26,6 +26,9 @@
         "redis_account_name": {
             "value": "pscopilotfeedbackbotdev"
         },
+        "servicebus_namespace_name": {
+            "value": "pscopilotfeedbackbotdev"
+        },
         "administratorLogin": {
             "value": "sqladmin" 
         },

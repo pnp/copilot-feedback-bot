@@ -8,6 +8,14 @@
         "app_service_plan_name": {
             "type": "String"
         },
+        "app_service_plan_sku": {
+            "type": "String",
+            "defaultValue": "Basic"
+        },
+        "app_service_plan_skuCode": {
+            "type": "String",
+            "defaultValue": "B1"
+        },
         "function_app_service_name": {
             "type": "String"
         },
@@ -21,6 +29,9 @@
             "type": "String"
         },
         "redis_account_name": {
+            "type": "String"
+        },
+        "servicebus_namespace_name": {
             "type": "String"
         },
         "storage_account_name": {
@@ -109,7 +120,7 @@
             "name": "[parameters('redis_account_name')]",
             "type": "Microsoft.Cache/redis",
             "apiVersion": "2024-04-01-preview",
-            "location": "westeurope",
+            "location": "[parameters('location')]",
             "dependsOn": [],
             "properties": {
                 "sku": {
@@ -176,10 +187,8 @@
             "name": "[parameters('app_service_plan_name')]",
             "location": "[parameters('location')]",
             "sku": {
-                "name": "B1",
-                "tier": "Basic",
-                "size": "B1",
-                "family": "B",
+                "Tier": "[parameters('app_service_plan_sku')]",
+                "Name": "[parameters('app_service_plan_skuCode')]",
                 "capacity": 1
             },
             "kind": "app",
@@ -266,8 +275,7 @@
                 "name": "Y1",
                 "tier": "Dynamic",
                 "size": "Y1",
-                "family": "Y",
-                "capacity": 0
+                "family": "Y"
             },
             "kind": "functionapp",
             "properties": {
@@ -355,6 +363,65 @@
                     }
                 }
             ]
+        },
+
+
+        {
+            "type": "Microsoft.ServiceBus/namespaces",
+            "apiVersion": "2023-01-01-preview",
+            "name": "[parameters('servicebus_namespace_name')]",
+            "location": "[parameters('location')]",
+            "sku": {
+                "name": "Basic",
+                "tier": "Basic"
+            },
+            "properties": {
+                "geoDataReplication": {
+                    "maxReplicationLagDurationInSeconds": 0,
+                    "locations": [
+                        {
+                            "locationName": "[parameters('location')]",
+                            "roleType": "Primary"
+                        }
+                    ]
+                },
+                "premiumMessagingPartitions": 0,
+                "minimumTlsVersion": "1.2",
+                "publicNetworkAccess": "Enabled",
+                "disableLocalAuth": false,
+                "zoneRedundant": false
+            }
+        },
+        {
+            "type": "Microsoft.ServiceBus/namespaces/authorizationrules",
+            "apiVersion": "2023-01-01-preview",
+            "name": "[concat(parameters('servicebus_namespace_name'), '/ListenAndSend')]",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ServiceBus/namespaces', parameters('servicebus_namespace_name'))]"
+            ],
+            "properties": {
+                "rights": [
+                    "Listen",
+                    "Send"
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.ServiceBus/namespaces/networkrulesets",
+            "apiVersion": "2023-01-01-preview",
+            "name": "[concat(parameters('servicebus_namespace_name'), '/default')]",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ServiceBus/namespaces', parameters('servicebus_namespace_name'))]"
+            ],
+            "properties": {
+                "publicNetworkAccess": "Enabled",
+                "defaultAction": "Allow",
+                "virtualNetworkRules": [],
+                "ipRules": [],
+                "trustedServiceAccessEnabled": false
+            }
         }
     ]
 }
