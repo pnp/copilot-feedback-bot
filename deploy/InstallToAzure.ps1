@@ -156,6 +156,8 @@ function ValidateAndInstall ($configFileName) {
 	}
 
 	InstallAzComponents($config)
+
+	
 }
 
 function RemoveDeployment {
@@ -236,7 +238,7 @@ function InstallAzComponents {
 	$sqlDb = Get-AzSqlDatabase -ResourceGroupName $config.ResourceGroupName -ServerName $sqlServer.ServerName -DatabaseName (Get-SqlDbArmTemplateValue $config)
 	
 	Write-Host "Configuring app services environment variables..." -ForegroundColor Yellow
-	$sqlConnectionString = "Server=tcp:$($sqlServer.ServerName).database.windows.net,1433;Initial Catalog=$($sqlDb.DatabaseName);Persist Security Info=False;User ID=$($sqlServer.ServerName);Password=$(Get-SqlServerPasswordTemplateValue $config);MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
+	$sqlConnectionString = "Server=tcp:$($sqlServer.ServerName).database.windows.net,1433;Initial Catalog=$($sqlDb.DatabaseName);Persist Security Info=False;User ID=$($sqlServer.SqlAdministratorLogin);Password=$(Get-SqlServerPasswordTemplateValue $config);MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
 	$redisConnectionString = "$($redis.HostName),abortConnect=false,ssl=true,password=$($redisKeys.PrimaryKey)"
 	$storageConnectionString = "DefaultEndpointsProtocol=https;AccountName=$($storage.StorageAccountName);AccountKey=$($storageKeys[0].Value);EndpointSuffix=core.windows.net"
 
@@ -246,6 +248,11 @@ function InstallAzComponents {
 	
 	UpdateAzWebAppSettings $webApp $config $sqlConnectionString $redisConnectionString $storageConnectionString
 	UpdateAzWebAppSettings $funcWebApp $config $sqlConnectionString $redisConnectionString $storageConnectionString
+
+	Write-Host "Restarting app services..." -ForegroundColor Blue
+	Restart-AzWebApp -ResourceGroupName $config.ResourceGroupName -Name $webAppName
+	Restart-AzWebApp -ResourceGroupName $config.ResourceGroupName -Name $funcWebAppName
+
 
 	Write-Host "Solution installed successfully." -ForegroundColor Green
 }
