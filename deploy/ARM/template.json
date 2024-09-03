@@ -45,7 +45,6 @@
         },
         "location": {
             "type": "string",
-            "defaultValue": "West Europe"
         },
         "git_branch": {
             "type": "String",

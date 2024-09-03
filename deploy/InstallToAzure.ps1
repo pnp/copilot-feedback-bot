@@ -108,7 +108,7 @@ function ValidateAndInstall ($configFileName) {
 	# Load config and sanity check
 	try {
 		$config = Get-Content ($scriptPath + "\" + $configFileName) -Raw -ErrorAction Stop | ConvertFrom-Json
-		Write-Host ("Read configuration for environment name '" + ($config.EnvironmentName) + "'...")
+		Write-Host ("Read configuration for '" + ($configFileName) + "'...")
 	}
 	catch {
 		Write-Host "FATAL ERROR: Cannot open config-file '$configFileName'" -ForegroundColor red -BackgroundColor Black
@@ -163,7 +163,6 @@ function RemoveDeployment {
 		[Parameter(Mandatory = $true)] $config,
 		$webAppName
 	)
-
 	$uri = "/subscriptions/$($config.SubcriptionId)/resourceGroups/$($config.ResourceGroupName)/providers/Microsoft.Web/sites/$webAppName/config/web?api-version=2023-12-01"
 	$responseRaw = Invoke-AzRestMethod -Method PATCH -Path $uri `
 		-Payload (@{ properties = @{ scmType = "None" } } | ConvertTo-Json) -Verbose
@@ -261,13 +260,27 @@ function DeployARMTemplate {
 	Write-Host "Deploying ARM template..." -ForegroundColor Yellow
 	$templateLocation = "$scriptPath\ARM\template.json"
 	$paramsLocation = $scriptPath + "\" + $config.ARMParametersFile
-	$armDeploy = New-AzResourceGroupDeployment -ResourceGroupName $config.ResourceGroupName -TemplateFile $templateLocation -TemplateParameterFile $paramsLocation -Name "FeedbackBotDeployment" -Verbose
+
+	$armDeploy = $null
+	try
+	{
+		$armDeploy = New-AzResourceGroupDeployment -ResourceGroupName $config.ResourceGroupName -TemplateFile $templateLocation -TemplateParameterFile $paramsLocation -Name "FeedbackBotDeployment" -Verbose
+	}
+	catch {
+		Write-Host $_
+	  }
+
+	if ($null -eq $armDeploy) {
+		Throw "Error: ARM template deployment fataly failed. Check previous errors." 
+	}
+
+
 	if ($armDeploy.ProvisioningState -eq "Succeeded") {
 		Write-Host "ARM template deployment succeeded." -ForegroundColor Green
 		return $true
 	}
 	else {
-		Write-Host "ARM template deployment failed. " -ForegroundColor Red
+		Write-Host "ARM template deployment failed. Check messages above to make sure no naming conflict, but for now we'll assume it's because the app services aren't ready" -ForegroundColor Red
 		return $false
 	}
 }
@@ -288,8 +301,6 @@ function UpdateAzWebAppSettings {
 
 	$webAppSettings["MicrosoftAppId"] = $config.ClientId
 	$webAppSettings["MicrosoftAppPassword"] = $config.ClientSecret
-
-	$webAppSettings["AppCatalogTeamAppId"] = [System.Guid]::Empty.ToString()
 
 	$connectionStrings = @{
 		"SQL"     = @{
@@ -323,7 +334,7 @@ function WaitForCodeDeploymentSync {
 
 				$uri = "https://management.azure.com/subscriptions/$($config.SubcriptionId)/resourcegroups/$($config.ResourceGroupName)/providers/Microsoft.Web/sites/$appService/deployments?api-version=2019-08-01"
 				
-				$deploymentResponseRaw = Invoke-AzRestMethod -Method GET $uri
+				$deploymentResponseRaw = Invoke-AzRestMethod -Method GET -Path $uri
 				$deploymentResponse = $deploymentResponseRaw.Content | ConvertFrom-Json
 				$deploymentsList = $deploymentResponse.value
 				if ($deploymentsList.length -eq 0 -or $deploymentsList[0].properties.complete) {
@@ -356,8 +367,16 @@ function ValidateConfig {
 		$config
 	)
 
-	if ($config.EnvironmentName -eq $null) {
-		Write-Host "Error: EnvironmentName is missing in the configuration file." -ForegroundColor Red
+	if ($config.ClientId -eq $null) {
+		Write-Host "Error: ClientId is missing in the configuration file." -ForegroundColor Red
+		return $false
+	}
+	if ($config.ClientSecret -eq $null) {
+		Write-Host "Error: ClientSecret is missing in the configuration file." -ForegroundColor Red
+		return $false
+	}
+	if ($config.TenantId -eq $null) {
+		Write-Host "Error: TenantId is missing in the configuration file." -ForegroundColor Red
 		return $false
 	}
 	if ($config.SubcriptionId -eq $null) {
@@ -396,6 +415,7 @@ else {
 
 if (-not $moduleInstalled) {
 	Write-Host "Az PowerShell module not found. Please install it using 'Install-Module -Name Az -AllowClobber -Scope CurrentUser'." -ForegroundColor Red
+	WriteI -message "Documentation: https://learn.microsoft.com/en-us/powershell/azure/install-azure-powershell"
 }
 else {
 	write-host "Az PowerShell module found. Checking for Azure login context..."

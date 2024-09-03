@@ -1,0 +1,42 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "app_service_name": {
+            "value": "<!-- REPLACE WITH YOUR VALUE -->"
+        },
+        "app_service_plan_name": {
+            "value": "<!-- REPLACE WITH YOUR VALUE -->"
+        },
+        "function_app_service_name": { 
+            "value": "<!-- REPLACE WITH YOUR VALUE -->"
+        },
+        "function_app_service_plan_name": { 
+            "value": "<!-- REPLACE WITH YOUR VALUE -->"
+        },
+        "sql_server_name": {
+            "value": "<!-- REPLACE WITH YOUR VALUE -->"
+        },
+        "sql_database_name": {
+            "value": "DB"
+        },
+        "storage_account_name": {
+            "value": "<!-- REPLACE WITH YOUR VALUE -->"
+        },
+        "redis_account_name": {
+            "value": "<!-- REPLACE WITH YOUR VALUE -->"
+        },
+        "servicebus_namespace_name": {
+            "value": "<!-- REPLACE WITH YOUR VALUE -->"
+        },
+        "administratorLogin": {
+            "value": "<!-- REPLACE WITH YOUR VALUE -->" 
+        },
+        "administratorLoginPassword": {
+            "value": "<!-- REPLACE WITH YOUR VALUE -->" 
+        },
+        "location": {
+            "value": "westeurope" 
+        }
+    }
+}
