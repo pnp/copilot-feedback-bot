@@ -2,6 +2,18 @@
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
+        "service_account_client_id": {
+            "value": "<!-- REPLACE WITH YOUR VALUE -->"
+        },
+        "service_account_client_secret": {
+            "value": "<!-- REPLACE WITH YOUR VALUE -->"
+        },
+        "tenant_id": {
+            "value": "<!-- REPLACE WITH YOUR VALUE -->"
+        },
+        "app_catalog_team_app_id": {
+            "value": "<!-- REPLACE WITH YOUR VALUE -->"
+        },
         "app_service_name": {
             "value": "<!-- REPLACE WITH YOUR VALUE -->"
         },
@@ -20,6 +32,12 @@
         "sql_database_name": {
             "value": "DB"
         },
+        "sql_server_admin_login": {
+            "value": "<!-- REPLACE WITH YOUR VALUE -->" 
+        },
+        "sql_server_admin_login_password": {
+            "value": "<!-- REPLACE WITH YOUR VALUE -->" 
+        },
         "storage_account_name": {
             "value": "<!-- REPLACE WITH YOUR VALUE -->"
         },
@@ -28,12 +46,6 @@
         },
         "servicebus_namespace_name": {
             "value": "<!-- REPLACE WITH YOUR VALUE -->"
-        },
-        "administratorLogin": {
-            "value": "<!-- REPLACE WITH YOUR VALUE -->" 
-        },
-        "administratorLoginPassword": {
-            "value": "<!-- REPLACE WITH YOUR VALUE -->" 
         },
         "location": {
             "value": "westeurope" 

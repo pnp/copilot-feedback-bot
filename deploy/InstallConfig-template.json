@@ -2,9 +2,5 @@
   "ARMParametersFile": "ARM\\parameters.json",
   "ResourceGroupName": "<!-- REPLACE WITH YOUR VALUE -->",
   "ResourceGroupLocation": "westeurope",
-  "SubcriptionId": "<!-- REPLACE WITH YOUR VALUE -->",
-  "AppCatalogTeamAppId": "<!-- REPLACE WITH YOUR VALUE -->",
-  "ClientId": "<!-- REPLACE WITH YOUR VALUE -->",
-  "ClientSecret": "<!-- REPLACE WITH YOUR VALUE -->",
-  "TenantId": "<!-- REPLACE WITH YOUR VALUE -->"
+  "SubcriptionId": "<!-- REPLACE WITH YOUR VALUE -->"
 }

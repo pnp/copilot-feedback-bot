@@ -2,6 +2,18 @@
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
+        "service_account_client_id": {
+            "type": "String"
+        },
+        "service_account_client_secret": {
+            "type": "SecureString"
+        },
+        "tenant_id": {
+            "type": "String"
+        },
+        "app_catalog_team_app_id": {
+            "type": "String"
+        },
         "app_service_name": {
             "type": "String"
         },
@@ -28,6 +40,12 @@
         "sql_database_name": {
             "type": "String"
         },
+        "sql_server_admin_login": {
+            "type": "String"
+        },
+        "sql_server_admin_login_password": {
+            "type": "SecureString"
+        },
         "redis_account_name": {
             "type": "String"
         },
@@ -37,14 +55,8 @@
         "storage_account_name": {
             "type": "String"
         },
-        "administratorLogin": {
-            "type": "string"
-        },
-        "administratorLoginPassword": {
-            "type": "securestring"
-        },
         "location": {
-            "type": "string",
+            "type": "string"
         },
         "git_branch": {
             "type": "String",
@@ -55,7 +67,9 @@
             "defaultValue": "https://github.com/pnp/copilot-feedback-bot.git"
         }
     },
-    "variables": {},
+    "variables": {
+        "sqlConnectionString": "[concat('Server=tcp:', parameters('sql_server_name'), '.database.windows.net,1433;Initial Catalog=', parameters('sql_database_name'), ';Persist Security Info=False;User ID=', parameters('sql_server_admin_login'), ';Password=', parameters('sql_server_admin_login_password'), ';MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;')]"
+    },
     "resources": [
         {
             "type": "Microsoft.Sql/servers",
@@ -64,8 +78,8 @@
             "location": "[parameters('location')]",
             "kind": "v12.0",
             "properties": {
-                "administratorLogin": "[parameters('administratorLogin')]",
-                "administratorLoginPassword": "[parameters('administratorLoginPassword')]",
+                "administratorLogin": "[parameters('sql_server_admin_login')]",
+                "administratorLoginPassword": "[parameters('sql_server_admin_login_password')]",
                 "version": "12.0",
                 "minimalTlsVersion": "None",
                 "publicNetworkAccess": "Enabled",
@@ -244,7 +258,35 @@
                         "[resourceId('Microsoft.Web/sites', parameters('app_service_name'))]"
                     ],
                     "properties": {
-                        "SITE_ROLE": "app"
+                        "SITE_ROLE": "app",
+                        "AppCatalogTeamAppId" : "[parameters('app_catalog_team_app_id')]",
+                        "AuthConfig:ClientId": "[parameters('service_account_client_id')]",
+                        "AuthConfig:ClientSecret": "[parameters('service_account_client_secret')]",
+                        "AuthConfig:TenantId": "[parameters('tenant_id')]",
+                        "MicrosoftAppId": "[parameters('service_account_client_id')]",
+                        "MicrosoftAppPassword": "[parameters('service_account_client_secret')]"
+                    }
+                },
+                {
+                    "apiVersion": "2015-08-01",
+                    "name": "connectionstrings",
+                    "type": "config",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Web/sites', parameters('app_service_name'))]"
+                    ],
+                    "properties": {
+                        "Storage": {
+                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', parameters('storage_account_name'), ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storage_account_name')),'2015-05-01-preview').key1, ';EndpointSuffix=core.windows.net')]",
+                            "type": "Custom"
+                        },
+                        "Redis": {
+                            "value": "[concat(parameters('redis_account_name'), '.redis.cache.windows.net,abortConnect=false,ssl=true,password=', listKeys(resourceId('Microsoft.Cache/redis', parameters('redis_account_name')),'2024-03-01').primaryKey)]",
+                            "type": "Custom"
+                        },
+                        "SQL": {
+                            "value": "[variables('sqlConnectionString')]",
+                            "type": "SQLAzure"
+                        }
                     }
                 },
                 {
@@ -344,7 +386,35 @@
                         "SITE_ROLE": "function",
                         "PROJECT": "src/Functions/Functions.csproj",
                         "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
-                        "FUNCTIONS_EXTENSION_VERSION": "~4"
+                        "FUNCTIONS_EXTENSION_VERSION": "~4",
+                        "AppCatalogTeamAppId" : "[parameters('app_catalog_team_app_id')]",
+                        "AuthConfig:ClientId": "[parameters('service_account_client_id')]",
+                        "AuthConfig:ClientSecret": "[parameters('service_account_client_secret')]",
+                        "AuthConfig:TenantId": "[parameters('tenant_id')]",
+                        "MicrosoftAppId": "[parameters('service_account_client_id')]",
+                        "MicrosoftAppPassword": "[parameters('service_account_client_secret')]"
+                    }
+                },
+                {
+                    "apiVersion": "2015-08-01",
+                    "name": "connectionstrings",
+                    "type": "config",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Web/sites', parameters('function_app_service_name'))]"
+                    ],
+                    "properties": {
+                        "Storage": {
+                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', parameters('storage_account_name'), ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storage_account_name')),'2015-05-01-preview').key1, ';EndpointSuffix=core.windows.net')]",
+                            "type": "Custom"
+                        },
+                        "Redis": {
+                            "value": "[concat(parameters('redis_account_name'), '.redis.cache.windows.net,abortConnect=false,ssl=true,password=', listKeys(resourceId('Microsoft.Cache/redis', parameters('redis_account_name')),'2024-03-01').primaryKey)]",
+                            "type": "Custom"
+                        },
+                        "SQL": {
+                            "value": "[variables('sqlConnectionString')]",
+                            "type": "SQLAzure"
+                        }
                     }
                 },
                 {
