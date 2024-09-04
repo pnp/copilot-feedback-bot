@@ -9,3 +9,7 @@ __azurite*
 /Teams App/*.zip
 src/Web/Properties/ServiceDependencies/copilotfeedback-ag - Web Deploy/*.*
 src/Functions/Properties/ServiceDependencies/copilotfeedback-function-ag - Zip Deploy/*.*
+/deploy/ARM/FeedbackBot/parameters.json
+/deploy/InstallConfig.json
+/.vscode
+/deploy/ARM/parameters.json

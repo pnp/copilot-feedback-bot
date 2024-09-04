@@ -1,0 +1,6 @@
+{
+  "ARMParametersFile": "ARM\\parameters.json",
+  "ResourceGroupName": "<!-- REPLACE WITH YOUR VALUE -->",
+  "ResourceGroupLocation": "westeurope",
+  "SubcriptionId": "<!-- REPLACE WITH YOUR VALUE -->"
+}

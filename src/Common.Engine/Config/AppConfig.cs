@@ -45,7 +45,6 @@ public class AppConnectionStrings : PropertyBoundConfig
     [ConfigValue]
     public string Redis { get; set; } = null!;
 
-    [ConfigValue]
     public string ServiceBusRoot { get; set; } = null!;
 
 
