@@ -60,7 +60,7 @@
         },
         "git_branch": {
             "type": "String",
-            "defaultValue": "installps"
+            "defaultValue": "main"
         },
         "git_repo": {
             "type": "String",
