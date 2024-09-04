@@ -15,11 +15,11 @@
     <Content Remove="Bots\Cards\Templates\BotReactionHappy.json" />
     <Content Remove="Bots\Cards\Templates\BotReactionMeh.json" />
     <Content Remove="Bots\Cards\Templates\BotResumeConversationIntro.json" />
-    <Content Remove="Bots\Cards\Templates\CopilotFileActionSurvey.json" />
-    <Content Remove="Bots\Cards\Templates\CopilotTeamsActionSurvey.json" />
+    <Content Remove="Bots\Cards\Templates\SurveyCardFileAction.json" />
+    <Content Remove="Bots\Cards\Templates\SurveyCardNoAction.json" />
+    <Content Remove="Bots\Cards\Templates\SurveyCardTeamsAction.json" />
     <Content Remove="Bots\Cards\Templates\SurveyCommonBody.json" />
     <Content Remove="Bots\Cards\Templates\SurveyFollowUpQuestions.json" />
-    <Content Remove="Bots\Cards\Templates\SurveyNoAction.json" />
   </ItemGroup>
 
   <ItemGroup>
@@ -30,10 +30,10 @@
     <EmbeddedResource Include="Bots\Cards\Templates\BotReactionCommon.json" />
     <EmbeddedResource Include="Bots\Cards\Templates\BotReactionMeh.json" />
     <EmbeddedResource Include="Bots\Cards\Templates\BotResumeConversationIntro.json" />
-    <EmbeddedResource Include="Bots\Cards\Templates\CopilotFileActionSurvey.json" />
+    <EmbeddedResource Include="Bots\Cards\Templates\SurveyCardFileAction.json" />
     <EmbeddedResource Include="Bots\Cards\Templates\SurveyCommonBody.json" />
-    <EmbeddedResource Include="Bots\Cards\Templates\SurveyNoAction.json" />
-    <EmbeddedResource Include="Bots\Cards\Templates\CopilotTeamsActionSurvey.json" />
+    <EmbeddedResource Include="Bots\Cards\Templates\SurveyCardNoAction.json" />
+    <EmbeddedResource Include="Bots\Cards\Templates\SurveyCardTeamsAction.json" />
   </ItemGroup>
 
   <ItemGroup>

@@ -41,13 +41,13 @@ public class SurveyDialogue : StoppableDialogue
         AddDialog(new TextPrompt(nameof(TextPrompt)));
         AddDialog(stopBotheringMeDialogue);
 
-        AddDialog(new WaterfallDialog(nameof(WaterfallDialog), new WaterfallStep[]
-        {
+        AddDialog(new WaterfallDialog(nameof(WaterfallDialog),
+        [
             NewChat,
             SendSurveyOrNot,
             ProcessInitialSurveyResponse,
             ProcessFollowUp
-        }));
+        ]));
         AddDialog(new ChoicePrompt(nameof(ChoicePrompt)));
         InitialDialogId = nameof(WaterfallDialog);
     }
