@@ -1,9 +1,10 @@
 ﻿using Common.Engine;
 using Common.Engine.Config;
-using Common.Engine.Surveys;
 using Microsoft.Bot.Builder.Dialogs;
-using Microsoft.Bot.Builder.Dialogs.Choices;
 using Microsoft.Graph;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using Web.Bots.Cards;
 using Web.Bots.Dialogues.Abstract;
 
 namespace Web.Bots.Dialogues;
@@ -42,14 +43,7 @@ public class StopBotheringMeDialogue : CommonBotDialogue
     /// </summary>
     private async Task<DialogTurnResult> StopBotheringMe(WaterfallStepContext stepContext, CancellationToken cancellationToken)
     {
-        return await stepContext.PromptAsync(nameof(ChoicePrompt), new PromptOptions
-        {
-            Prompt = BuildMsg("ARE YOU SURE?"),
-            Choices = new List<Choice>() {
-                    new Choice() { Value = BTN_YES, Synonyms = new List<string>() { "Yes", "Do it", "Send" } },
-                    new Choice() { Value = "Nah", Synonyms = new List<string>() { "No", "Stop", "Abort" } }
-                }
-        }, cancellationToken);
+        return await PromptWithCard(stepContext, new StopBotheringMeCard());
     }
 
     /// <summary>
@@ -57,23 +51,31 @@ public class StopBotheringMeDialogue : CommonBotDialogue
     /// </summary>
     private async Task<DialogTurnResult> SaveDnD(WaterfallStepContext stepContext, CancellationToken cancellationToken)
     {
-        var response = (FoundChoice)stepContext.Result;
-        if (response.Value == BTN_YES)
+        var stopBotherJsonResponse = JsonSerializer.Deserialize<TalkToMeInResposne>(stepContext.Result?.ToString() ?? string.Empty);
+        if (stopBotherJsonResponse != null)
         {
+            var nextContact = DateTime.MaxValue;
+
+            if (stopBotherJsonResponse.TalkToMeInDaysFromNow.HasValue)
+            {
+                nextContact = DateTime.Now.AddDays(stopBotherJsonResponse.TalkToMeInDaysFromNow.Value);
+            }
+
             var botUser = await BotUserUtils.GetBotUserAsync(stepContext.Context, _botConfig, _graphServiceClient);
             var chatUser = await base.GetCachedUser(botUser);
             if (chatUser != null && chatUser.UserPrincipalName != null)
             {
-                SurveyPendingActivities? userPendingEvents = null;
-                await base.GetSurveyManagerService(async surveyManager =>
-                {
-                    userPendingEvents = await base.GetSurveyPendingActivities(surveyManager, chatUser.UserPrincipalName);
-                });
-
-                // Register survey request sent so we don't repeatedly ask for the same event
+                // Remember the user's choice
                 await base.GetSurveyManagerService(async surveyManager => await surveyManager.Loader.StopBotheringUser(chatUser.UserPrincipalName, DateTime.MaxValue));
 
-                await SendMsg(stepContext.Context, "Bye then 😞. You can always say hi, and I'll always respond if I can ♥️");
+                if (stopBotherJsonResponse.TalkToMeInDaysFromNow.HasValue)
+                {
+                    await SendMsg(stepContext.Context, "No problem; speak soon");
+                }
+                else
+                {
+                    await SendMsg(stepContext.Context, "Bye then 😞. You can always say hi, and I'll always respond if I can ♥️");
+                }
             }
             else
             {
@@ -82,8 +84,14 @@ public class StopBotheringMeDialogue : CommonBotDialogue
         }
         else
         {
-            await SendMsg(stepContext.Context, "Ok. I'll be in touch later to see how you're getting on with copilot. You can always ping me here if you want to send feedback!");
+            await SendMsg(stepContext.Context, "Ooops, I didn't understand that response. Try again?");
         }
         return await stepContext.CancelAllDialogsAsync(true);
+    }
+
+    class TalkToMeInResposne
+    {
+        [JsonPropertyName("talkToMeDayFromNow")]
+        public int? TalkToMeInDaysFromNow { get; set; }
     }
 }

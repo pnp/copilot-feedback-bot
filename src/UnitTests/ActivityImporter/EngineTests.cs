@@ -9,11 +9,25 @@ using Entities.DB.Entities.AuditLog;
 using Microsoft.EntityFrameworkCore;
 using UnitTests.FakeLoaderClasses;
 
-namespace UnitTests.ActivityImporter;
+namespace UnitTests;
 
 [TestClass]
-public class CopilotTests : AbstractTest
+public class EngineTests : AbstractTest
 {
+    [TestMethod]
+    public async Task GetUnsurveyedActivitiesTests()
+    {
+        var loader = new SqlSurveyManagerDataLoader(_db, GetLogger<SqlSurveyManagerDataLoader>());
+
+        var user = await loader.GetUser(_config.TestCopilotEventUPN);
+        var unsurveyed = await loader.GetUnsurveyedActivities(user, null);
+
+        Assert.IsNotNull(unsurveyed);
+        Assert.IsTrue(unsurveyed.Count > 0);
+
+        throw new NotImplementedException();
+    }
+
     [TestMethod]
     public void SurveyPendingActivitiesGetNext()
     {
@@ -32,11 +46,14 @@ public class CopilotTests : AbstractTest
 
         var firstMeeting = new CopilotEventMetadataMeeting { RelatedChat = new CopilotChat { AuditEvent = new CommonAuditEvent { TimeStamp = DateTime.Now.AddDays(-1) } } };
         var secondMeeting = new CopilotEventMetadataMeeting { RelatedChat = new CopilotChat { AuditEvent = new CommonAuditEvent { TimeStamp = DateTime.Now } } };
-        spa.MeetingEvents.AddRange(new CopilotEventMetadataMeeting[] { firstMeeting, secondMeeting });
+        spa.MeetingEvents.AddRange(NewMethod(firstMeeting, secondMeeting));
 
         Assert.IsTrue(spa.GetNext() == firstMeeting);
+    }
 
-
+    private static CopilotEventMetadataMeeting[] NewMethod(CopilotEventMetadataMeeting firstMeeting, CopilotEventMetadataMeeting secondMeeting)
+    {
+        return new CopilotEventMetadataMeeting[] { firstMeeting, secondMeeting };
     }
 
     [TestMethod]

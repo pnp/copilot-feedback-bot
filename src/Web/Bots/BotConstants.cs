@@ -9,6 +9,7 @@ public static class BotConstants
     public static string BotName => "Copilot Feedback Bot";
 
     public static string BotFirstIntroduction => "Web.Bots.Cards.Templates.BotFirstIntro.json";
+    public static string StopBotheringMe => "Web.Bots.Cards.Templates.StopBotheringMe.json";
     public static string BotDiagFinished => "Web.Bots.Cards.Templates.BotDiagFinished.json";
     public static string BotReactionHappy => "Web.Bots.Cards.Templates.BotReactionHappy.json";
     public static string BotReactionMeh => "Web.Bots.Cards.Templates.BotReactionMeh.json";

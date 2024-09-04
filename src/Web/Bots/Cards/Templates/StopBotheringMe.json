@@ -1,0 +1,116 @@
+{
+  "type": "AdaptiveCard",
+  "body": [
+    {
+      "type": "TextBlock",
+      "size": "Medium",
+      "weight": "Bolder",
+      "text": "Oops"
+    },
+    {
+      "type": "TextBlock",
+      "text": "Sorry - I didn't realise I was being annoying. Can I check back with you again? I'll talk to you in:",
+      "wrap": true
+    },
+    {
+      "type": "ColumnSet",
+      "spacing": "Medium",
+      "columns": [
+        {
+          "type": "Column",
+          "selectAction": {
+            "type": "Action.Submit",
+            "data": {
+              "talkToMeDayFromNow": 1
+            }
+          },
+          "items": [
+            {
+              "type": "TextBlock",
+              "horizontalAlignment": "Center",
+              "text": "📅",
+              "size": "Large"
+            },
+            {
+              "type": "TextBlock",
+              "horizontalAlignment": "Center",
+              "text": "Tomorrow"
+            }
+          ],
+          "width": "stretch"
+        },
+        {
+          "type": "Column",
+          "selectAction": {
+            "type": "Action.Submit",
+            "data": {
+              "talkToMeDayFromNow": 7
+            }
+          },
+          "items": [
+            {
+              "type": "TextBlock",
+              "horizontalAlignment": "Center",
+              "text": "📅",
+              "size": "Large"
+            },
+            {
+              "type": "TextBlock",
+              "horizontalAlignment": "Center",
+              "text": "7 days"
+            }
+          ],
+          "width": "stretch"
+        },
+        {
+          "type": "Column",
+          "selectAction": {
+            "type": "Action.Submit",
+            "data": {
+              "talkToMeDayFromNow": 31
+            }
+          },
+          "items": [
+            {
+              "type": "TextBlock",
+              "horizontalAlignment": "Center",
+              "text": "📅",
+              "size": "Large"
+            },
+            {
+              "type": "TextBlock",
+              "horizontalAlignment": "Center",
+              "text": "1 Month"
+            }
+          ],
+          "width": "stretch"
+        },
+        {
+          "type": "Column",
+          "selectAction": {
+            "type": "Action.Submit",
+            "data": {
+              "talkToMeDayFromNow": null
+            }
+          },
+          "items": [
+            {
+              "type": "TextBlock",
+              "horizontalAlignment": "Center",
+              "text": "❌",
+              "size": "Large"
+            },
+            {
+              "type": "TextBlock",
+              "horizontalAlignment": "Center",
+              "text": "Never Again"
+            }
+          ],
+          "width": "stretch"
+        }
+      ]
+    }
+  ],
+  "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+  "version": "1.3"
+}
