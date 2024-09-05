@@ -39,27 +39,36 @@ public class SurveyManager
 
     public async Task<SurveyPendingActivities> FindNewSurveyEvents(User user)
     {
+        if (user.MessageNotBefore.HasValue && user.MessageNotBefore.Value > DateTime.UtcNow)
+        {
+            _logger.LogInformation("User {upn} is not to be bothered until {until}", user.UserPrincipalName, user.MessageNotBefore);
+            return new SurveyPendingActivities();
+        }
+
         var lastUserSurveyDate = await _dataLoader.GetLastUserSurveyDate(user);
         var unsurveyedActivities = await _dataLoader.GetUnsurveyedActivities(user, lastUserSurveyDate);
 
-        var result = new SurveyPendingActivities();
+        var results = new SurveyPendingActivities();
         foreach (var item in unsurveyedActivities)
         {
             if (item is CopilotEventMetadataFile)
             {
-                result.FileEvents.Add((CopilotEventMetadataFile)item);
+                results.FileEvents.Add((CopilotEventMetadataFile)item);
             }
             else if (item is CopilotEventMetadataMeeting)
             {
-                result.MeetingEvents.Add((CopilotEventMetadataMeeting)item);
+                results.MeetingEvents.Add((CopilotEventMetadataMeeting)item);
             }
         }
-        return result;
+        return results;
     }
 
     public ISurveyManagerDataLoader Loader => _dataLoader;
 }
 
+/// <summary>
+/// Lists of unsurveyed activities of each type
+/// </summary>
 public class SurveyPendingActivities
 {
     public List<CopilotEventMetadataFile> FileEvents { get; set; } = new();

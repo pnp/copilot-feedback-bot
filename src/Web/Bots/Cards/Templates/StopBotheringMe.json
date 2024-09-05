@@ -5,11 +5,11 @@
       "type": "TextBlock",
       "size": "Medium",
       "weight": "Bolder",
-      "text": "Oops"
+      "text": "Oh, I see..."
     },
     {
       "type": "TextBlock",
-      "text": "Sorry - I didn't realise I was being annoying. Can I check back with you again? I'll talk to you in:",
+      "text": "Sorry - I didn't realise I was being annoying. Can I check back with you again? I can talk to you in:",
       "wrap": true
     },
     {

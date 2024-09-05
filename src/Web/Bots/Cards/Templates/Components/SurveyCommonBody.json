@@ -115,12 +115,6 @@
       ]
     }
   ],
-  "actions": [
-    {
-      "type": "Action.Submit",
-      "title": "Stop bothering me 🛑",
-      "data": "${SurveyAnswerStop}"
-    }
-  ],
+  "actions": [],
   "$schema": "http://adaptivecards.io/schemas/adaptive-card.json"
 }

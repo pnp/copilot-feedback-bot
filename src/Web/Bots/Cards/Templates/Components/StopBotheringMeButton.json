@@ -1,0 +1,14 @@
+{
+  "type": "AdaptiveCard",
+  "version": "1.3",
+  "body": [
+  ],
+  "actions": [
+    {
+      "type": "Action.Submit",
+      "title": "Stop bothering me 🛑",
+      "data": "${SurveyAnswerStop}"
+    }
+  ],
+  "$schema": "http://adaptivecards.io/schemas/adaptive-card.json"
+}

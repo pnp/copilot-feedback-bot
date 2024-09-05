@@ -1,0 +1,20 @@
+{
+  "type": "AdaptiveCard",
+  "version": "1.3",
+  "body": [
+    {
+      "type": "TextBlock",
+      "text": "It looks like you've asked me not to send you surveys for a while...'",
+      "weight": "Bolder",
+      "wrap": true
+    }
+  ],
+  "actions": [
+    {
+      "type": "Action.Submit",
+      "title": "Continue asking me for surveys ▶️",
+      "data": "${SurveyAnswerContinueSurveys}"
+    }
+  ],
+  "$schema": "http://adaptivecards.io/schemas/adaptive-card.json"
+}

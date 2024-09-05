@@ -14,17 +14,17 @@ public class BotActionsHelper
         _logger.LogInformation($"Have config: AppBaseUri:{config.WebAppURL}, MicrosoftAppId:{config.BotAppId}, AppCatalogTeamAppId:{config.AppCatalogTeamAppId}");
     }
 
-    public async Task SendBotFirstIntro(ITurnContext turnContext, CancellationToken cancellationToken)
+    public async Task SendBotFirstIntro(bool userHasSurveysStopped, ITurnContext turnContext, CancellationToken cancellationToken)
     {
         // "Hi I'm bot..."
-        var introCardAttachment = new BotFirstIntroduction(BotConstants.BotName).GetCardAttachment();
+        var introCardAttachment = new BotFirstIntroduction(BotConstants.BotName, userHasSurveysStopped).GetCardAttachment();
         await turnContext.SendActivityAsync(MessageFactory.Attachment(introCardAttachment), cancellationToken);
     }
 
-    public async Task SendBotResumeConvo(ITurnContext turnContext, CancellationToken cancellationToken)
+    public async Task SendBotResumeConvo(bool userHasSurveysStopped, ITurnContext turnContext, CancellationToken cancellationToken)
     {
         // "Hi I'm bot..."
-        var introCardAttachment = new BotResumeConversationIntroduction(BotConstants.BotName).GetCardAttachment();
+        var introCardAttachment = new BotResumeConversationIntroduction(BotConstants.BotName, userHasSurveysStopped).GetCardAttachment();
         await turnContext.SendActivityAsync(MessageFactory.Attachment(introCardAttachment), cancellationToken);
 
 

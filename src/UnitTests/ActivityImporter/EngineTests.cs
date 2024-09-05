@@ -14,18 +14,52 @@ namespace UnitTests;
 [TestClass]
 public class EngineTests : AbstractTest
 {
+    /// <summary>
+    /// Tests we can get unsurveyed activities, and that StopBotheringUser works
+    /// </summary>
     [TestMethod]
     public async Task GetUnsurveyedActivitiesTests()
     {
         var loader = new SqlSurveyManagerDataLoader(_db, GetLogger<SqlSurveyManagerDataLoader>());
 
-        var user = await loader.GetUser(_config.TestCopilotEventUPN);
+        var user = await _db.Users.Where(u => u.UserPrincipalName == _config.TestCopilotEventUPN).FirstOrDefaultAsync();
+        if (user == null)
+        {
+            user = new User { UserPrincipalName = _config.TestCopilotEventUPN };
+            _db.Users.Add(user);
+            await _db.SaveChangesAsync();
+        }
+        user.MessageNotBefore = null;
+
+        // Add activity for user
+        var testActivity = new CopilotEventMetadataMeeting
+        {
+            RelatedChat = new CopilotChat 
+            {
+                AppHost = "Unit testing",
+                AuditEvent = new CommonAuditEvent 
+                { 
+                    TimeStamp = DateTime.Now.AddDays(-1), User = user,
+                    Operation = new EventOperation { Name = "Meeting Op" + DateTime.Now.Ticks }
+                } 
+            },
+            OnlineMeeting = new OnlineMeeting {  MeetingId = DateTime.Now.Ticks.ToString(), Name = "Test meeting" }
+        };
+        _db.CopilotEventMetadataMeetings.Add(testActivity);
+        await _db.SaveChangesAsync();
+
         var unsurveyed = await loader.GetUnsurveyedActivities(user, null);
 
         Assert.IsNotNull(unsurveyed);
         Assert.IsTrue(unsurveyed.Count > 0);
 
-        throw new NotImplementedException();
+        // Stop bothering user
+        await loader.StopBotheringUser(user.UserPrincipalName, DateTime.Now.AddDays(1));
+
+        // Make sure we get no activities
+        var sm = new SurveyManager(loader, new FakeSurveyProcessor(), GetLogger<SurveyManager>());
+        var unsurveyedAfterDnD = await sm.FindNewSurveyEvents(user);
+        Assert.IsTrue(unsurveyedAfterDnD.Count == 0);
     }
 
     [TestMethod]
@@ -42,18 +76,11 @@ public class EngineTests : AbstractTest
 
         Assert.IsTrue(spa.GetNext() == firstFile);
 
-
-
         var firstMeeting = new CopilotEventMetadataMeeting { RelatedChat = new CopilotChat { AuditEvent = new CommonAuditEvent { TimeStamp = DateTime.Now.AddDays(-1) } } };
         var secondMeeting = new CopilotEventMetadataMeeting { RelatedChat = new CopilotChat { AuditEvent = new CommonAuditEvent { TimeStamp = DateTime.Now } } };
-        spa.MeetingEvents.AddRange(NewMethod(firstMeeting, secondMeeting));
+        spa.MeetingEvents.AddRange([firstMeeting, secondMeeting]);
 
         Assert.IsTrue(spa.GetNext() == firstMeeting);
-    }
-
-    private static CopilotEventMetadataMeeting[] NewMethod(CopilotEventMetadataMeeting firstMeeting, CopilotEventMetadataMeeting secondMeeting)
-    {
-        return new CopilotEventMetadataMeeting[] { firstMeeting, secondMeeting };
     }
 
     [TestMethod]

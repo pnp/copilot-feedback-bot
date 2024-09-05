@@ -13,6 +13,13 @@ public abstract class BaseAdaptiveCard
 
     public abstract string GetCardContent();
 
+    public virtual string ReplaceCardContentConstants(string raw)
+    { 
+        return raw.Replace(BotConstants.FIELD_NAME_BOT_NAME, BotConstants.BotName)
+            .Replace(BotConstants.FIELD_NAME_SURVEY_STOP, BotConstants.SurveyAnswerStop)
+            .Replace(BotConstants.FIELD_NAME_SURVEY_CONTINUE_SENDING, BotConstants.SurveyAnswerContinueSurveys);
+    }
+
     protected string ReadResource(string resourcePath)
     {
         var assembly = Assembly.GetExecutingAssembly();
@@ -36,7 +43,7 @@ public abstract class BaseAdaptiveCard
     }
     public Attachment GetCardAttachment()
     {
-        dynamic cardJson = JsonConvert.DeserializeObject(GetCardContent()) ?? new { };
+        dynamic cardJson = JsonConvert.DeserializeObject(ReplaceCardContentConstants(GetCardContent())) ?? new { };
 
         return new Attachment
         {

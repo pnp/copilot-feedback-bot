@@ -51,7 +51,7 @@ public class FeedbackBot<T> : DialogueBot<T> where T : Dialog
                     await _conversationCache.AddConversationReferenceToCache((Activity)turnContext.Activity, userIdentity);
 
                     // First time meeting a user (new thread). Can be because we've just installed the app. Introduce bot and start a new dialog.
-                    await _helper.SendBotFirstIntro(turnContext, cancellationToken);
+                    await _helper.SendBotFirstIntro(false, turnContext, cancellationToken);
                 }
                 else
                 {
@@ -66,7 +66,7 @@ public class FeedbackBot<T> : DialogueBot<T> where T : Dialog
 
                     }
                     else
-                        await _helper.SendBotResumeConvo(turnContext, cancellationToken);
+                        await _helper.SendBotResumeConvo(false, turnContext, cancellationToken);
                 }
             }
         }

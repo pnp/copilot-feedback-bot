@@ -1,8 +1,8 @@
 ﻿namespace Web.Bots.Cards;
 
-public abstract class BaseBotIntroductionCard : BaseAdaptiveCard
+public abstract class BaseBotIntroductionCard : CommonCardWithStartOrStopSurveysButtonCard
 {
-    public BaseBotIntroductionCard(string botName)
+    public BaseBotIntroductionCard(string botName, bool userHasSurveysStopped) : base(userHasSurveysStopped)
     {
         BotName = botName;
     }
@@ -13,42 +13,32 @@ public abstract class BaseBotIntroductionCard : BaseAdaptiveCard
     public override string GetCardContent()
     {
         var json = ReadResource(BotConstants.BotFirstIntroduction);
-
-        json = json.Replace(BotConstants.FIELD_NAME_BOT_NAME, BotName)
-            .Replace(BotConstants.FIELD_NAME_SURVEY_STOP, BotConstants.SurveyAnswerStop);
-
         return json;
-    }
-
-    public string ReplaceCommonFields(string json)
-    {
-        return json.Replace(BotConstants.FIELD_NAME_BOT_NAME, BotName)
-            .Replace(BotConstants.FIELD_NAME_SURVEY_STOP, BotConstants.SurveyAnswerStop);
     }
 }
 
 public class BotFirstIntroduction : BaseBotIntroductionCard
 {
-    public BotFirstIntroduction(string botName) : base(botName)
+    public BotFirstIntroduction(string botName, bool userHasSurveysStopped) : base(botName, userHasSurveysStopped)
     {
     }
 
     public override string GetCardContent()
     {
-        var json = ReplaceCommonFields(ReadResource(BotConstants.BotFirstIntroduction));
+        var json = ReadResource(BotConstants.BotFirstIntroduction);
         return json;
     }
 }
 
 public class BotResumeConversationIntroduction : BaseBotIntroductionCard
 {
-    public BotResumeConversationIntroduction(string botName) : base(botName)
+    public BotResumeConversationIntroduction(string botName, bool userHasSurveysStopped) : base(botName, userHasSurveysStopped)
     {
     }
 
     public override string GetCardContent()
     {
-        var json = ReplaceCommonFields(ReadResource(BotConstants.BotResumeConversationIntro));
+        var json = ReadResource(BotConstants.BotResumeConversationIntro);
         return json;
     }
 }

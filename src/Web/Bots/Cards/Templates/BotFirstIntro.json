@@ -26,11 +26,6 @@
       "data": "Start Survey"
     },
     {
-      "type": "Action.Submit",
-      "title": "Stop bothering me 🛑",
-      "data": "${SurveyAnswerStop}"
-    },
-    {
       "type": "Action.OpenUrl",
       "title": "What's Copilot?",
       "url": "https://copilot.microsoft.com/"

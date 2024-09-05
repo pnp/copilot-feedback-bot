@@ -16,6 +16,7 @@ public class SurveyConversationResumeHandler(IServiceProvider services) : IConve
 
             SurveyPendingActivities userPendingEvents;
             Entities.DB.Entities.User? dbUser = null;
+            var userHasSurveysStopped = false;
             try
             {
                 dbUser = await surveyManager.Loader.GetUser(chatUserUpn);
@@ -28,6 +29,7 @@ public class SurveyConversationResumeHandler(IServiceProvider services) : IConve
             if (dbUser != null)
             {
                 userPendingEvents = await surveyManager.FindNewSurveyEvents(dbUser);
+                userHasSurveysStopped = dbUser.HasMessageNotBeforeNow();
             }
             else
             {
@@ -41,7 +43,7 @@ public class SurveyConversationResumeHandler(IServiceProvider services) : IConve
             if (userPendingEvents.IsEmpty)
             {
                 // Send general survey card for no specific event
-                return (null, new SurveyNotForSpecificAction().GetCardAttachment());
+                return (null, new SurveyNotForSpecificAction(userHasSurveysStopped).GetCardAttachment());
             }
             else
             {
@@ -54,15 +56,15 @@ public class SurveyConversationResumeHandler(IServiceProvider services) : IConve
                 // Figure out what kind of event it is & what card to send
                 if (nextCopilotEvent is CopilotEventMetadataFile)
                 {
-                    surveyCard = new CopilotFileActionSurveyCard((CopilotEventMetadataFile)nextCopilotEvent).GetCardAttachment();
+                    surveyCard = new CopilotFileActionSurveyCard((CopilotEventMetadataFile)nextCopilotEvent, userHasSurveysStopped).GetCardAttachment();
                 }
                 else if (nextCopilotEvent is CopilotEventMetadataMeeting)
                 {
-                    surveyCard = new CopilotTeamsActionSurveyCard((CopilotEventMetadataMeeting)nextCopilotEvent).GetCardAttachment();
+                    surveyCard = new CopilotTeamsActionSurveyCard((CopilotEventMetadataMeeting)nextCopilotEvent, userHasSurveysStopped).GetCardAttachment();
                 }
                 else
                 {
-                    surveyCard = new SurveyNotForSpecificAction().GetCardAttachment();
+                    surveyCard = new SurveyNotForSpecificAction(userHasSurveysStopped).GetCardAttachment();
                 }
                 return (nextCopilotEvent, surveyCard);
             }

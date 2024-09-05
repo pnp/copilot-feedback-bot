@@ -3,9 +3,35 @@ using Newtonsoft.Json.Linq;
 
 namespace Web.Bots.Cards;
 
-public abstract class SurveyCard : BaseAdaptiveCard
+public abstract class CommonCardWithStartOrStopSurveysButtonCard: BaseAdaptiveCard
 {
-    public SurveyCard()
+    private readonly bool _userHasSurveysStopped;
+
+    protected CommonCardWithStartOrStopSurveysButtonCard(bool userHasSurveysStopped)
+    {
+        _userHasSurveysStopped = userHasSurveysStopped;
+    }
+
+    protected string GetMergedCardWithSurveyButtonContent(string cardSpecific)
+    {
+        var cardBody = JObject.Parse(cardSpecific);
+
+        var buttonBody = _userHasSurveysStopped ? JObject.Parse(ReadResource(BotConstants.SurveyButtonContinueSurveys)) :
+            JObject.Parse(ReadResource(BotConstants.SurveyButtonStopBotheringMe));
+
+        cardBody.Merge(buttonBody, new JsonMergeSettings
+        {
+            // Avoid duplicates
+            MergeArrayHandling = MergeArrayHandling.Union
+        });
+
+        return cardBody.ToString();
+    }
+}
+
+public abstract class SurveyCard : CommonCardWithStartOrStopSurveysButtonCard
+{
+    public SurveyCard(bool userHasSurveysStopped) : base(userHasSurveysStopped)
     {
         // Replace in JSON the variables with the actual values
         CardBody = ReadResource(BotConstants.SurveyCommonBody)
@@ -29,16 +55,17 @@ public abstract class SurveyCard : BaseAdaptiveCard
             MergeArrayHandling = MergeArrayHandling.Union
         });
 
-        return cardBody.ToString();
+        return base.GetMergedCardWithSurveyButtonContent(cardBody.ToString());
     }
 }
 
 
 public class CopilotTeamsActionSurveyCard : SurveyCard
 {
+
     private readonly CopilotEventMetadataMeeting _baseCopilotEvent;
 
-    public CopilotTeamsActionSurveyCard(CopilotEventMetadataMeeting baseCopilotEvent)
+    public CopilotTeamsActionSurveyCard(CopilotEventMetadataMeeting baseCopilotEvent, bool userHasSurveysStopped) : base(userHasSurveysStopped)
     {
         _baseCopilotEvent = baseCopilotEvent;
     }
@@ -55,7 +82,7 @@ public class CopilotFileActionSurveyCard : SurveyCard
 {
     private readonly CopilotEventMetadataFile _baseCopilotEvent;
 
-    public CopilotFileActionSurveyCard(CopilotEventMetadataFile baseCopilotEvent)
+    public CopilotFileActionSurveyCard(CopilotEventMetadataFile baseCopilotEvent, bool userHasSurveysStopped) : base(userHasSurveysStopped)
     {
         _baseCopilotEvent = baseCopilotEvent;
     }
@@ -70,7 +97,7 @@ public class CopilotFileActionSurveyCard : SurveyCard
 
 public class SurveyNotForSpecificAction : SurveyCard
 {
-    public SurveyNotForSpecificAction()
+    public SurveyNotForSpecificAction(bool userHasSurveysStopped) : base(userHasSurveysStopped)
     {
     }
 

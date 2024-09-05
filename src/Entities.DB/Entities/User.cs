@@ -82,6 +82,11 @@ public class User : AbstractEFEntity
 
     public UserJobTitle? JobTitle { get; set; } = null!;
 
+    public bool HasMessageNotBeforeNow()
+    {
+        return MessageNotBefore.HasValue && MessageNotBefore.Value > DateTime.Now;
+    }
+
     #endregion
 
     public override string ToString()
