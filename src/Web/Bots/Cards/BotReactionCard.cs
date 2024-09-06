@@ -15,7 +15,7 @@ public class BotReactionCard : BaseAdaptiveCard
     public string Message { get; set; }
 
 
-    public override string GetCardContent()
+    protected override string GetCardContent()
     {
         var jsonReactionSpecific = _isHappy ? ReadResource(BotConstants.BotReactionHappy) : ReadResource(BotConstants.BotReactionMeh);
 

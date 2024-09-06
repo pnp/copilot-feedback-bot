@@ -6,7 +6,7 @@ public class BotDiagFinishedCard : BaseAdaptiveCard
     {
     }
 
-    public override string GetCardContent()
+    protected override string GetCardContent()
     {
         var json = ReadResource(BotConstants.BotDiagFinished);
 

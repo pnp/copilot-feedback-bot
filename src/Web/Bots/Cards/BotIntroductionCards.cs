@@ -10,7 +10,7 @@ public abstract class BaseBotIntroductionCard : CommonCardWithStartOrStopSurveys
     public string BotName { get; set; }
 
 
-    public override string GetCardContent()
+    protected override string GetCardContent()
     {
         var json = ReadResource(BotConstants.BotFirstIntroduction);
         return json;
@@ -23,7 +23,7 @@ public class BotFirstIntroduction : BaseBotIntroductionCard
     {
     }
 
-    public override string GetCardContent()
+    protected override string GetCardContent()
     {
         var json = ReadResource(BotConstants.BotFirstIntroduction);
         return json;
@@ -36,7 +36,7 @@ public class BotResumeConversationIntroduction : BaseBotIntroductionCard
     {
     }
 
-    public override string GetCardContent()
+    protected override string GetCardContent()
     {
         var json = ReadResource(BotConstants.BotResumeConversationIntro);
         return json;

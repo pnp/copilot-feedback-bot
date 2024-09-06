@@ -12,6 +12,12 @@ public abstract class CommonCardWithStartOrStopSurveysButtonCard: BaseAdaptiveCa
         _userHasSurveysStopped = userHasSurveysStopped;
     }
 
+    public override string ReplaceCardContentConstants(string raw)
+    {
+        return raw.Replace(BotConstants.FIELD_NAME_SURVEY_STOP, BotConstants.SurveyAnswerStop)
+            .Replace(BotConstants.FIELD_NAME_SURVEY_CONTINUE_SENDING, BotConstants.SurveyAnswerContinueSurveys);
+    }
+
     protected string GetMergedCardWithSurveyButtonContent(string cardSpecific)
     {
         var cardBody = JObject.Parse(cardSpecific);
@@ -31,25 +37,32 @@ public abstract class CommonCardWithStartOrStopSurveysButtonCard: BaseAdaptiveCa
 
 public abstract class SurveyCard : CommonCardWithStartOrStopSurveysButtonCard
 {
-    public SurveyCard(bool userHasSurveysStopped) : base(userHasSurveysStopped)
+
+    public string CommonCardContent { get; set; }
+
+    public override string ReplaceCardContentConstants(string raw)
     {
-        // Replace in JSON the variables with the actual values
-        CardBody = ReadResource(BotConstants.SurveyCommonBody)
+        return base.ReplaceCardContentConstants(raw)
             .Replace(GetJsonVarName(nameof(BotConstants.SurveyAnswerRating1)), BotConstants.SurveyAnswerRating1)
             .Replace(GetJsonVarName(nameof(BotConstants.SurveyAnswerRating2)), BotConstants.SurveyAnswerRating2)
             .Replace(GetJsonVarName(nameof(BotConstants.SurveyAnswerRating3)), BotConstants.SurveyAnswerRating3)
             .Replace(GetJsonVarName(nameof(BotConstants.SurveyAnswerRating4)), BotConstants.SurveyAnswerRating4)
-            .Replace(GetJsonVarName(nameof(BotConstants.SurveyAnswerRating5)), BotConstants.SurveyAnswerRating5)
-            .Replace(BotConstants.FIELD_NAME_SURVEY_STOP, BotConstants.SurveyAnswerStop);
+            .Replace(GetJsonVarName(nameof(BotConstants.SurveyAnswerRating5)), BotConstants.SurveyAnswerRating5);
     }
+    public SurveyCard(bool userHasSurveysStopped) : base(userHasSurveysStopped)
+    {
+        // Replace in JSON the variables with the actual values
+        CommonCardContent = ReadResource(BotConstants.SurveyCommonBody);
+    }
+
     string GetJsonVarName(string name) => "${" + name + "}";
 
-    public string CardBody { get; set; }
 
     protected string GetMergedCardContent(string cardSpecific)
     {
         var cardBody = JObject.Parse(cardSpecific);
-        cardBody.Merge(JObject.Parse(CardBody), new JsonMergeSettings
+        var commonBody = JObject.Parse(CommonCardContent);
+        cardBody.Merge(commonBody, new JsonMergeSettings
         {
             // Avoid duplicates
             MergeArrayHandling = MergeArrayHandling.Union
@@ -70,7 +83,7 @@ public class CopilotTeamsActionSurveyCard : SurveyCard
         _baseCopilotEvent = baseCopilotEvent;
     }
 
-    public override string GetCardContent()
+    protected override string GetCardContent()
     {
         var json = ReadResource(BotConstants.CardFileNameCopilotTeamsActionSurvey);
         json = json.Replace(BotConstants.FIELD_NAME_RESOURCE_NAME, _baseCopilotEvent.GetEventDescription());
@@ -87,7 +100,7 @@ public class CopilotFileActionSurveyCard : SurveyCard
         _baseCopilotEvent = baseCopilotEvent;
     }
 
-    public override string GetCardContent()
+    protected override string GetCardContent()
     {
         var json = ReadResource(BotConstants.CardFileNameCopilotFileActionSurvey);
         json = json.Replace(BotConstants.FIELD_NAME_RESOURCE_NAME, _baseCopilotEvent.GetEventDescription());
@@ -101,7 +114,7 @@ public class SurveyNotForSpecificAction : SurveyCard
     {
     }
 
-    public override string GetCardContent()
+    protected override string GetCardContent()
     {
         var json = ReadResource(BotConstants.CardFileNameSurveyNoActionCard);
         return GetMergedCardContent(json);

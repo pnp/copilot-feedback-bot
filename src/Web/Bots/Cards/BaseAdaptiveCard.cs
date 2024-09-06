@@ -10,8 +10,13 @@ namespace Web.Bots.Cards;
 /// </summary>
 public abstract class BaseAdaptiveCard
 {
+    public string GetCardContentAndReplaceVars()
+    {
+        var content = ReplaceCardContentConstants(GetCardContent());
+        return content;
+    }
 
-    public abstract string GetCardContent();
+    protected abstract string GetCardContent();
 
     public virtual string ReplaceCardContentConstants(string raw)
     { 
@@ -43,7 +48,7 @@ public abstract class BaseAdaptiveCard
     }
     public Attachment GetCardAttachment()
     {
-        dynamic cardJson = JsonConvert.DeserializeObject(ReplaceCardContentConstants(GetCardContent())) ?? new { };
+        dynamic cardJson = JsonConvert.DeserializeObject(ReplaceCardContentConstants(GetCardContentAndReplaceVars())) ?? new { };
 
         return new Attachment
         {
