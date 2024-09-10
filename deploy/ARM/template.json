@@ -65,6 +65,10 @@
         "git_repo": {
             "type": "String",
             "defaultValue": "https://github.com/pnp/copilot-feedback-bot.git"
+        },
+        "workspace_analytics_name": {
+            "type": "String",
+            "defaultValue": "CopilotFeedbackBotAnalytics"
         }
     },
     "variables": {
@@ -259,12 +263,15 @@
                     ],
                     "properties": {
                         "SITE_ROLE": "app",
-                        "AppCatalogTeamAppId" : "[parameters('app_catalog_team_app_id')]",
+                        "AppCatalogTeamAppId": "[parameters('app_catalog_team_app_id')]",
                         "AuthConfig:ClientId": "[parameters('service_account_client_id')]",
                         "AuthConfig:ClientSecret": "[parameters('service_account_client_secret')]",
                         "AuthConfig:TenantId": "[parameters('tenant_id')]",
                         "MicrosoftAppId": "[parameters('service_account_client_id')]",
-                        "MicrosoftAppPassword": "[parameters('service_account_client_secret')]"
+                        "MicrosoftAppPassword": "[parameters('service_account_client_secret')]",
+                        "ApplicationInsightsAgent_EXTENSION_VERSION": "~2",
+                        "XDT_MicrosoftApplicationInsights_Mode": "default",
+                        "APPLICATIONINSIGHTS_CONNECTION_STRING": "[reference(resourceId('microsoft.insights/components', parameters('workspace_analytics_name')), '2015-05-01').ConnectionString]"
                     }
                 },
                 {
@@ -305,6 +312,28 @@
             ]
         },
 
+
+        {
+            "apiVersion": "2020-02-02-preview",
+            "name": "[parameters('workspace_analytics_name')]",
+            "type": "microsoft.insights/components",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('workspace_analytics_name'))]"
+
+            ],
+            "properties": {
+                "ApplicationId": "[parameters('workspace_analytics_name')]",
+                "WorkspaceResourceId": "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('workspace_analytics_name'))]"
+            }
+        },
+        {
+            "type": "Microsoft.OperationalInsights/workspaces",
+            "apiVersion": "2023-09-01",
+            "name": "[parameters('workspace_analytics_name')]",
+            "location": "[parameters('location')]",
+            "properties": {}
+        },
 
 
         {
@@ -387,7 +416,7 @@
                         "PROJECT": "src/Functions/Functions.csproj",
                         "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
                         "FUNCTIONS_EXTENSION_VERSION": "~4",
-                        "AppCatalogTeamAppId" : "[parameters('app_catalog_team_app_id')]",
+                        "AppCatalogTeamAppId": "[parameters('app_catalog_team_app_id')]",
                         "AuthConfig:ClientId": "[parameters('service_account_client_id')]",
                         "AuthConfig:ClientSecret": "[parameters('service_account_client_secret')]",
                         "AuthConfig:TenantId": "[parameters('tenant_id')]",

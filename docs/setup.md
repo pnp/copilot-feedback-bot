@@ -36,7 +36,7 @@ There is a script to deploy all the Azure components and configure them. Recomme
 ## Manual Setup - Create Azure Resources
 You can deploy the ARM template manually:
 
-[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fpnp%2Fcopilot-feedback-bot%2Finstallps%2Fdeploy%2FARM%2Ftemplate.json)
+[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fpnp%2Fcopilot-feedback-bot%2Fmain%2Fdeploy%2FARM%2Ftemplate.json)
 
 Template is at ```deploy/ARM/template.json``` in this repository if you wish to copy/paste into the portal manually. 
 
