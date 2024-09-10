@@ -127,7 +127,6 @@
                 "zoneRedundant": false,
                 "readScale": "Disabled",
                 "requestedBackupStorageRedundancy": "Local",
-                "maintenanceConfigurationId": "/subscriptions/a0a08ecb-a4cb-4e5f-9330-4a229202688a/providers/Microsoft.Maintenance/publicMaintenanceConfigurations/SQL_Default",
                 "isLedgerOn": false,
                 "availabilityZone": "NoPreference"
             }
@@ -421,7 +420,10 @@
                         "AuthConfig:ClientSecret": "[parameters('service_account_client_secret')]",
                         "AuthConfig:TenantId": "[parameters('tenant_id')]",
                         "MicrosoftAppId": "[parameters('service_account_client_id')]",
-                        "MicrosoftAppPassword": "[parameters('service_account_client_secret')]"
+                        "MicrosoftAppPassword": "[parameters('service_account_client_secret')]",
+                         "ApplicationInsightsAgent_EXTENSION_VERSION": "~2",
+                        "XDT_MicrosoftApplicationInsights_Mode": "default",
+                        "APPLICATIONINSIGHTS_CONNECTION_STRING": "[reference(resourceId('microsoft.insights/components', parameters('workspace_analytics_name')), '2015-05-01').ConnectionString]"
                     }
                 },
                 {

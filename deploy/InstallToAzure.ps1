@@ -212,10 +212,10 @@ function DeployARMTemplate {
 	$armDeploy = New-AzResourceGroupDeployment -ResourceGroupName $config.ResourceGroupName -TemplateFile $templateLocation -TemplateParameterFile $paramsLocation -Name "FeedbackBotDeployment" -Verbose
 
 	if ($null -eq $armDeploy) {
-		Throw "Error: ARM template deployment fataly failed. Check previous errors." 
+		Throw "Error: ARM template deployment fataly failed to resource group '$($config.ResourceGroupName)'. Check previous errors." 
 	}
 	if ($armDeploy.ProvisioningState -eq "Succeeded") {
-		WriteS "ARM template deployment succeeded." 
+		WriteS "ARM template deployment succeeded to resource group '$($config.ResourceGroupName)'." 
 		return $true
 	}
 	else {
