@@ -78,15 +78,11 @@ IF !ERRORLEVEL! NEQ 0 goto error
 :: 2. Build and publish console project. Clean the runtime folder
 echo Building the console application
 call :ExecuteCmd dotnet publish "%DEPLOYMENT_SOURCE%\src\ActivityImporter.ConsoleApp\ActivityImporter.ConsoleApp.csproj" --output "%DEPLOYMENT_TEMP%\app_data\Jobs\Triggered\ActivityImporter.ConsoleApp" --configuration Release -property:KuduDeployment=1
-echo Cleaning the runtime folder '%DEPLOYMENT_TEMP%\app_data\Jobs\Triggered\ActivityImporter.ConsoleApp\runtimes'
-rmdir %DEPLOYMENT_TEMP%\app_data\Jobs\Triggered\ActivityImporter.ConsoleApp\runtimes /s /q
 
 :: 3. Build and publish Web project
 echo Building the web application
 call :ExecuteCmd dotnet publish "%DEPLOYMENT_SOURCE%\src\Web\Web.csproj" --output "%DEPLOYMENT_TEMP%" --configuration Release -property:KuduDeployment=1
 IF !ERRORLEVEL! NEQ 0 goto error
-echo Cleaning the runtime folder '%DEPLOYMENT_TEMP%\runtimes'
-rmdir %DEPLOYMENT_TEMP%\runtimes /s /q
 
 :: 4. KuduSync
 echo Target dir: %DEPLOYMENT_TARGET%

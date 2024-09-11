@@ -22,11 +22,11 @@
         },
         "app_service_plan_sku": {
             "type": "String",
-            "defaultValue": "Basic"
+            "defaultValue": "Standard"
         },
         "app_service_plan_skuCode": {
             "type": "String",
-            "defaultValue": "B1"
+            "defaultValue": "S1"
         },
         "function_app_service_name": {
             "type": "String"
