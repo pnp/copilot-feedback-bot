@@ -54,6 +54,7 @@ IF NOT DEFINED DEPLOYMENT_TEMP (
   SET DEPLOYMENT_TEMP=%temp%\___deployTemp%random%
   SET CLEAN_LOCAL_DEPLOYMENT_TEMP=true
 )
+echo Deployment temp: %DEPLOYMENT_TEMP%
 
 IF DEFINED CLEAN_LOCAL_DEPLOYMENT_TEMP (
   IF EXIST "%DEPLOYMENT_TEMP%" rd /s /q "%DEPLOYMENT_TEMP%"
@@ -74,16 +75,18 @@ echo Restoring NuGet packages
 call :ExecuteCmd dotnet restore "%DEPLOYMENT_SOURCE%\src\Copilot Feedback Bot.sln"
 IF !ERRORLEVEL! NEQ 0 goto error
 
-:: 2. Restore npm packages
-echo Restoring npm packages (this can take several minutes)
-pushd "%DEPLOYMENT_SOURCE%\src\Web"
+:: 2. Build and publish console project. Clean the runtime folder
+echo Building the console application
+call :ExecuteCmd dotnet publish "%DEPLOYMENT_SOURCE%\src\ActivityImporter.ConsoleApp\ActivityImporter.ConsoleApp.csproj" --output "%DEPLOYMENT_TEMP%\app_data\Jobs\Triggered\ActivityImporter.ConsoleApp" --configuration Release -property:KuduDeployment=1
 
-:: 4. Build and publish
-echo Building the application
+
+:: 3. Build and publish Web project
+echo Building the web application
 call :ExecuteCmd dotnet publish "%DEPLOYMENT_SOURCE%\src\Web\Web.csproj" --output "%DEPLOYMENT_TEMP%" --configuration Release -property:KuduDeployment=1
 IF !ERRORLEVEL! NEQ 0 goto error
 
-:: 5. KuduSync
+:: 4. KuduSync
+echo Target dir: %DEPLOYMENT_TARGET%
 call :ExecuteCmd "%KUDU_SYNC_CMD%" -v 50 -f "%DEPLOYMENT_TEMP%" -t "%DEPLOYMENT_TARGET%" -n "%NEXT_MANIFEST_PATH%" -p "%PREVIOUS_MANIFEST_PATH%" -i ".git;.hg;.deployment;deploy.cmd"
 IF !ERRORLEVEL! NEQ 0 goto error
 

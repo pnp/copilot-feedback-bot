@@ -22,11 +22,11 @@
         },
         "app_service_plan_sku": {
             "type": "String",
-            "defaultValue": "Basic"
+            "defaultValue": "Standard"
         },
         "app_service_plan_skuCode": {
             "type": "String",
-            "defaultValue": "B1"
+            "defaultValue": "S1"
         },
         "function_app_service_name": {
             "type": "String"
@@ -300,7 +300,8 @@
                     "name": "[concat(parameters('app_service_name'), '/web')]",
                     "type": "Microsoft.Web/sites/sourcecontrols",
                     "dependsOn": [
-                        "[resourceId('Microsoft.Web/sites', parameters('app_service_name'))]"
+                        "[resourceId('Microsoft.Web/sites', parameters('app_service_name'))]",
+                        "[resourceId('Microsoft.Web/sites/config', parameters('app_service_name'), 'appsettings')]"
                     ],
                     "properties": {
                         "repoUrl": "[parameters('git_repo')]",
@@ -408,7 +409,8 @@
                     "name": "appsettings",
                     "type": "config",
                     "dependsOn": [
-                        "[resourceId('Microsoft.Web/sites', parameters('function_app_service_name'))]"
+                        "[resourceId('Microsoft.Web/sites', parameters('function_app_service_name'))]",
+                        "[resourceId('Microsoft.Storage/storageAccounts', parameters('storage_account_name'))]"
                     ],
                     "properties": {
                         "SITE_ROLE": "function",
@@ -421,9 +423,11 @@
                         "AuthConfig:TenantId": "[parameters('tenant_id')]",
                         "MicrosoftAppId": "[parameters('service_account_client_id')]",
                         "MicrosoftAppPassword": "[parameters('service_account_client_secret')]",
-                         "ApplicationInsightsAgent_EXTENSION_VERSION": "~2",
+                        "ApplicationInsightsAgent_EXTENSION_VERSION": "~2",
                         "XDT_MicrosoftApplicationInsights_Mode": "default",
-                        "APPLICATIONINSIGHTS_CONNECTION_STRING": "[reference(resourceId('microsoft.insights/components', parameters('workspace_analytics_name')), '2015-05-01').ConnectionString]"
+                        "APPLICATIONINSIGHTS_CONNECTION_STRING": "[reference(resourceId('microsoft.insights/components', parameters('workspace_analytics_name')), '2015-05-01').ConnectionString]",
+                        "AzureWebJobsDashboard" : "[concat('DefaultEndpointsProtocol=https;AccountName=', parameters('storage_account_name'), ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storage_account_name')),'2015-05-01-preview').key1, ';EndpointSuffix=core.windows.net')]",
+                        "AzureWebJobsStorage" : "[concat('DefaultEndpointsProtocol=https;AccountName=', parameters('storage_account_name'), ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storage_account_name')),'2015-05-01-preview').key1, ';EndpointSuffix=core.windows.net')]"
                     }
                 },
                 {
