@@ -20,6 +20,12 @@
         "app_service_plan_name": {
             "value": "<!-- REPLACE WITH YOUR VALUE -->"
         },
+        "app_service_plan_sku": {
+            "value": "Standard"
+        },
+        "app_service_plan_skuCode": {
+            "value": "S1"
+        },
         "function_app_service_name": { 
             "value": "<!-- REPLACE WITH YOUR VALUE -->"
         },

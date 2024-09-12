@@ -300,7 +300,8 @@
                     "name": "[concat(parameters('app_service_name'), '/web')]",
                     "type": "Microsoft.Web/sites/sourcecontrols",
                     "dependsOn": [
-                        "[resourceId('Microsoft.Web/sites', parameters('app_service_name'))]"
+                        "[resourceId('Microsoft.Web/sites', parameters('app_service_name'))]",
+                        "[resourceId('Microsoft.Web/sites/config', parameters('app_service_name'), 'appsettings')]"
                     ],
                     "properties": {
                         "repoUrl": "[parameters('git_repo')]",
