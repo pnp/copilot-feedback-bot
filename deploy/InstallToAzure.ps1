@@ -16,17 +16,34 @@ function Get-ScriptDirectory {
 
 
 function Get-AppServiceNameArmTemplateValue {
- param ( $config )
+ param ( [parameter(mandatory = $true)] $config )
 	return Get-ArmTemplateValue $config "app_service_name"
 }
 function Get-FunctionAppServiceNameArmTemplateValue {
- param ( $config )
+ param ( [parameter(mandatory = $true)] $config )
 	return Get-ArmTemplateValue $config "function_app_service_name"
 }
+function Get-SqlServerNameArmTemplateValue {
+	param ( [parameter(mandatory = $true)] $config )
+	return Get-ArmTemplateValue $config "sql_server_name"
+}
+function Get-SqlServerUserNameArmTemplateValue {
+	param ( [parameter(mandatory = $true)] $config )
+	return Get-ArmTemplateValue $config "sql_server_admin_login"
+}
+function Get-SqlServerPasswordArmTemplateValue {
+	param ( [parameter(mandatory = $true)] $config )
+	return Get-ArmTemplateValue $config "sql_server_admin_login_password"
+}
+function Get-SqlDbNameArmTemplateValue {
+	param ( [parameter(mandatory = $true)] $config )
+	return Get-ArmTemplateValue $config "sql_database_name"
+}
+
 function Get-ArmTemplateValue {
 	param (
-		$config,
-		$parameterName
+		[parameter(mandatory = $true)] $config,
+		[parameter(mandatory = $true)] $parameterName
 	)
 
 	if ($null -eq $config) {
@@ -134,10 +151,113 @@ function ValidateAndInstall ($configFileName) {
 		WriteS -message "Resource group '$($config.ResourceGroupName)' already exists."
 	}
 
-	InstallAzComponents($config)
+	$deploySuccess = InstallAzComponents($config)
+	if ($deploySuccess -eq $true) {
+
+		# Add the client's public IP to the SQL firewall
+		AddClientPublicIpToSqlFirewall $config
+		TriggerAppServiceWebJob $config (Get-AppServiceNameArmTemplateValue $config)
+		
+		# Wait for the webjob to finish initialising
+		writei -message "Waiting for the webjob to finish initialising..."
+		Start-Sleep -Seconds 30
+		
+		# Make sure we have at least one site to filter, otherwise webjob won't run
+		AddUrlFiltersToDB $config
+
+		# Trigger the webjob again now we have the filters so it'll start processing
+		TriggerAppServiceWebJob $config (Get-AppServiceNameArmTemplateValue $config)
+
+		WriteS -message "Solution installed successfully. Next steps: "
+		WriteS -message "1. Install ."
+		WriteS -message "2. Check the web app for any errors."
+	}
+	else {
+		WriteE -message "Solution installation failed."
+	}
 }
 
-function RemoveDeployment {
+function AddClientPublicIpToSqlFirewall {
+	param (
+		[Parameter(Mandatory = $true)] $config
+	)
+	$ruleName = "SetupScript-$env:USERNAME-on-$env:COMPUTERNAME"
+
+	# Get your current IP address
+	WriteI -message "Getting your public IP address from http://checkip.dyndns.org..."
+	$client = New-Object System.Net.WebClient
+	[xml]$response = $client.DownloadString("http://checkip.dyndns.org")
+	$ip = ($response.html.body -split ':')[1].Trim()
+
+	writei -message "Adding your public IP '$ip' to the SQL server firewall (rule name '$ruleName')..."
+	$server = Get-SqlServerNameArmTemplateValue $config
+
+	Remove-AzSqlServerFirewallRule -ServerName $server -ResourceGroupName $config.ResourceGroupName -FirewallRuleName $ruleName -ErrorAction SilentlyContinue
+	New-AzSqlServerFirewallRule -ServerName $server -ResourceGroupName $config.ResourceGroupName -FirewallRuleName $ruleName -StartIpAddress $ip -EndIpAddress $ip
+
+	WriteS -message "Your public IP '$ip' has been added to the SQL server firewall (rule name '$ruleName')."
+}
+function AddUrlFiltersToDB {
+	param (
+		[Parameter(Mandatory = $true)] $config
+	)
+	$server = Get-SqlServerNameArmTemplateValue $config
+	$database = Get-SqlDbNameArmTemplateValue $config
+	$userId = Get-SqlServerUserNameArmTemplateValue $config
+	$password = Get-SqlServerPasswordArmTemplateValue $config
+
+	WriteI -message "Adding URL filters to database '$database' on server '$server' ..."
+
+	$connectionString = "Server=tcp:$server.database.windows.net,1433;Initial Catalog=$database;Persist Security Info=False;User ID=$userId;Password=$password;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
+	$connection = New-Object System.Data.SqlClient.SqlConnection
+	$connection.ConnectionString = $connectionString
+
+	$connection.Open()
+
+	foreach ($site in $config.RecordAuditEventsOnSites) {
+		$siteUrl = $site.SiteUrl
+		$exactMatch = $site.ExactMatch
+
+		$query = "
+		IF NOT EXISTS (select * from [import_url_filter] where url_base = '$siteUrl')
+		BEGIN
+			INSERT INTO [import_url_filter] (url_base, exact_match) VALUES ('$siteUrl', '$exactMatch') 
+		END
+		" 
+
+		$command = $connection.CreateCommand()
+		$command.CommandText = $query
+
+		$command.ExecuteNonQuery() | Out-Null
+	}
+
+	$connection.Close()
+	WriteS -message "URL filters added to database '$database' on server '$server'."
+}
+function TriggerAppServiceWebJob {
+	param (
+		[Parameter(Mandatory = $true)] $config,
+		[Parameter(Mandatory = $true)] $webAppName
+	)
+	WriteI -message "Triggering App Service webjob on app serving '$webAppName'..."
+	$uri = "/subscriptions/$($config.SubcriptionId)/resourceGroups/$($config.ResourceGroupName)/providers/Microsoft.Web/sites/$webAppName/triggeredwebjobs/ActivityImporter.ConsoleApp/run?api-version=2023-12-01"
+	$responseRaw = Invoke-AzRestMethod -Method POST -Path $uri `
+		-Payload (@{ properties = @{ scmType = "None" } } | ConvertTo-Json) -Verbose
+
+	if ($responseRaw.StatusCode -eq 200) {
+		WriteS "Web-job triggered successfully."
+	}
+	else {
+		if ($responseRaw.StatusCode -eq 404) {
+			WriteW -message "App service webjob not found." 
+		}
+		else {
+			WriteE -message "Error: start App service webjob failed. Response: $($responseRaw.Content)" 
+		}
+	}
+}
+
+function RemoveAppServiceDeployment {
 	param (
 		[Parameter(Mandatory = $true)] $config,
 		$webAppName
@@ -147,14 +267,14 @@ function RemoveDeployment {
 		-Payload (@{ properties = @{ scmType = "None" } } | ConvertTo-Json) -Verbose
 
 	if ($responseRaw.StatusCode -eq 200) {
-		WriteS "Deployment removed successfully."
+		WriteS "App service deployment removed successfully."
 	}
 	else {
 		if ($responseRaw.StatusCode -eq 404) {
-			WriteW -message "Deployment not found." 
+			WriteW -message "App service deployment not found." 
 		}
 		else {
-			WriteE -message "Error: Deployment removal failed. Response: $($responseRaw.Content)" 
+			WriteE -message "Error: App service deployment removal failed. Response: $($responseRaw.Content)" 
 		}
 	}
 }
@@ -168,8 +288,9 @@ function InstallAzComponents {
 	$webAppName = Get-AppServiceNameArmTemplateValue $config
 	$funcWebAppName = Get-FunctionAppServiceNameArmTemplateValue $config
 
-	RemoveDeployment $config $webAppName	
-	RemoveDeployment $config $funcWebAppName
+	# Remove the previous deployments so the ARM template can deploy the new ones
+	RemoveAppServiceDeployment $config $webAppName	
+	RemoveAppServiceDeployment $config $funcWebAppName
 	
 	# Deploy the ARM template
 	$deploySuccess = DeployARMTemplate $config
@@ -182,20 +303,15 @@ function InstallAzComponents {
 			$funcWebAppName
 		)
 
-		# wait couple of minutes & check deployment status...
-		$appserviceCodeSyncSuccess = WaitForCodeDeploymentSync $config $appServicesNames.Clone()
+		# Check deployment status...
+		WaitForCodeDeploymentSync $config $appServicesNames.Clone()
                 
-		if ($appserviceCodeSyncSuccess) {
-			WriteE -message "ARM deploy failed but app service deploy jobs succeeded. Re-running deployment in 20 mins as ARM template can fail with long deploy jobs..."
-			Start-Sleep -Seconds 1200
-			DeployARMTemplate $config
-		}
-		else {
-			Throw "ERROR: Unkown ARM template deployment error."
-		}
+		WriteE -message "Deployment failed. Please check the logs above for more information and try again."
 	}
-
-	WriteS "Solution installed successfully."
+	else {
+		WriteS -message "ARM template deployment succeeded."
+	}
+	return $deploySuccess
 }
 
 
@@ -272,20 +388,25 @@ function ValidateConfig {
 		$config
 	)
 
-	if ($config.SubcriptionId -eq $null) {
-		Write-Host "Error: SubcriptionId is missing in the configuration file." -ForegroundColor Red
+	if ($null -eq $config.SubcriptionId) {
+		WriteE "Error: SubcriptionId is missing in the configuration file. See 'InstallConfig-template.json' for reference configuration file needed." -ForegroundColor Red
 		return $false
 	}
-	if ($config.ResourceGroupName -eq $null) {
-		Write-Host "Error: ResourceGroupName is missing in the configuration file." -ForegroundColor Red
+	if ($null -eq $config.ResourceGroupName) {
+		WriteE "Error: ResourceGroupName is missing in the configuration file. See 'InstallConfig-template.json' for reference configuration file needed." -ForegroundColor Red
 		return $false
 	}
-	if ($config.ResourceGroupLocation -eq $null) {
-		Write-Host "Error: ResourceGroupLocation is missing in the configuration file." -ForegroundColor Red
+	if ($null -eq $config.ResourceGroupLocation) {
+		WriteE "Error: ResourceGroupLocation is missing in the configuration file. See 'InstallConfig-template.json' for reference configuration file needed." -ForegroundColor Red
 		return $false
 	}
-	if ($config.ARMParametersFile -eq $null) {
-		Write-Host "Error: ARMParametersFile is missing in the configuration file." -ForegroundColor Red
+	if ($null -eq $config.ARMParametersFile) {
+		WriteE "Error: ARMParametersFile is missing in the configuration file. See 'InstallConfig-template.json' for reference configuration file needed." -ForegroundColor Red
+		return $false
+	}
+
+	if ($null -eq $config.RecordAuditEventsOnSites -or $config.RecordAuditEventsOnSites.Count -eq 0) {
+		WriteE "Error: RecordAuditEventsOnSites is missing in the configuration file. See 'InstallConfig-template.json' for reference configuration file needed." -ForegroundColor Red
 		return $false
 	}
 

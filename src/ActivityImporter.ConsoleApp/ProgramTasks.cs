@@ -45,7 +45,7 @@ internal class ProgramTasks(AppConfig importConfig, ILogger logger)
     /// <summary>
     /// Activity API
     /// </summary>
-    internal async Task DownloadAndSaveActivityData()
+    internal async Task<bool> DownloadAndSaveActivityData()
     {
         // Remember start time
         var startTime = DateTime.Now;
@@ -62,7 +62,7 @@ internal class ProgramTasks(AppConfig importConfig, ILogger logger)
                 logger.LogError("FATAL ERROR: No import URLs found in database! " +
                     "This means everything would be ignored for SharePoint audit data. Add at least one URL to the import_url_filter table for this to work.");
 
-                return;
+                return false;
             }
 
             logger.LogInformation("\nBeginning import. Filtering for SharePoint events below these URLs:");
@@ -90,5 +90,6 @@ internal class ProgramTasks(AppConfig importConfig, ILogger logger)
                 logger.LogError($"Got unexpected exception importing activity: {ex.Message}");
             }
         }
+        return true;
     }
 }

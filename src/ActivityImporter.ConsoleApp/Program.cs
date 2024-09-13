@@ -47,6 +47,10 @@ using (var db = new DataContext(optionsBuilder.Options))
 
     // Import things
     var t = new ProgramTasks(config, _logger);
-    await t.DownloadAndSaveActivityData();
-    await t.GetGraphTeamsAndUserData();
+    var haveFilterConfig = await t.DownloadAndSaveActivityData();
+
+    if (haveFilterConfig)
+        await t.GetGraphTeamsAndUserData();
+    else
+        _logger.LogError("Aborting import");
 }

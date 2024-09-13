@@ -2,5 +2,15 @@
   "ARMParametersFile": "ARM\\parameters.json",
   "ResourceGroupName": "<!-- REPLACE WITH YOUR VALUE -->",
   "ResourceGroupLocation": "westeurope",
-  "SubcriptionId": "<!-- REPLACE WITH YOUR VALUE -->"
+  "SubcriptionId": "<!-- REPLACE WITH YOUR VALUE -->",
+  "RecordAuditEventsOnSites": [
+    {
+      "SiteUrl": "https://contoso.sharepoint.com/sites/intranet",
+      "ExactMatch": true
+    },
+    {
+      "SiteUrl": "https://contoso.sharepoint.com/sites/project-",
+      "ExactMatch": false
+    }
+  ]
 }
