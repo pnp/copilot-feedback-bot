@@ -169,8 +169,8 @@ function ValidateAndInstall ($configFileName) {
 		TriggerAppServiceWebJob $config (Get-AppServiceNameArmTemplateValue $config)
 
 		WriteS -message "Solution installed successfully. Next steps: "
-		WriteS -message "1. Install ."
-		WriteS -message "2. Check the web app for any errors."
+		WriteS -message "1. Verify import job is running in the web app and trace logs in Application Insights."
+		WriteS -message "2. Check SQL tables have data once an import has finished."
 	}
 	else {
 		WriteE -message "Solution installation failed."
@@ -192,7 +192,7 @@ function AddClientPublicIpToSqlFirewall {
 	writei -message "Adding your public IP '$ip' to the SQL server firewall (rule name '$ruleName')..."
 	$server = Get-SqlServerNameArmTemplateValue $config
 
-	Remove-AzSqlServerFirewallRule -ServerName $server -ResourceGroupName $config.ResourceGroupName -FirewallRuleName $ruleName -ErrorAction SilentlyContinue
+	Remove-AzSqlServerFirewallRule -ServerName $server -ResourceGroupName $config.ResourceGroupName -FirewallRuleName $ruleName -ErrorAction SilentlyContinue  | Out-Null
 	New-AzSqlServerFirewallRule -ServerName $server -ResourceGroupName $config.ResourceGroupName -FirewallRuleName $ruleName -StartIpAddress $ip -EndIpAddress $ip
 
 	WriteS -message "Your public IP '$ip' has been added to the SQL server firewall (rule name '$ruleName')."
