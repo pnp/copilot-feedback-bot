@@ -389,24 +389,24 @@ function ValidateConfig {
 	)
 
 	if ($null -eq $config.SubcriptionId) {
-		WriteE "Error: SubcriptionId is missing in the configuration file. See 'InstallConfig-template.json' for reference configuration file needed." -ForegroundColor Red
+		WriteE "Error: SubcriptionId is missing in the configuration file. See 'InstallConfig-template.json' for reference configuration file needed."
 		return $false
 	}
 	if ($null -eq $config.ResourceGroupName) {
-		WriteE "Error: ResourceGroupName is missing in the configuration file. See 'InstallConfig-template.json' for reference configuration file needed." -ForegroundColor Red
+		WriteE "Error: ResourceGroupName is missing in the configuration file. See 'InstallConfig-template.json' for reference configuration file needed."
 		return $false
 	}
 	if ($null -eq $config.ResourceGroupLocation) {
-		WriteE "Error: ResourceGroupLocation is missing in the configuration file. See 'InstallConfig-template.json' for reference configuration file needed." -ForegroundColor Red
+		WriteE "Error: ResourceGroupLocation is missing in the configuration file. See 'InstallConfig-template.json' for reference configuration file needed."
 		return $false
 	}
 	if ($null -eq $config.ARMParametersFile) {
-		WriteE "Error: ARMParametersFile is missing in the configuration file. See 'InstallConfig-template.json' for reference configuration file needed." -ForegroundColor Red
+		WriteE "Error: ARMParametersFile is missing in the configuration file. See 'InstallConfig-template.json' for reference configuration file needed."
 		return $false
 	}
 
 	if ($null -eq $config.RecordAuditEventsOnSites -or $config.RecordAuditEventsOnSites.Count -eq 0) {
-		WriteE "Error: RecordAuditEventsOnSites is missing in the configuration file. See 'InstallConfig-template.json' for reference configuration file needed." -ForegroundColor Red
+		WriteE "Error: RecordAuditEventsOnSites is missing in the configuration file. See 'InstallConfig-template.json' for reference configuration file needed."
 		return $false
 	}
 
