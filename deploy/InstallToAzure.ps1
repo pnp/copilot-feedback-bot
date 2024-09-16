@@ -151,22 +151,29 @@ function ValidateAndInstall ($configFileName) {
 		WriteS -message "Resource group '$($config.ResourceGroupName)' already exists."
 	}
 
-	$deploySuccess = InstallAzComponents($config)
-	if ($deploySuccess -eq $true) {
+	#$deploySuccess = InstallAzComponents($config)
+	if ($true) {
 
 		# Add the client's public IP to the SQL firewall
-		AddClientPublicIpToSqlFirewall $config
+		$firewallConfigured = AddClientPublicIpToSqlFirewall $config
 		TriggerAppServiceWebJob $config (Get-AppServiceNameArmTemplateValue $config)
 		
 		# Wait for the webjob to finish initialising
-		writei -message "Waiting for the webjob to finish initialising..."
+		WriteI -message "Waiting for the webjob to finish initialising SQL database..."
 		Start-Sleep -Seconds 30
 		
 		# Make sure we have at least one site to filter, otherwise webjob won't run
-		AddUrlFiltersToDB $config
+		if ($firewallConfigured -eq $true) {
+			# Add the URL filters to the database
+			AddUrlFiltersToDB $config
 
-		# Trigger the webjob again now we have the filters so it'll start processing
-		TriggerAppServiceWebJob $config (Get-AppServiceNameArmTemplateValue $config)
+			
+			# Trigger the webjob again now we have the filters so it'll start processing
+			TriggerAppServiceWebJob $config (Get-AppServiceNameArmTemplateValue $config)
+		}
+		else {
+			WriteE -message "Error: Unable to add URL filters to the database. Please add manually to table 'import_url_filter'"
+		}
 
 		WriteS -message "Solution installed successfully. Next steps: "
 		WriteS -message "1. Verify import job is running in the web app and trace logs in Application Insights."
@@ -182,15 +189,23 @@ function AddClientPublicIpToSqlFirewall {
 		[Parameter(Mandatory = $true)] $config
 	)
 	$ruleName = "SetupScript-$env:USERNAME-on-$env:COMPUTERNAME"
+	$server = Get-SqlServerNameArmTemplateValue $config
 
 	# Get your current IP address
 	WriteI -message "Getting your public IP address from http://checkip.dyndns.org..."
 	$client = New-Object System.Net.WebClient
-	[xml]$response = $client.DownloadString("http://checkip.dyndns.org")
+
+	try {
+		[xml]$response = $client.DownloadString("http://checkip.dyndns.org")
+	}
+	catch {
+		WriteE -message "Error: Unable to get your public IP address. This is likely because you're behind a proxy or firewall that blocks the request."
+		WriteW "You can always add your public IP address manually to the SQL server '$server' firewall using the Azure portal (rule name '$ruleName')."
+		return $false
+	}
 	$ip = ($response.html.body -split ':')[1].Trim()
 
-	writei -message "Adding your public IP '$ip' to the SQL server firewall (rule name '$ruleName')..."
-	$server = Get-SqlServerNameArmTemplateValue $config
+	WriteI -message "Adding your public IP '$ip' to the SQL server firewall (rule name '$ruleName')..."
 
 	Remove-AzSqlServerFirewallRule -ServerName $server -ResourceGroupName $config.ResourceGroupName -FirewallRuleName $ruleName -ErrorAction SilentlyContinue  | Out-Null
 	New-AzSqlServerFirewallRule -ServerName $server -ResourceGroupName $config.ResourceGroupName -FirewallRuleName $ruleName -StartIpAddress $ip -EndIpAddress $ip
