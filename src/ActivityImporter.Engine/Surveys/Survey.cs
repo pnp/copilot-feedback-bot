@@ -6,12 +6,54 @@ using System.Threading.Tasks;
 
 namespace ActivityImporter.Engine.Surveys;
 
-internal class Survey
+
+public class StringSurveyAnswer : SurveyAnswer<string>
 {
-    public string Value { get; set; }
+}
+public class IntSurveyAnswer : SurveyAnswer<int>
+{
 }
 
-public class SurveyQuestion
+public abstract class SurveyAnswer<T>
 {
-    public string MyProperty { get; set; }
+    public required T ValueGiven { get; set; }
+
+    public required SurveyQuestion<T> Question { get; set; }
+
+    public bool IsPositiveResult
+    {
+        get
+        {
+            if (ValueGiven == null) return false;
+            
+            if (Question.ExpectedValueLogicalOp == Op.Equals)
+            {
+                return ValueGiven.Equals(Question.ExpectedValue);
+            }
+
+            throw new InvalidOperationException("Invalid survey data");
+        }
+    }
+}
+
+public class StringSurveyQuestion : SurveyQuestion<string>
+{
+}
+public class IntSurveyQuestion : SurveyQuestion<int>
+{
+}
+
+public enum Op
+{
+    Equals,
+    NotEquals,
+    GreaterThan,
+    LessThan,
+}
+
+public abstract class SurveyQuestion<T>
+{
+    public required string Question { get; set; }
+    public required T ExpectedValue { get; set; }
+    public Op ExpectedValueLogicalOp { get; }
 }
