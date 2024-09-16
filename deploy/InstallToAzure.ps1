@@ -151,9 +151,8 @@ function ValidateAndInstall ($configFileName) {
 		WriteS -message "Resource group '$($config.ResourceGroupName)' already exists."
 	}
 
-	#$deploySuccess = InstallAzComponents($config)
-	if ($true) {
-
+	$deploySuccess = InstallAzComponents($config)
+	if ($true -eq $deploySuccess) {
 		# Add the client's public IP to the SQL firewall
 		$firewallConfigured = AddClientPublicIpToSqlFirewall $config
 		TriggerAppServiceWebJob $config (Get-AppServiceNameArmTemplateValue $config)
@@ -191,6 +190,13 @@ function AddClientPublicIpToSqlFirewall {
 	$ruleName = "SetupScript-$env:USERNAME-on-$env:COMPUTERNAME"
 	$server = Get-SqlServerNameArmTemplateValue $config
 
+	# Check if the rule already exists
+	$existingRule = Get-AzSqlServerFirewallRule -ServerName $server -ResourceGroupName 'PsTests' | Where-Object { $_.FirewallRuleName -eq $ruleName}
+	if ($null -ne $existingRule) {
+		WriteW -message "Your public IP is already added to the SQL server firewall (rule name '$ruleName'), so we won't detect & add it again."
+		return $true
+	}
+
 	# Get your current IP address
 	WriteI -message "Getting your public IP address from http://checkip.dyndns.org..."
 	$client = New-Object System.Net.WebClient
@@ -199,7 +205,7 @@ function AddClientPublicIpToSqlFirewall {
 		[xml]$response = $client.DownloadString("http://checkip.dyndns.org")
 	}
 	catch {
-		WriteE -message "Error: Unable to get your public IP address. This is likely because you're behind a proxy or firewall that blocks the request."
+		WriteE -message "Error: Unable to get your public IP address. This is likely because you're behind a proxy or firewall that blocks the request, or you have only an IPv6 address that can be seen externally."
 		WriteW "You can always add your public IP address manually to the SQL server '$server' firewall using the Azure portal (rule name '$ruleName')."
 		return $false
 	}
@@ -207,9 +213,7 @@ function AddClientPublicIpToSqlFirewall {
 
 	WriteI -message "Adding your public IP '$ip' to the SQL server firewall (rule name '$ruleName')..."
 
-	Remove-AzSqlServerFirewallRule -ServerName $server -ResourceGroupName $config.ResourceGroupName -FirewallRuleName $ruleName -ErrorAction SilentlyContinue  | Out-Null
 	New-AzSqlServerFirewallRule -ServerName $server -ResourceGroupName $config.ResourceGroupName -FirewallRuleName $ruleName -StartIpAddress $ip -EndIpAddress $ip
-
 	WriteS -message "Your public IP '$ip' has been added to the SQL server firewall (rule name '$ruleName')."
 }
 function AddUrlFiltersToDB {
