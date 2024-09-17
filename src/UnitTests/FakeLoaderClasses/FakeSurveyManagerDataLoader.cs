@@ -102,14 +102,14 @@ internal class FakeSurveyManagerDataLoader : ISurveyManagerDataLoader
         return Task.FromResult(1);
     }
 
-    public Task LogSurveyFollowUp(int surveyIdUpdatedOrCreated, SurveyFollowUpModel surveyFollowUp)
-    {
-        throw new NotImplementedException();
-    }
-
     Task<int> ISurveyManagerDataLoader.LogSurveyRequested(CommonAuditEvent @event)
     {
         _ids.Add(@event.Id);
         return Task.FromResult(1);
+    }
+
+    public Task<SurveyPage?> GetSurveyPage(int pageIndex)
+    {
+        throw new NotImplementedException();
     }
 }

@@ -2,6 +2,7 @@
 using Common.Engine.Config;
 using Common.Engine.Notifications;
 using Common.Engine.Surveys;
+using Entities.DB.Entities;
 using Entities.DB.Entities.AuditLog;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Dialogs;
@@ -23,6 +24,7 @@ public class SurveyDialogue : StoppableDialogue
     private readonly UserState _userState;
     private readonly IConversationResumeHandler _conversationResumeHandler;
     const string CACHE_NAME_NEXT_COPILOT_ACTION_TO_SURVEY = "NextCopilotAction";
+    const string CACHE_NAME_CUSTOM_SURVEY_PAGE_NUMBER = "SurveyPageNumber";
     const string CACHE_NAME_SURVEY_ID = "SurveyId";
     const string BTN_SEND_SURVEY = "Go on then";
 
@@ -146,7 +148,7 @@ public class SurveyDialogue : StoppableDialogue
 
                 if (nextCopilotEvent != null)
                 {
-                    // Remember selected copilot action user is being surveyed for
+                    // Remember copilot action user is being surveyed for
                     await _userState.CreateProperty<BaseCopilotSpecificEvent>(CACHE_NAME_NEXT_COPILOT_ACTION_TO_SURVEY).SetAsync(stepContext.Context, nextCopilotEvent);
                 }
 
@@ -191,13 +193,14 @@ public class SurveyDialogue : StoppableDialogue
             {
                 // Save survey data?
                 var botUser = await BotUserUtils.GetBotUserAsync(stepContext.Context, _botConfig, _graphServiceClient);
+                SurveyPage? surveyPage = null;
                 var chatUserAndConvo = await base.GetCachedUser(botUser);
                 if (chatUserAndConvo == null || chatUserAndConvo.UserPrincipalName == null)
                     await SendMsg(stepContext.Context, "Oops, can't report feedback for anonymous users. Your login is needed even if we don't report on it. Thanks for letting me know anyway.");
                 else
                 {
                     // Update survey data using the survey manager
-                    var surveyIdUpdatedOrCreated = 0;
+                    var surveyIdUpdatedOrCreated = 0; 
                     await base.GetSurveyManagerService(async surveyManager =>
                     {
                         if (surveyedEvent != null)
@@ -218,9 +221,11 @@ public class SurveyDialogue : StoppableDialogue
                         {
                             // Log survey result for general survey
                             surveyIdUpdatedOrCreated = await surveyManager.Loader.LogDisconnectedSurveyResult(parsedResponse.ScoreGiven, chatUserAndConvo.UserPrincipalName);
+                            surveyPage = await surveyManager.Loader.GetSurveyPage(0);
                         }
                     });
 
+                    // Continue diag logic 
                     if (surveyIdUpdatedOrCreated == 0)
                     {
                         await SendMsg(stepContext.Context, "Oops, I can't find the event you're responding to. Sorry about that...");
@@ -233,8 +238,12 @@ public class SurveyDialogue : StoppableDialogue
                     }
                 }
 
+                // Success!
+                // Cycle through survey pages, starting at 0
+                await _userState.CreateProperty<int>(CACHE_NAME_CUSTOM_SURVEY_PAGE_NUMBER).SetAsync(stepContext.Context, 0);
+
                 // Send reaction card to initial survey with follow-up form for more details
-                var responseCard = new BotReactionCard(parsedResponse.Msg, parsedResponse.IsHappy);
+                var responseCard = new BotReactionCard(parsedResponse.Msg, parsedResponse.IsHappy, surveyPage);
                 return await PromptWithCard(stepContext, responseCard);
             }
         }
@@ -249,22 +258,22 @@ public class SurveyDialogue : StoppableDialogue
         var surveyIdUpdatedOrCreated = await _userState.CreateProperty<int>(CACHE_NAME_SURVEY_ID).GetAsync(stepContext.Context);
 
         var result = stepContext.Context.Activity.Text;
-        SurveyFollowUpModel? surveyFollowUp = null;
-        try
+        //SurveyFollowUpModel? surveyFollowUp = null;
+        //try
+        //{
+        //    surveyFollowUp = JsonSerializer.Deserialize<SurveyFollowUpModel>(result);
+        //}
+        //catch (JsonException)
+        //{
+        //    // Ignore
+        //}
+        if (surveyIdUpdatedOrCreated > 0)
         {
-            surveyFollowUp = JsonSerializer.Deserialize<SurveyFollowUpModel>(result);
-        }
-        catch (JsonException)
-        {
-            // Ignore
-        }
-        if (surveyFollowUp != null && surveyIdUpdatedOrCreated > 0)
-        {
-            await base.GetSurveyManagerService(async surveyManager =>
-            {
-                // Add follow-up survey data
-                await surveyManager.Loader.LogSurveyFollowUp(surveyIdUpdatedOrCreated, surveyFollowUp);
-            });
+            //await base.GetSurveyManagerService(async surveyManager =>
+            //{
+            //    // Add follow-up survey data
+            //    await surveyManager.Loader.LogSurveyFollowUp(surveyIdUpdatedOrCreated, surveyFollowUp);
+            //});
 
             // Sign off & say thanks
             var allDoneCard = new BotDiagFinishedCard().GetCardAttachment();

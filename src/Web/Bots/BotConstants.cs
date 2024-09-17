@@ -17,7 +17,6 @@ public static class BotConstants
     public static string CardFileNameCopilotFileActionSurvey => "Web.Bots.Cards.Templates.SurveyCardFileAction.json";
     public static string CardFileNameSurveyNoActionCard => "Web.Bots.Cards.Templates.SurveyCardNoAction.json";
     public static string SurveyCommonBody => "Web.Bots.Cards.Templates.SurveyCommonBody.json";
-    public static string BotReactionCommon => "Web.Bots.Cards.Templates.BotReactionCommon.json";
     public static string SurveyFollowUpQuestions => "Web.Bots.Cards.Templates.SurveyFollowUpQuestions.json";
 
 

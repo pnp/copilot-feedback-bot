@@ -284,11 +284,9 @@ public class DbInitialiser
         CommonAuditEvent related)
     {
         var dt = from.AddDays(i * -1);
-        var testFileOpResponse = new UserSurveyResponse
+        var testFileOpResponse = new UserSurveyResponseDB
         {
-            Comments = $"{responseCommentPrefix} - copilot helped with file {i}",
-            EstimatedTimeSavedMinutes = rnd.Next(i),
-            Rating = rnd.Next(ratingFrom, ratingTo),
+            OverrallRating = rnd.Next(ratingFrom, ratingTo),
             Requested = dt,
             Responded = dt.AddMinutes(i),
             User = allUsers[rnd.Next(0, allUsers.Count)],
@@ -296,11 +294,9 @@ public class DbInitialiser
         context.SurveyResponses.Add(testFileOpResponse);
         context.SurveyResponseActivityTypes.Add(new UserSurveyResponseActivityType { CopilotActivity = docActivity, UserSurveyResponse = testFileOpResponse });
 
-        var testMeetingResponse = new UserSurveyResponse
+        var testMeetingResponse = new UserSurveyResponseDB
         {
-            Comments = $"{responseCommentPrefix} - copilot helped with meeting {i}",
-            EstimatedTimeSavedMinutes = 60 - rnd.Next(i),
-            Rating = rnd.Next(1, 5),
+            OverrallRating = rnd.Next(1, 5),
             Requested = dt,
             Responded = dt.AddMinutes(i),
             User = allUsers[rnd.Next(0, allUsers.Count)],

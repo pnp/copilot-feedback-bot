@@ -57,7 +57,7 @@ public class SqlSurveyManagerDataLoader(DataContext db, ILogger<SqlSurveyManager
 
     public async Task<int> LogSurveyRequested(CommonAuditEvent @event)
     {
-        var survey = new UserSurveyResponse { RelatedEventId = @event.Id, Requested = DateTime.UtcNow, UserID = @event.UserId };
+        var survey = new UserSurveyResponseDB { RelatedEventId = @event.Id, Requested = DateTime.UtcNow, UserID = @event.UserId };
         db.SurveyResponses.Add(survey);
         await db.SaveChangesAsync();
         return survey.ID;
@@ -80,7 +80,7 @@ public class SqlSurveyManagerDataLoader(DataContext db, ILogger<SqlSurveyManager
         var response = await db.SurveyResponses.Where(e => e.RelatedEvent == @event).FirstOrDefaultAsync();
         if (response != null)
         {
-            response.Rating = score;
+            response.OverrallRating = score;
             await db.SaveChangesAsync();
             return response.ID;
         }
@@ -96,7 +96,7 @@ public class SqlSurveyManagerDataLoader(DataContext db, ILogger<SqlSurveyManager
             user = new User { UserPrincipalName = userUpn };
         }
 
-        var survey = new UserSurveyResponse { Rating = scoreGiven, Requested = DateTime.UtcNow, User = user };
+        var survey = new UserSurveyResponseDB { OverrallRating = scoreGiven, Requested = DateTime.UtcNow, User = user };
         db.SurveyResponses.Add(survey);
         await db.SaveChangesAsync();
         return survey.ID;
@@ -117,18 +117,8 @@ public class SqlSurveyManagerDataLoader(DataContext db, ILogger<SqlSurveyManager
         }
     }
 
-    public async Task LogSurveyFollowUp(int surveyId, SurveyFollowUpModel surveyFollowUp)
+    public async Task<SurveyPage?> GetSurveyPage(int pageIndex)
     {
-        var survey = await db.SurveyResponses.Where(e => e.ID == surveyId).FirstOrDefaultAsync();
-        if (survey != null)
-        {
-            survey.CopilotMakesMeMoreProductiveAgreeRating = surveyFollowUp.CopilotMakesMeMoreProductiveAgreeRating.HasValue ? (int)surveyFollowUp.CopilotMakesMeMoreProductiveAgreeRating.Value : null;
-            survey.CopilotImprovesQualityOfWorkAgreeRating = surveyFollowUp.CopilotImprovesQualityOfWorkAgreeRating.HasValue ? (int)surveyFollowUp.CopilotImprovesQualityOfWorkAgreeRating.Value : null;
-            survey.CopilotHelpsWithMundaneTasksAgreeRating = surveyFollowUp.CopilotHelpsWithMundaneTasksAgreeRating.HasValue ? (int)surveyFollowUp.CopilotHelpsWithMundaneTasksAgreeRating.Value : null;
-            survey.CopilotAllowsTaskCompletionFasterAgreeRating = surveyFollowUp.CopilotAllowsTaskCompletionFasterAgreeRating.HasValue ? (int)surveyFollowUp.CopilotAllowsTaskCompletionFasterAgreeRating.Value : null;
-            survey.Comments = surveyFollowUp.Comments;
-
-            await db.SaveChangesAsync();
-        }
+        return await DbLoader.LoadSurveyPageQuestions(db, pageIndex);
     }
 }

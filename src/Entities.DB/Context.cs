@@ -47,12 +47,18 @@ public class DataContext : DbContext
     public DbSet<CopilotEventMetadataMeeting> CopilotEventMetadataMeetings { get; set; }
 
 
-    public DbSet<UserSurveyResponse> SurveyResponses { get; set; }
+    public DbSet<UserSurveyResponseDB> SurveyResponses { get; set; }
     public DbSet<UserSurveyResponseActivityType> SurveyResponseActivities { get; set; }
 
     public DbSet<UserSurveyResponseActivityType> SurveyResponseActivityTypes { get; set; }
     public DbSet<CopilotActivity> CopilotActivities { get; set; }
     public DbSet<CopilotActivityType> CopilotActivityTypes { get; set; }
+
+
+    public DbSet<SurveyPageDB> SurveyPages { get; set; }
+    public DbSet<SurveyQuestionDB> SurveyQuestions { get; set; }
+    public DbSet<SurveyAnswerDB> SurveyAnswers { get; set; }
+    public DbSet<CopilotActivityType> SurveyAnswer { get; set; }
 
     #endregion
 
@@ -113,13 +119,11 @@ public class DataContext : DbContext
          .HasIndex(t => new { t.Name })
          .IsUnique();
 
+        modelBuilder.Entity<ImportSiteFilter>()
+         .HasIndex(t => t.UrlBase)
+         .IsUnique();
 
-        // Removed due to issues inserting fake data
-        //modelBuilder.Entity<UserSurveyResponse>()
-        // .HasIndex(t => new { t.RelatedEventId, t.UserID })
-        // .IsUnique();
-
-        modelBuilder.Entity<UserSurveyResponse>()
+        modelBuilder.Entity<UserSurveyResponseDB>()
          .HasOne(f => f.User)
          .WithMany()
          .OnDelete(DeleteBehavior.Restrict);

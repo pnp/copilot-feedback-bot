@@ -9,7 +9,7 @@ using Entities.DB.Entities.AuditLog;
 using Microsoft.EntityFrameworkCore;
 using UnitTests.FakeLoaderClasses;
 
-namespace UnitTests.ActivityImporter;
+namespace UnitTests;
 
 [TestClass]
 public class CopilotTests : AbstractTest
