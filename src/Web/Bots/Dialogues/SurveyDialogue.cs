@@ -243,7 +243,7 @@ public class SurveyDialogue : StoppableDialogue
                 await _userState.CreateProperty<int>(CACHE_NAME_CUSTOM_SURVEY_PAGE_NUMBER).SetAsync(stepContext.Context, 0);
 
                 // Send reaction card to initial survey with follow-up form for more details
-                var responseCard = new BotReactionCard(parsedResponse.Msg, parsedResponse.IsHappy, surveyPage);
+                var responseCard = new BotReactionCard(parsedResponse.ReplyToFeedback, parsedResponse.IsHappy, surveyPage);
                 return await PromptWithCard(stepContext, responseCard);
             }
         }

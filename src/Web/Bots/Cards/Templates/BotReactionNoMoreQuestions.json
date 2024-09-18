@@ -1,0 +1,11 @@
+{
+  "type": "AdaptiveCard",
+  "version": "1.3",
+  "body": [
+    {
+      "type": "TextBlock",
+      "text": "No more qs"
+    }
+  ],
+  "$schema": "http://adaptivecards.io/schemas/adaptive-card.json"
+}
