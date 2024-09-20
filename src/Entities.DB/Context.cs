@@ -58,7 +58,6 @@ public class DataContext : DbContext
     public DbSet<SurveyPageDB> SurveyPages { get; set; }
     public DbSet<SurveyQuestionDB> SurveyQuestions { get; set; }
     public DbSet<SurveyAnswerDB> SurveyAnswers { get; set; }
-    public DbSet<CopilotActivityType> SurveyAnswer { get; set; }
 
     #endregion
 

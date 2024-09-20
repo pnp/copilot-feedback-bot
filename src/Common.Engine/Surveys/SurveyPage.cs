@@ -11,12 +11,12 @@ public class SurveyPage
 
     public SurveyPage(SurveyPageDB surveyPageDB) : this()
     {
-        this.AdaptiveCardTemplateJson = surveyPageDB.AdaptiveCardTemplateJson;
+        this.SurveyPageAdaptiveCardTemplateJson = surveyPageDB.AdaptiveCardTemplateJson;
 
         var i = 0;
         foreach (var q in surveyPageDB.Questions.OrderBy(q => q.Index))
         {
-            if (q.ExpectedValueLogicalOp == LogicalOperator.Unknown)
+            if (q.OptimalAnswerLogicalOp == LogicalOperator.Unknown)
             {
                 throw new SurveyEngineDataException($"Unknown logical operator for question ID '{q.ID}'");
             }
@@ -24,7 +24,7 @@ public class SurveyPage
             {
                 var intQ = new IntSurveyQuestion(q, i)
                 {
-                    ExpectedValue = int.Parse(q.ExpectedValue)
+                    OptimalAnswer = q.OptimalAnswerValue != null ? int.Parse(q.OptimalAnswerValue) : 0
                 };
                 IntQuestions.Add(intQ);
                 AllQuestions.Add(intQ);
@@ -33,7 +33,7 @@ public class SurveyPage
             {
                 var stringQ = new StringSurveyQuestion(q, i)
                 {
-                    ExpectedValue = q.ExpectedValue
+                    OptimalAnswer = q.OptimalAnswerValue
                 };
                 StringQuestions.Add(stringQ);
                 AllQuestions.Add(stringQ);
@@ -42,7 +42,7 @@ public class SurveyPage
             {
                 var boolQ = new BooleanSurveyQuestion(q, i)
                 {
-                    ExpectedValue = bool.Parse(q.ExpectedValue)
+                    OptimalAnswer = q.OptimalAnswerValue != null ? bool.Parse(q.OptimalAnswerValue) : false
                 };
                 BoolQuestions.Add(boolQ);
                 AllQuestions.Add(boolQ);
@@ -61,17 +61,19 @@ public class SurveyPage
 
     public List<BaseSurveyQuestion> AllQuestions { get; set; } = new();
 
-    public string AdaptiveCardTemplateJson { get; set; } = null!;
+    public string SurveyPageAdaptiveCardTemplateJson { get; set; } = null!;
+    public string SurveyPageCommonAdaptiveCardTemplateJson { get; set; } = null!;
 
     public JObject BuildAdaptiveCard()
     {
-        if (string.IsNullOrEmpty(AdaptiveCardTemplateJson))
+        if (string.IsNullOrEmpty(SurveyPageAdaptiveCardTemplateJson))
         {
             throw new SurveyEngineDataException("Adaptive card template JSON is empty");
         }
-        var cardBody = JObject.Parse(AdaptiveCardTemplateJson);
+        var surveyPageCardBody = JObject.Parse(SurveyPageAdaptiveCardTemplateJson);
+        var surveyPageCardBodyCommon = string.IsNullOrEmpty(SurveyPageCommonAdaptiveCardTemplateJson) ? new JObject() : JObject.Parse(SurveyPageCommonAdaptiveCardTemplateJson);
 
-        var union = new JsonMergeSettings
+        var unionMergeSettings = new JsonMergeSettings
         {
             // Avoid duplicates
             MergeArrayHandling = MergeArrayHandling.Union
@@ -88,8 +90,9 @@ public class SurveyPage
             ["body"] = questionSet
         };
 
-        cardBody.Merge(questionsBody, union);
+        surveyPageCardBody.Merge(questionsBody, unionMergeSettings);
+        surveyPageCardBody.Merge(surveyPageCardBodyCommon, unionMergeSettings);
 
-        return cardBody;
+        return surveyPageCardBody;
     }
 }

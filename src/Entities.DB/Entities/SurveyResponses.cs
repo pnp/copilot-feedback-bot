@@ -68,11 +68,11 @@ public class SurveyQuestionDB : AbstractEFEntity
     [Column("question")]
     public required string Question { get; set; }
 
-    [Column("expected_value")]
-    public required string ExpectedValue { get; set; }
+    [Column("optimal_answer_value")]
+    public string? OptimalAnswerValue { get; set; } = null;
 
-    [Column("expected_value_logical_op")]
-    public LogicalOperator ExpectedValueLogicalOp { get; set; }
+    [Column("optimal_answer_logical_op")]
+    public LogicalOperator? OptimalAnswerLogicalOp { get; set; }
 
     [Column("data_type")]
     public required QuestionDatatype DataType { get; set; }
@@ -82,7 +82,7 @@ public class SurveyQuestionDB : AbstractEFEntity
 }
 
 [Table("survey_answers")]
-public class SurveyAnswerDB : AbstractEFEntity
+public class SurveyAnswerDB : UserRelatedEntity
 {
     [ForeignKey(nameof(ForQuestion))]
     [Column("for_question_id")]
@@ -91,6 +91,9 @@ public class SurveyAnswerDB : AbstractEFEntity
 
     [Column("given_answer")]
     public required string GivenAnswer { get; set; }
+
+    [Column("timestamp_utc")]
+    public DateTime TimestampUtc { get; set; }
 }
 
 

@@ -18,20 +18,20 @@
     <Content Remove="Bots\Cards\Templates\SurveyCardFileAction.json" />
     <Content Remove="Bots\Cards\Templates\SurveyCardNoAction.json" />
     <Content Remove="Bots\Cards\Templates\SurveyCardTeamsAction.json" />
-    <Content Remove="Bots\Cards\Templates\SurveyCommonBody.json" />
-    <Content Remove="Bots\Cards\Templates\SurveyFollowUpQuestions.json" />
+    <Content Remove="Bots\Cards\Templates\SurveyCustomPageCommon.json" />
+    <Content Remove="Bots\Cards\Templates\SurveyOverrallSatisfactionCommonBody.json" />
   </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="Bots\Cards\Templates\BotDiagFinished.json" />
     <EmbeddedResource Include="Bots\Cards\Templates\BotReactionNoMoreQuestions.json" />
-    <EmbeddedResource Include="Bots\Cards\Templates\SurveyFollowUpQuestions.json" />
+    <EmbeddedResource Include="Bots\Cards\Templates\SurveyCustomPageCommon.json" />
     <EmbeddedResource Include="Bots\Cards\Templates\BotFirstIntro.json" />
     <EmbeddedResource Include="Bots\Cards\Templates\BotReactionHappy.json" />
     <EmbeddedResource Include="Bots\Cards\Templates\BotReactionMeh.json" />
     <EmbeddedResource Include="Bots\Cards\Templates\BotResumeConversationIntro.json" />
     <EmbeddedResource Include="Bots\Cards\Templates\SurveyCardFileAction.json" />
-    <EmbeddedResource Include="Bots\Cards\Templates\SurveyCommonBody.json" />
+    <EmbeddedResource Include="Bots\Cards\Templates\SurveyOverrallSatisfactionCommonBody.json" />
     <EmbeddedResource Include="Bots\Cards\Templates\SurveyCardNoAction.json" />
     <EmbeddedResource Include="Bots\Cards\Templates\SurveyCardTeamsAction.json" />
   </ItemGroup>

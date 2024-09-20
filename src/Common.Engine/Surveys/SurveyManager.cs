@@ -57,6 +57,26 @@ public class SurveyManager
         return result;
     }
 
+    public async Task SaveCustomSurveyResponse(SurveyResponse response)
+    {
+        if (!response.IsValid)
+        {
+            _logger.LogWarning($"Invalid survey response for user '{response.UserPrincipalName}'");
+            return;
+        }
+        _logger.LogInformation($"Saving survey response for user {response.UserPrincipalName}");
+
+        var user = await _dataLoader.GetUser(response.UserPrincipalName);
+        if (user != null)
+        {
+            await _dataLoader.SaveAnswers(user, response.Answers);
+        }
+        else
+        {
+            _logger.LogError($"User '{response.UserPrincipalName}' not found");
+        }
+    }
+
     public ISurveyManagerDataLoader Loader => _dataLoader;
 }
 

@@ -8,6 +8,7 @@ using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Builder.Dialogs.Choices;
 using Microsoft.Graph;
+using Microsoft.Graph.Models;
 using System.Text.Json;
 using Web.Bots.Cards;
 using Web.Bots.Dialogues.Abstract;
@@ -203,6 +204,13 @@ public class SurveyDialogue : StoppableDialogue
                     var surveyIdUpdatedOrCreated = 0; 
                     await base.GetSurveyManagerService(async surveyManager =>
                     {
+                        // Start custom surveys
+                        surveyPage = await surveyManager.Loader.GetSurveyPage(0);
+                        if (surveyPage != null)
+                        {
+                            surveyPage.SurveyPageCommonAdaptiveCardTemplateJson = Utils.ReadResource(BotConstants.SurveyCustomPageCommon);
+                        }
+
                         if (surveyedEvent != null)
                         {
                             // Log survey result for specific copilot event
@@ -221,7 +229,6 @@ public class SurveyDialogue : StoppableDialogue
                         {
                             // Log survey result for general survey
                             surveyIdUpdatedOrCreated = await surveyManager.Loader.LogDisconnectedSurveyResult(parsedResponse.ScoreGiven, chatUserAndConvo.UserPrincipalName);
-                            surveyPage = await surveyManager.Loader.GetSurveyPage(0);
                         }
                     });
 
@@ -258,31 +265,37 @@ public class SurveyDialogue : StoppableDialogue
         var surveyIdUpdatedOrCreated = await _userState.CreateProperty<int>(CACHE_NAME_SURVEY_ID).GetAsync(stepContext.Context);
 
         var result = stepContext.Context.Activity.Text;
-        //SurveyFollowUpModel? surveyFollowUp = null;
-        //try
-        //{
-        //    surveyFollowUp = JsonSerializer.Deserialize<SurveyFollowUpModel>(result);
-        //}
-        //catch (JsonException)
-        //{
-        //    // Ignore
-        //}
-        if (surveyIdUpdatedOrCreated > 0)
-        {
-            //await base.GetSurveyManagerService(async surveyManager =>
-            //{
-            //    // Add follow-up survey data
-            //    await surveyManager.Loader.LogSurveyFollowUp(surveyIdUpdatedOrCreated, surveyFollowUp);
-            //});
+        var botUser = await BotUserUtils.GetBotUserAsync(stepContext.Context, _botConfig, _graphServiceClient);
 
-            // Sign off & say thanks
-            var allDoneCard = new BotDiagFinishedCard().GetCardAttachment();
-            await stepContext.Context.SendActivityAsync(MessageFactory.Attachment(allDoneCard), cancellationToken);
+        var chatUserAndConvo = await base.GetCachedUser(botUser);
+
+        if (chatUserAndConvo?.UserPrincipalName != null)
+        {
+            var surveyResponse = new SurveyResponse(result, chatUserAndConvo.UserPrincipalName);
+
+            if (surveyIdUpdatedOrCreated > 0 && surveyResponse.IsValid)
+            {
+                await base.GetSurveyManagerService(async surveyManager =>
+                {
+                    // Add follow-up survey data
+                    await surveyManager.SaveCustomSurveyResponse(surveyResponse);
+                });
+
+                // Sign off & say thanks
+                var allDoneCard = new BotDiagFinishedCard().GetCardAttachment();
+                await stepContext.Context.SendActivityAsync(MessageFactory.Attachment(allDoneCard), cancellationToken);
+            }
+            else
+            {
+                await SendMsg(stepContext.Context, "Oops, didn't get that for some reason. Oh well; everything else seemed to work. Thanks & byee!");
+            }
+
         }
         else
         {
-            await SendMsg(stepContext.Context, "Oops, didn't get that for some reason. Oh well; everything else seemed to work. Thanks & byee!");
+            await SendMsg(stepContext.Context, "Oops, can't report feedback for anonymous users. Your login is needed even if we don't report on it. Thanks for letting me know anyway.");
         }
+
         return await stepContext.EndDialogAsync();
     }
 }

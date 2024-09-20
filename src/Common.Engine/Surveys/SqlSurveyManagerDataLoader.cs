@@ -121,4 +121,11 @@ public class SqlSurveyManagerDataLoader(DataContext db, ILogger<SqlSurveyManager
     {
         return await DbLoader.LoadSurveyPageQuestions(db, pageIndex);
     }
+
+    public Task SaveAnswers(User user, List<SurveyResponse.RawResponse> answers)
+    {
+        var responses = answers.Select(a => new SurveyAnswerDB { ForQuestionId = a.QuestionId, GivenAnswer = a.Response, User = user, TimestampUtc = DateTime.UtcNow });
+        db.SurveyAnswers.AddRange(responses);
+        return db.SaveChangesAsync();
+    }
 }
