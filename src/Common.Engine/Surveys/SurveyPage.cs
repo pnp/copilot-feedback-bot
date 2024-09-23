@@ -1,4 +1,5 @@
-﻿using Entities.DB.Entities;
+﻿using Common.Engine.Surveys.Model;
+using Entities.DB.Entities;
 using Newtonsoft.Json.Linq;
 
 namespace Common.Engine.Surveys;

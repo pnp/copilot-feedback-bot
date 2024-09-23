@@ -2,6 +2,7 @@
 using Common.Engine.Config;
 using Common.Engine.Notifications;
 using Common.Engine.Surveys;
+using Common.Engine.Surveys.Model;
 using Entities.DB.Entities;
 using Entities.DB.Entities.AuditLog;
 using Microsoft.Bot.Builder;
@@ -205,7 +206,7 @@ public class SurveyDialogue : StoppableDialogue
                     await base.GetSurveyManagerService(async surveyManager =>
                     {
                         // Start custom surveys
-                        surveyPage = await surveyManager.Loader.GetSurveyPage(0);
+                        surveyPage = await surveyManager.GetSurveyPage(0);
                         if (surveyPage != null)
                         {
                             surveyPage.SurveyPageCommonAdaptiveCardTemplateJson = Utils.ReadResource(BotConstants.SurveyCustomPageCommon);
@@ -271,7 +272,7 @@ public class SurveyDialogue : StoppableDialogue
 
         if (chatUserAndConvo?.UserPrincipalName != null)
         {
-            var surveyResponse = new SurveyResponse(result, chatUserAndConvo.UserPrincipalName);
+            var surveyResponse = new SurveyPageUserResponse(result, chatUserAndConvo.UserPrincipalName);
 
             if (surveyIdUpdatedOrCreated > 0 && surveyResponse.IsValid)
             {

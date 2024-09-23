@@ -1,4 +1,5 @@
-﻿using Entities.DB;
+﻿using Common.Engine.Surveys.Model;
+using Entities.DB;
 using Entities.DB.Entities;
 using Entities.DB.Entities.AuditLog;
 using Microsoft.EntityFrameworkCore;
@@ -13,6 +14,10 @@ public class SqlSurveyManagerDataLoader(DataContext db, ILogger<SqlSurveyManager
 {
     public async Task<User> GetUser(string upn)
     {
+        if (string.IsNullOrWhiteSpace(upn))
+        {
+            throw new ArgumentNullException(nameof(upn));
+        }
         return await db.Users.Where(u => u.UserPrincipalName == upn).FirstOrDefaultAsync() ?? throw new ArgumentOutOfRangeException(nameof(upn));
     }
 
@@ -117,15 +122,33 @@ public class SqlSurveyManagerDataLoader(DataContext db, ILogger<SqlSurveyManager
         }
     }
 
-    public async Task<SurveyPage?> GetSurveyPage(int pageIndex)
+    public async Task<List<SurveyAnswerDB>> SaveAnswers(User user, List<SurveyPageUserResponse.RawResponse> answers)
     {
-        return await DbLoader.LoadSurveyPageQuestions(db, pageIndex);
+        if (answers.Select(a=> a.QuestionId).Contains(0))
+        {
+            throw new ArgumentOutOfRangeException("Cannot save answers for question ID 0");
+        }
+        var responses = answers
+            .Select(a => new SurveyAnswerDB { ForQuestionId = a.QuestionId, GivenAnswer = a.Response, User = user, TimestampUtc = DateTime.UtcNow }).ToList();
+        db.SurveyAnswers.AddRange(responses);
+        await db.SaveChangesAsync();
+
+        // Deep load questions
+        foreach (var r in responses)
+        {
+            await db.Entry(r).ReloadAsync();
+        }
+
+        return responses;
     }
 
-    public Task SaveAnswers(User user, List<SurveyResponse.RawResponse> answers)
+    public async Task<List<SurveyPageDB>> GetPublishedPages()
     {
-        var responses = answers.Select(a => new SurveyAnswerDB { ForQuestionId = a.QuestionId, GivenAnswer = a.Response, User = user, TimestampUtc = DateTime.UtcNow });
-        db.SurveyAnswers.AddRange(responses);
-        return db.SaveChangesAsync();
+        // Load survey questions from the database
+        return await db.SurveyPages
+            .Where(p => p.IsPublished)
+            .Include(p => p.Questions)
+            .OrderBy(p => p.PageIndex)
+            .ToListAsync();
     }
 }

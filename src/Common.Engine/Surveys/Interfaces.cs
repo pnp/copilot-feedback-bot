@@ -1,4 +1,5 @@
-﻿using Entities.DB.Entities;
+﻿using Common.Engine.Surveys.Model;
+using Entities.DB.Entities;
 using Entities.DB.Entities.AuditLog;
 
 namespace Common.Engine.Surveys;
@@ -10,7 +11,6 @@ public interface ISurveyManagerDataLoader
     Task<User> GetUser(string upn);
     Task<List<User>> GetUsersWithActivity();
 
-    Task<SurveyPage?> GetSurveyPage(int pageIndex);
 
 
     /// <summary>
@@ -25,7 +25,8 @@ public interface ISurveyManagerDataLoader
     /// First response to the survey. Returns the ID of the survey response created
     /// </summary>
     Task<int> UpdateSurveyResultWithInitialScore(CommonAuditEvent @event, int score);
-    Task SaveAnswers(User user, List<SurveyResponse.RawResponse> answers);
+    Task<List<SurveyAnswerDB>> SaveAnswers(User user, List<SurveyPageUserResponse.RawResponse> answers);
+    Task<List<SurveyPageDB>> GetPublishedPages();
 }
 
 public interface ISurveyProcessor

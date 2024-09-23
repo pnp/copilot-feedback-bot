@@ -2,83 +2,8 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Common.Engine.Surveys;
+namespace Common.Engine.Surveys.Model;
 
-#region Answers
-
-public abstract class SurveyAnswer<T> where T : notnull
-{
-    public required T ValueGiven { get; set; }
-
-    public required SurveyQuestion<T> Question { get; set; }
-
-    public bool IsPositiveResult
-    {
-        get
-        {
-            if (Question.OptimalAnswerLogicalOp == LogicalOperator.Unknown)
-                throw new SurveyEngineDataException($"{nameof(Question.OptimalAnswerLogicalOp)} is {nameof(LogicalOperator.Unknown)}");
-
-            if (Question.OptimalAnswerLogicalOp == LogicalOperator.Equals)
-            {
-                return ValueGiven.Equals(Question.OptimalAnswer);
-            }
-            else if (Question.OptimalAnswerLogicalOp == LogicalOperator.NotEquals)
-            {
-                return !ValueGiven.Equals(Question.OptimalAnswer);
-            }
-            else if (Question.OptimalAnswerLogicalOp == LogicalOperator.GreaterThan)
-            {
-                return IsAnswerTrueForExpectedComparativeVal(LogicalOperator.GreaterThan);
-            }
-            else if (Question.OptimalAnswerLogicalOp == LogicalOperator.LessThan)
-            {
-                return IsAnswerTrueForExpectedComparativeVal(LogicalOperator.LessThan);
-            }
-
-            throw new SurveyEngineLogicException();
-        }
-    }
-
-    protected abstract bool IsAnswerTrueForExpectedComparativeVal(LogicalOperator op);
-}
-
-public class StringSurveyAnswer : SurveyAnswer<string>
-{
-    protected override bool IsAnswerTrueForExpectedComparativeVal(LogicalOperator op)
-    {
-        throw new InvalidOperationException("String survey questions can't be greater/less than compared");
-    }
-}
-public class IntSurveyAnswer : SurveyAnswer<int>
-{
-    protected override bool IsAnswerTrueForExpectedComparativeVal(LogicalOperator op)
-    {
-        switch (op)
-        {
-            case LogicalOperator.Equals:
-                return ValueGiven == Question.OptimalAnswer;
-            case LogicalOperator.NotEquals:
-                return ValueGiven != Question.OptimalAnswer;
-            case LogicalOperator.GreaterThan:
-                return ValueGiven > Question.OptimalAnswer;
-            case LogicalOperator.LessThan:
-                return ValueGiven < Question.OptimalAnswer;
-            default:
-                throw new SurveyEngineLogicException();
-        }
-    }
-}
-
-public class BooleanSurveyAnswer : SurveyAnswer<bool>
-{
-    protected override bool IsAnswerTrueForExpectedComparativeVal(LogicalOperator op)
-    {
-        throw new InvalidOperationException("Boolean survey questions can't be greater/less than compared");
-    }
-}
-
-#endregion
 
 
 public class StringSurveyQuestion : SurveyQuestion<string>
@@ -120,6 +45,14 @@ public class BooleanSurveyQuestion : SurveyQuestion<bool>
     }
     public BooleanSurveyQuestion(SurveyQuestionDB q, int index) : base(q, index)
     {
+        if (bool.TryParse(q.OptimalAnswerValue, out var r))
+        {
+            OptimalAnswer = r;
+        }
+        else
+        {
+            throw new SurveyEngineDataException("Failed to parse boolean OptimalAnswerValue");
+        }
     }
 
     internal override JObject GetAdaptiveCardJson()
@@ -139,16 +72,16 @@ public abstract class BaseSurveyQuestion
     }
     protected BaseSurveyQuestion(SurveyQuestionDB q, int index)
     {
-        this.Question = q.Question;
-        this.OptimalAnswerLogicalOp = q.OptimalAnswerLogicalOp;
-        this.Id = q.ID;
+        Question = q.Question;
+        OptimalAnswerLogicalOp = q.OptimalAnswerLogicalOp ?? LogicalOperator.Unknown;
+        Id = q.ID;
         Index = index;
     }
 
     public string Question { get; set; }
     public int Index { get; set; }
     public int Id { get; set; } = 0;
-    public LogicalOperator? OptimalAnswerLogicalOp { get; set; }
+    public LogicalOperator OptimalAnswerLogicalOp { get; set; } = LogicalOperator.Unknown;
 
     internal virtual JObject GetAdaptiveCardJson()
     {
@@ -174,23 +107,23 @@ public abstract class SurveyQuestion<T> : BaseSurveyQuestion
     {
     }
 
-    public required T? OptimalAnswer { get; set; }
+    public T? OptimalAnswer { get; set; } = default!;
 }
 
 
-public class SurveyResponse
+public class SurveyPageUserResponse
 {
-    public SurveyResponse(string? json, string? userPrincipalName)
+    public SurveyPageUserResponse(string? jsonFromAdaptiveCard, string? userPrincipalName)
     {
-        if (string.IsNullOrEmpty(userPrincipalName) || string.IsNullOrEmpty(json))
+        if (string.IsNullOrEmpty(userPrincipalName) || string.IsNullOrEmpty(jsonFromAdaptiveCard))
         {
             IsValid = false;
             return;
         }
         try
         {
-            var values = JsonConvert.DeserializeObject<Dictionary<string, string>>(json);
-            this.IsValid = true;
+            var values = JsonConvert.DeserializeObject<Dictionary<string, string>>(jsonFromAdaptiveCard);
+            IsValid = true;
 
             if (values == null)
             {
@@ -211,10 +144,11 @@ public class SurveyResponse
         }
         catch (JsonReaderException)
         {
-            this.IsValid = false;
+            IsValid = false;
             return;
         }
 
+        IsValid = !string.IsNullOrEmpty(userPrincipalName);
         UserPrincipalName = userPrincipalName;
     }
 

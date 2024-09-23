@@ -1,4 +1,5 @@
-﻿using Entities.DB.Entities;
+﻿using Common.Engine.Surveys.Model;
+using Entities.DB.Entities;
 using Entities.DB.Entities.AuditLog;
 using Microsoft.Extensions.Logging;
 using System.Text.Json.Serialization;
@@ -57,23 +58,42 @@ public class SurveyManager
         return result;
     }
 
-    public async Task SaveCustomSurveyResponse(SurveyResponse response)
+
+    public async Task<SurveyPage?> GetSurveyPage(int pageIndex)
+    {
+        // Load survey questions from the database
+        var publishedPages = await _dataLoader.GetPublishedPages();
+
+        _logger.LogInformation($"Loaded {publishedPages.Count} published survey pages");
+
+        if (publishedPages.Count > pageIndex)
+            return new SurveyPage(publishedPages[pageIndex]);
+        else
+            return null;
+    }
+
+    public async Task<AnswersCollection> SaveCustomSurveyResponse(SurveyPageUserResponse response)
     {
         if (!response.IsValid)
         {
             _logger.LogWarning($"Invalid survey response for user '{response.UserPrincipalName}'");
-            return;
+            throw new SurveyEngineDataException("Invalid survey response");
         }
         _logger.LogInformation($"Saving survey response for user {response.UserPrincipalName}");
 
         var user = await _dataLoader.GetUser(response.UserPrincipalName);
         if (user != null)
         {
-            await _dataLoader.SaveAnswers(user, response.Answers);
+            var savedAnswers = await _dataLoader.SaveAnswers(user, response.Answers);
+            _logger.LogInformation($"Survey response saved for user {response.UserPrincipalName}");
+
+            return new AnswersCollection(savedAnswers);
         }
         else
         {
             _logger.LogError($"User '{response.UserPrincipalName}' not found");
+
+            throw new SurveyEngineDataException("User not found");
         }
     }
 

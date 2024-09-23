@@ -1,4 +1,5 @@
 ﻿using Common.Engine.Surveys;
+using Common.Engine.Surveys.Model;
 using Entities.DB.Entities;
 using Entities.DB.Entities.AuditLog;
 
@@ -108,8 +109,33 @@ internal class FakeSurveyManagerDataLoader : ISurveyManagerDataLoader
         return Task.FromResult(1);
     }
 
-    public Task<SurveyPage?> GetSurveyPage(int pageIndex)
+    public Task<List<SurveyAnswerDB>> SaveAnswers(User user, List<SurveyPageUserResponse.RawResponse> answers)
     {
-        throw new NotImplementedException();
+        Console.WriteLine($"Fake user saved answers for {user.UserPrincipalName}");
+        return Task.FromResult(new List<SurveyAnswerDB>());
+    }
+
+    public Task<List<SurveyPageDB>> GetPublishedPages()
+    {
+        return Task.FromResult(new List<SurveyPageDB>()
+        { 
+            new SurveyPageDB
+            {
+                Questions = new List<SurveyQuestionDB>
+                {
+                    new SurveyQuestionDB
+                    {
+                        ID = 1,
+                        Question = "Question 1",
+                        DataType = QuestionDatatype.Int
+                    },
+                    new SurveyQuestionDB
+                    {
+                        ID = 2,
+                        Question = "Question 2",
+                        DataType = QuestionDatatype.String
+                    }
+                }
+            } });
     }
 }

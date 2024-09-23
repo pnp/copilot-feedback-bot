@@ -1,5 +1,8 @@
 ﻿using Common.Engine.Surveys;
+using Common.Engine.Surveys.Model;
 using Entities.DB.Entities;
+using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json.Linq;
 using UnitTests.FakeLoaderClasses;
 
 namespace UnitTests;
@@ -80,38 +83,163 @@ public class SurveyTests : AbstractTest
     }
 
     [TestMethod]
-    public void MiscModelTests()
+    public void SurveyPageUserResponseModelTests()
     {
         var responseJson = @"{""autoQuestionId-1"": ""a"", ""autoQuestionId-2"": ""1"" }";
-        var test = new SurveyResponse(responseJson, "whoever");
+        var test = new SurveyPageUserResponse(responseJson, "whoever");
         Assert.AreEqual(2, test.Answers.Count);
         Assert.IsTrue(test.IsValid);
 
-        Assert.IsTrue(test.Answers.Contains(new SurveyResponse.RawResponse { QuestionId = 1, Response = "a" }));
-        Assert.IsTrue(test.Answers.Contains(new SurveyResponse.RawResponse { QuestionId = 2, Response = "1" }));
+        Assert.IsTrue(test.Answers.Contains(new SurveyPageUserResponse.RawResponse { QuestionId = 1, Response = "a" }));
+        Assert.IsTrue(test.Answers.Contains(new SurveyPageUserResponse.RawResponse { QuestionId = 2, Response = "1" }));
 
         Assert.IsTrue(test.QuestionIds.Count == 2);
         Assert.IsTrue(test.QuestionIds.Contains(1));
         Assert.IsTrue(test.QuestionIds.Contains(2));
 
 
-        var invalid1 = new SurveyResponse("rando", "whoever");
+        var invalid1 = new SurveyPageUserResponse("rando", "whoever");
         Assert.IsFalse(invalid1.IsValid);
 
-        var invalid2 = new SurveyResponse("{\"random-1\": \"a\"}", "whoever");
+        var invalid2 = new SurveyPageUserResponse("{\"random-1\": \"a\"}", "whoever");
         Assert.IsTrue(invalid2.IsValid);
         Assert.AreEqual(0, invalid2.Answers.Count);
     }
 
     [TestMethod]
+    public void AnswersCollectionModelTests()
+    {
+        var answers = new List<SurveyAnswerDB>
+        {
+            new SurveyAnswerDB
+            { 
+                ID = 1,
+                ForQuestion = new SurveyQuestionDB
+                {
+                    DataType = QuestionDatatype.String,
+                    OptimalAnswerValue = "Don't hurt me",
+                    OptimalAnswerLogicalOp = LogicalOperator.Equals,
+                    Question = "What is love?",
+                    Index = 0,
+                },
+                GivenAnswer = "Don't hurt me"
+            },
+            new SurveyAnswerDB
+            {
+                ID = 2,
+                ForQuestion = new SurveyQuestionDB
+                {
+                    DataType = QuestionDatatype.Int,
+                    OptimalAnswerValue = "2",
+                    OptimalAnswerLogicalOp = LogicalOperator.Equals,
+                    Question = "What is 1+1?",
+                    Index = 2,
+                },
+                GivenAnswer = "2"
+            },
+            new SurveyAnswerDB
+            {
+                ID = 3,
+                ForQuestion = new SurveyQuestionDB
+                {
+                    DataType = QuestionDatatype.Bool,
+                    OptimalAnswerValue = "True",
+                    OptimalAnswerLogicalOp = LogicalOperator.Equals,
+                    Question = "True?",
+                    Index = 4,
+                },
+                GivenAnswer = "True"
+            }
+        };
+
+        var ac = new AnswersCollection(answers);
+        Assert.AreEqual(3, ac.AllAnswerIds.Count);
+        Assert.AreEqual(1, ac.StringSurveyAnswers.Count);
+        Assert.AreEqual(1, ac.IntSurveyAnswers.Count);
+        Assert.AreEqual(1, ac.BooleanSurveyAnswers.Count);
+    }
+
+
+    [TestMethod]
     public async Task SurveySave()
     {
 
-        var sm = new SurveyManager(new FakeSurveyManagerDataLoader(_config), new FakeSurveyProcessor(), GetLogger<SurveyManager>());
+        var sm = new SurveyManager(
+            new SqlSurveyManagerDataLoader(_db, GetLogger<SqlSurveyManagerDataLoader>()), 
+            new FakeSurveyProcessor(),
+            GetLogger<SurveyManager>());
 
         var testPage = new SurveyPageDB { Name = "unit test", IsPublished = true };
 
-        await sm.SaveCustomSurveyResponse(new SurveyResponse(@"{""autoQuestionId-1"": ""a"", ""autoQuestionId-2"": ""1"" }", "whoever"));
+        // Insert test data
+        var firstUserInDb = new User { UserPrincipalName = "unittesting" + DateTime.Now.Ticks };
+        _db.Users.Add(firstUserInDb);
+
+        var newStringQ = new SurveyQuestionDB
+        {
+            DataType = QuestionDatatype.String,
+            OptimalAnswerValue = "Don't hurt me",
+            OptimalAnswerLogicalOp = LogicalOperator.Equals,
+            Question = "What is love?",
+            Index = 0,
+        };
+        var newIntQ = new SurveyQuestionDB
+        {
+            DataType = QuestionDatatype.Int,
+            OptimalAnswerValue = "2",
+            OptimalAnswerLogicalOp = LogicalOperator.Equals,
+            Question = "What is 1+1?",
+            Index = 2,
+        };
+        var newBoolQ = new SurveyQuestionDB
+        {
+            DataType = QuestionDatatype.Bool,
+            OptimalAnswerValue = "True",
+            OptimalAnswerLogicalOp = LogicalOperator.Equals,
+            Question = "True?",
+            Index = 4,
+        };
+        _db.SurveyQuestions.AddRange(newStringQ, newIntQ, newBoolQ);
+
+
+        var newPage = new SurveyPageDB
+        {
+            Name = "unit test",
+            IsPublished = true,
+            AdaptiveCardTemplateJson = "{}",
+            Questions = new List<SurveyQuestionDB>
+            {
+                newStringQ,
+                newIntQ,
+                newBoolQ
+            }
+        };
+        _db.SurveyPages.Add(newPage);
+
+        await _db.SaveChangesAsync();
+
+
+        var jsonSurveyPageUserResponse = new JObject
+        {
+            ["autoQuestionId-" + newStringQ.ID] = newStringQ.OptimalAnswerValue,
+            ["autoQuestionId-" + newIntQ.ID] = newIntQ.OptimalAnswerValue,
+            ["autoQuestionId-" + newBoolQ.ID] = newBoolQ.OptimalAnswerValue,
+        };
+
+        var r = await sm.SaveCustomSurveyResponse(new SurveyPageUserResponse(jsonSurveyPageUserResponse.ToString(), 
+            firstUserInDb.UserPrincipalName));
+
+        Assert.IsTrue(r.AllAnswerIds.Count == 3);
+        Assert.IsTrue(r.StringSurveyAnswers.Count == 1);
+        Assert.IsTrue(r.IntSurveyAnswers.Count == 1);
+        Assert.IsTrue(r.BooleanSurveyAnswers.Count == 1);
+
+        // Find same answers in DB
+        var dbAnwsers = await _db.SurveyAnswers
+            .Where(a => r.AllAnswerIds.Contains(a.ID))
+            .ToListAsync();
+
+        Assert.IsTrue(dbAnwsers.Count == 3);
     }
 
     [TestMethod]
