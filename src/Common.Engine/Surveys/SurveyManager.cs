@@ -12,10 +12,10 @@ namespace Common.Engine.Surveys;
 public class SurveyManager
 {
     private readonly ISurveyManagerDataLoader _dataLoader;
-    private readonly ISurveyProcessor _surveyProcessor;
+    private readonly ISurveyEventsProcessor _surveyProcessor;
     private readonly ILogger _logger;
 
-    public SurveyManager(ISurveyManagerDataLoader dataLoader, ISurveyProcessor surveyProcessor, ILogger<SurveyManager> logger)
+    public SurveyManager(ISurveyManagerDataLoader dataLoader, ISurveyEventsProcessor surveyProcessor, ILogger<SurveyManager> logger)
     {
         _dataLoader = dataLoader;
         _surveyProcessor = surveyProcessor;

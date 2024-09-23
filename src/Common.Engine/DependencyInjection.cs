@@ -53,7 +53,7 @@ public class DependencyInjection
 
         services.AddSingleton<IBotConvoResumeManager, BotConvoResumeManager>();
         services.AddSingleton<BotConversationCache>();
-        services.AddSingleton<ISurveyProcessor, TeamsBotSendSurveyProcessor>();
+        services.AddSingleton<ISurveyEventsProcessor, TeamsBotSendSurveyProcessor>();
 
         services.AddTransient<SurveyManager>();
         services.AddTransient<ISurveyManagerDataLoader, SqlSurveyManagerDataLoader>();

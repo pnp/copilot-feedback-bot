@@ -29,7 +29,7 @@ public interface ISurveyManagerDataLoader
     Task<List<SurveyPageDB>> GetPublishedPages();
 }
 
-public interface ISurveyProcessor
+public interface ISurveyEventsProcessor
 {
     Task ProcessSurveyRequest(SurveyPendingActivities activities);
 }

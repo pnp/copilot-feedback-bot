@@ -5,7 +5,7 @@ using Entities.DB.Entities.AuditLog;
 
 namespace UnitTests.FakeLoaderClasses;
 
-internal class FakeSurveyProcessor : ISurveyProcessor
+internal class FakeSurveyProcessor : ISurveyEventsProcessor
 {
     public Task ProcessSurveyRequest(SurveyPendingActivities activities)
     {

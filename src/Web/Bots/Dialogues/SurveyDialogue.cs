@@ -202,7 +202,7 @@ public class SurveyDialogue : StoppableDialogue
                 else
                 {
                     // Update survey data using the survey manager
-                    var surveyIdUpdatedOrCreated = 0; 
+                    var surveyIdUpdatedOrCreated = 0;
                     await base.GetSurveyManagerService(async surveyManager =>
                     {
                         // Start custom surveys
@@ -276,15 +276,37 @@ public class SurveyDialogue : StoppableDialogue
 
             if (surveyIdUpdatedOrCreated > 0 && surveyResponse.IsValid)
             {
+                var lastPageId = await _userState.CreateProperty<int>(CACHE_NAME_CUSTOM_SURVEY_PAGE_NUMBER).GetAsync(stepContext.Context);
+                var goAroundAgain = false;
                 await base.GetSurveyManagerService(async surveyManager =>
                 {
                     // Add follow-up survey data
                     await surveyManager.SaveCustomSurveyResponse(surveyResponse);
+
+                    // Get next survey page
+                    var surveyPage = await surveyManager.GetSurveyPage(lastPageId + 1);
+                    if (surveyPage != null)
+                    {
+                        surveyPage.SurveyPageCommonAdaptiveCardTemplateJson = Utils.ReadResource(BotConstants.SurveyCustomPageCommon);
+                        await _userState.CreateProperty<int>(CACHE_NAME_CUSTOM_SURVEY_PAGE_NUMBER).SetAsync(stepContext.Context, lastPageId + 1);
+
+                        // Send follow-up survey page
+                        var followUpCard = new CustomSurveyPageCard(surveyPage);
+                        await stepContext.Context.SendActivityAsync(MessageFactory.Attachment(followUpCard.GetCardAttachment()), cancellationToken);
+                        goAroundAgain = true;
+                    }
+                    else
+                    {
+                        // Sign off & say thanks
+                        var allDoneCard = new BotDiagFinishedCard().GetCardAttachment();
+                        await stepContext.Context.SendActivityAsync(MessageFactory.Attachment(allDoneCard), cancellationToken);
+                    }
                 });
 
-                // Sign off & say thanks
-                var allDoneCard = new BotDiagFinishedCard().GetCardAttachment();
-                await stepContext.Context.SendActivityAsync(MessageFactory.Attachment(allDoneCard), cancellationToken);
+                if (goAroundAgain)
+                {
+                    return await stepContext.ReplaceDialogAsync(nameof(WaterfallDialog));
+                }
             }
             else
             {
