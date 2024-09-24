@@ -110,6 +110,10 @@ public class DataContext : DbContext
          .HasIndex(t => new { t.UserPrincipalName })
          .IsUnique();
 
+        modelBuilder.Entity<SurveyQuestionDB>()
+         .HasIndex(t => new { t.QuestionId })
+         .IsUnique();
+
 
         modelBuilder.Entity<CopilotActivityType>()
          .HasIndex(t => new { t.Name })

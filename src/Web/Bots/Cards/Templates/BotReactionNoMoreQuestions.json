@@ -4,7 +4,8 @@
   "body": [
     {
       "type": "TextBlock",
-      "text": "No more questions - thanks for your feedback!"
+      "text": "No more questions - thanks for your feedback!",
+      "wrap": true
     }
   ],
   "$schema": "http://adaptivecards.io/schemas/adaptive-card.json"

@@ -97,7 +97,7 @@ internal class FakeSurveyManagerDataLoader : ISurveyManagerDataLoader
         return Task.CompletedTask;
     }
 
-    public Task<int> LogDisconnectedSurveyResult(int scoreGiven, string userUpn)
+    public Task<int> LogDisconnectedSurveyResultWithInitialScore(int scoreGiven, string userUpn)
     {
         Console.WriteLine($"Fake user logged disconnected survey result with score {scoreGiven}");
         return Task.FromResult(1);
@@ -109,7 +109,7 @@ internal class FakeSurveyManagerDataLoader : ISurveyManagerDataLoader
         return Task.FromResult(1);
     }
 
-    public Task<List<SurveyAnswerDB>> SaveAnswers(User user, List<SurveyPageUserResponse.RawResponse> answers)
+    public Task<List<SurveyAnswerDB>> SaveAnswers(User user, List<SurveyPageUserResponse.RawResponse> answers, int existingSurveyId)
     {
         Console.WriteLine($"Fake user saved answers for {user.UserPrincipalName}");
         return Task.FromResult(new List<SurveyAnswerDB>());

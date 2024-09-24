@@ -216,6 +216,14 @@ public class SurveyTests : AbstractTest
         };
         _db.SurveyPages.Add(newPage);
 
+        var newSurvey = new UserSurveyResponseDB
+        {
+            OverrallRating = 5,
+            Requested = DateTime.UtcNow,
+            User = firstUserInDb, RelatedEvent = null,
+        };
+        _db.SurveyResponses.Add(newSurvey);
+
         await _db.SaveChangesAsync();
 
 
@@ -226,8 +234,8 @@ public class SurveyTests : AbstractTest
             ["autoQuestionId-" + newBoolQ.ID] = newBoolQ.OptimalAnswerValue,
         };
 
-        var r = await sm.SaveCustomSurveyResponse(new SurveyPageUserResponse(jsonSurveyPageUserResponse.ToString(), 
-            firstUserInDb.UserPrincipalName));
+        var r = await sm.SaveCustomSurveyResponse(new SurveyPageUserResponse(jsonSurveyPageUserResponse.ToString(),
+            firstUserInDb.UserPrincipalName), newSurvey.ID);
 
         Assert.IsTrue(r.AllAnswerIds.Count == 3);
         Assert.IsTrue(r.StringSurveyAnswers.Count == 1);

@@ -16,7 +16,7 @@ public interface ISurveyManagerDataLoader
     /// <summary>
     /// Log survey result for a user, but for no specific copilot event. Returns the ID of the survey response created
     /// </summary>
-    Task<int> LogDisconnectedSurveyResult(int scoreGiven, string userUpn);
+    Task<int> LogDisconnectedSurveyResultWithInitialScore(int scoreGiven, string userUpn);
     Task<int> LogSurveyRequested(CommonAuditEvent @event);
 
     Task StopBotheringUser(string upn, DateTime until);
@@ -25,7 +25,7 @@ public interface ISurveyManagerDataLoader
     /// First response to the survey. Returns the ID of the survey response created
     /// </summary>
     Task<int> UpdateSurveyResultWithInitialScore(CommonAuditEvent @event, int score);
-    Task<List<SurveyAnswerDB>> SaveAnswers(User user, List<SurveyPageUserResponse.RawResponse> answers);
+    Task<List<SurveyAnswerDB>> SaveAnswers(User user, List<SurveyPageUserResponse.RawResponse> answers, int existingSurveyId);
     Task<List<SurveyPageDB>> GetPublishedPages();
 }
 

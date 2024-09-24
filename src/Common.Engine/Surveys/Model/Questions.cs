@@ -59,6 +59,7 @@ public class BooleanSurveyQuestion : SurveyQuestion<bool>
     {
         var c = base.GetAdaptiveCardJson();
         c["type"] = "Input.Toggle";
+        c["title"] = "Yes/no";
         return c;
     }
 }
@@ -94,7 +95,7 @@ public abstract class BaseSurveyQuestion
         return new JObject
         {
             ["id"] = $"autoQuestionId-{Id}",
-            ["placeholder"] = Question,
+            ["label"] = this.Question
         };
     }
 }

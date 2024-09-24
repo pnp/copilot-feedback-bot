@@ -72,7 +72,7 @@ public class SurveyManager
             return null;
     }
 
-    public async Task<AnswersCollection> SaveCustomSurveyResponse(SurveyPageUserResponse response)
+    public async Task<AnswersCollection> SaveCustomSurveyResponse(SurveyPageUserResponse response, int existingSurveyId)
     {
         if (!response.IsValid)
         {
@@ -84,7 +84,7 @@ public class SurveyManager
         var user = await _dataLoader.GetUser(response.UserPrincipalName);
         if (user != null)
         {
-            var savedAnswers = await _dataLoader.SaveAnswers(user, response.Answers);
+            var savedAnswers = await _dataLoader.SaveAnswers(user, response.Answers, existingSurveyId);
             _logger.LogInformation($"Survey response saved for user {response.UserPrincipalName}");
 
             return new AnswersCollection(savedAnswers);

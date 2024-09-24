@@ -2,7 +2,7 @@
 
 namespace Web.Bots;
 
-public class SurveyInitialResponse
+public class InitialSurveyResponse
 {
     [JsonPropertyName("rating")]
     public string Rating { get; set; } = null!;

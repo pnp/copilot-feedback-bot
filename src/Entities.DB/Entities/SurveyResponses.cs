@@ -65,6 +65,12 @@ public class SurveyQuestionDB : AbstractEFEntity
     public int ForSurveyPageId { get; set; }
     public SurveyPageDB ForSurveyPage { get; set; } = null!;
 
+    /// <summary>
+    /// For identifying specific questions in the survey
+    /// </summary>
+    [Column("question_id")]
+    public string? QuestionId { get; set; }
+
     [Column("question")]
     public required string Question { get; set; }
 
@@ -94,6 +100,11 @@ public class SurveyAnswerDB : UserRelatedEntity
 
     [Column("timestamp_utc")]
     public DateTime TimestampUtc { get; set; }
+
+    [ForeignKey(nameof(ParentSurvey))]
+    [Column("parent_survey_response_id")]
+    public int ParentSurveyId { get; set; }
+    public UserSurveyResponseDB ParentSurvey { get; set; } = null!;
 }
 
 

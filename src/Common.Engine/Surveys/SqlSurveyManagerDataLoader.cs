@@ -93,7 +93,7 @@ public class SqlSurveyManagerDataLoader(DataContext db, ILogger<SqlSurveyManager
         throw new ArgumentOutOfRangeException(nameof(@event));
     }
 
-    public async Task<int> LogDisconnectedSurveyResult(int scoreGiven, string userUpn)
+    public async Task<int> LogDisconnectedSurveyResultWithInitialScore(int scoreGiven, string userUpn)
     {
         var user = await db.Users.Where(u => u.UserPrincipalName == userUpn).FirstOrDefaultAsync();
         if (user == null)
@@ -122,14 +122,21 @@ public class SqlSurveyManagerDataLoader(DataContext db, ILogger<SqlSurveyManager
         }
     }
 
-    public async Task<List<SurveyAnswerDB>> SaveAnswers(User user, List<SurveyPageUserResponse.RawResponse> answers)
+    public async Task<List<SurveyAnswerDB>> SaveAnswers(User user, List<SurveyPageUserResponse.RawResponse> answers, int existingSurveyId)
     {
         if (answers.Select(a=> a.QuestionId).Contains(0))
         {
             throw new ArgumentOutOfRangeException("Cannot save answers for question ID 0");
         }
         var responses = answers
-            .Select(a => new SurveyAnswerDB { ForQuestionId = a.QuestionId, GivenAnswer = a.Response, User = user, TimestampUtc = DateTime.UtcNow }).ToList();
+            .Select(a => new SurveyAnswerDB 
+            { 
+                ForQuestionId = a.QuestionId, 
+                GivenAnswer = a.Response, 
+                User = user, 
+                TimestampUtc = DateTime.UtcNow,
+                ParentSurveyId = existingSurveyId
+            }).ToList();
         db.SurveyAnswers.AddRange(responses);
         await db.SaveChangesAsync();
 

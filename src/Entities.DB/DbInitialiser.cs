@@ -86,7 +86,7 @@ public class DbInitialiser
                         new JObject
                         {
                             ["type"] = "TextBlock",
-                            ["text"] = "Survey custom questions page 1",
+                            ["text"] = "Page 1/2 - Extra info",
                             ["wrap"] = true
                         }
                     },
@@ -105,16 +105,18 @@ public class DbInitialiser
                 Question = "How many minutes has copilot saved you this time?", 
                 ForSurveyPage = page1, DataType = QuestionDatatype.Int, 
                 OptimalAnswerValue = "0", 
-                OptimalAnswerLogicalOp = LogicalOperator.GreaterThan
+                OptimalAnswerLogicalOp = LogicalOperator.GreaterThan,
+                QuestionId = "MinutesSaved"
             },
         ]);
 
+        // Override content body
         cardContent["body"] = new JArray
         {
             new JObject
             {
                 ["type"] = "TextBlock",
-                ["text"] = "Page 2",
+                ["text"] = "Page 2/2 - Do you value Copilot in O365?",
                 ["wrap"] = true
             }
         };
@@ -122,9 +124,11 @@ public class DbInitialiser
         page2.Questions.AddRange([
             new SurveyQuestionDB
             {
-                Question = "Did you find copilot useful today?",
+                Question = "Does copilot help you be more productive generally?",
                 ForSurveyPage = page2, DataType = QuestionDatatype.Bool,
-                OptimalAnswerValue = "true"
+                OptimalAnswerValue = "true",
+                OptimalAnswerLogicalOp = LogicalOperator.Equals,
+                QuestionId = "MakesGenerallyProductive"
             },
         ]);
 
