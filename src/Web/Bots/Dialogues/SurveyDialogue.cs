@@ -3,7 +3,6 @@ using Common.Engine.Config;
 using Common.Engine.Notifications;
 using Common.Engine.Surveys;
 using Common.Engine.Surveys.Model;
-using Entities.DB.Entities.AuditLog;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Builder.Dialogs.Choices;
@@ -14,14 +13,6 @@ using Web.Bots.Dialogues.Abstract;
 
 namespace Web.Bots.Dialogues;
 
-class ConvoState
-{
-    public InitialSurveyResponse? LastResponse { get; set; }
-    public bool DiagRestart { get; set; } = false;
-    public int? NextCopilotCustomPage { get; set; }
-    public int? SurveyIdUpdatedOrCreated { get; set; }
-    public BaseCopilotSpecificEvent? CopilotEventForSurveyResult { get; set; }
-}
 
 /// <summary>
 /// Entrypoint to all new conversations
@@ -56,23 +47,11 @@ public class SurveyDialogue : StoppableDialogue
         [
             NewChat,
             SendSurveyOrNot,
-            ProcessInitialSurveyResponse,
+            ProcessSurveyResponse,
             ProcessFollowUp
         ]));
         AddDialog(new ChoicePrompt(nameof(ChoicePrompt)));
         InitialDialogId = nameof(WaterfallDialog);
-    }
-
-    async Task<ConvoState> GetConvoStateAsync(ITurnContext context)
-    {
-        var convoStateProp = _userState.CreateProperty<ConvoState>(CACHE_NAME_CONVO_STATE);
-        var convoState = await convoStateProp.GetAsync(context);
-        if (convoState == null)
-        {
-            convoState = new ConvoState();
-            await convoStateProp.SetAsync(context, convoState);
-        }
-        return convoState;
     }
 
     /// <summary>
@@ -195,12 +174,10 @@ public class SurveyDialogue : StoppableDialogue
     }
 
     /// <summary>
-    /// User responds to initial survey card
+    /// User responds to initial survey card, or we're in a loop showing custom survey pages
     /// </summary>
-    private async Task<DialogTurnResult> ProcessInitialSurveyResponse(WaterfallStepContext stepContext, CancellationToken cancellationToken)
+    private async Task<DialogTurnResult> ProcessSurveyResponse(WaterfallStepContext stepContext, CancellationToken cancellationToken)
     {
-        var initialSurveyRatingResponse = JsonSerializer.Deserialize<InitialSurveyResponse>(stepContext.Context.Activity.Text);
-
         // Get/set state
         var convoState = await GetConvoStateAsync(stepContext.Context);
 
@@ -215,6 +192,7 @@ public class SurveyDialogue : StoppableDialogue
             BaseAdaptiveCard? responseCard = null;
             await base.GetSurveyManagerService(async surveyManager =>
             {
+                var initialSurveyRatingResponse = JsonSerializer.Deserialize<InitialSurveyResponse>(stepContext.Context.Activity.Text);
                 if (initialSurveyRatingResponse?.Response != null)
                 {
                     // We're here because the user has responded to the initial overral rating survey card
@@ -281,7 +259,6 @@ public class SurveyDialogue : StoppableDialogue
 
     private async Task<DialogTurnResult> ProcessFollowUp(WaterfallStepContext stepContext, CancellationToken cancellationToken)
     {
-
         // Get/set state
         var convoState = await GetConvoStateAsync(stepContext.Context);
 
@@ -321,7 +298,7 @@ public class SurveyDialogue : StoppableDialogue
 
                 if (goAroundAgain)
                 {
-                    await SendMsg(stepContext.Context, "Thanks for that. Let's move on to the next question...");
+                    // "Thanks for that. Let's move on to the next question..." - diag will send next card on previous step
                     return await stepContext.ReplaceDialogAsync(nameof(WaterfallDialog));
                 }
             }
@@ -338,4 +315,16 @@ public class SurveyDialogue : StoppableDialogue
 
         return await stepContext.EndDialogAsync();
     }
+    async Task<SurveyDialogueConvoState> GetConvoStateAsync(ITurnContext context)
+    {
+        var convoStateProp = _userState.CreateProperty<SurveyDialogueConvoState>(CACHE_NAME_CONVO_STATE);
+        var convoState = await convoStateProp.GetAsync(context);
+        if (convoState == null)
+        {
+            convoState = new SurveyDialogueConvoState();
+            await convoStateProp.SetAsync(context, convoState);
+        }
+        return convoState;
+    }
+
 }
