@@ -134,12 +134,12 @@ public class SqlSurveyManagerDataLoader(DataContext db, ILogger<SqlSurveyManager
         await db.SaveChangesAsync();
 
         // Deep load questions
-        foreach (var r in responses)
-        {
-            await db.Entry(r).ReloadAsync();
-        }
+        var savedAnswers = await db.SurveyAnswers
+            .Include(a=> a.ForQuestion)
+            .Where(a => responses.Select(r => r.ID).Contains(a.ID))
+            .ToListAsync();
 
-        return responses;
+        return savedAnswers;
     }
 
     public async Task<List<SurveyPageDB>> GetPublishedPages()
