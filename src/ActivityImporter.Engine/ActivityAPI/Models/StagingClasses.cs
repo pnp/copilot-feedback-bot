@@ -55,7 +55,7 @@ internal class SPCopilotLogTempEntity : BaseCopilotLogTempEntity
 /// Class for inserting staging data to temp SQL table
 /// </summary>
 [TempTableName(ActivityImportConstants.STAGING_TABLE_ACTIVITY_SP)]
-internal class SPAuditLogTempEntity 
+internal class SPAuditLogTempEntity
 {
     public SPAuditLogTempEntity(AbstractAuditLogContent abtractLog, string userNameOrHash)
     {

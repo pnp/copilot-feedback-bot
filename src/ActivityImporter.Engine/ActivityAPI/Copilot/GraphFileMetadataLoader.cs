@@ -104,7 +104,7 @@ public class GraphFileMetadataLoader : ICopilotMetadataLoader
             {
                 // Currently we can't filter by webUrl, so we have to get all items and filter client side
                 var listItems = await _graphServiceClient.Sites[spSiteId].Lists[spListId].Items
-                    .GetAsync(op => op.QueryParameters.Select = ["id","webUrl"]);
+                    .GetAsync(op => op.QueryParameters.Select = ["id", "webUrl"]);
                 if (listItems?.Value != null)
                 {
                     foreach (var i in listItems.Value)
@@ -116,7 +116,7 @@ public class GraphFileMetadataLoader : ICopilotMetadataLoader
                     }
                 }
             }
-            catch (ODataError ex) 
+            catch (ODataError ex)
             {
                 _logger.LogWarning(ex, "Error getting items info for list {spListId} on site {siteUrl}", spListId, siteUrl);
                 return null;

@@ -37,7 +37,7 @@ public class CopilotEventData
 
 public class Context
 {
-    public required string Id { get; set; } 
+    public required string Id { get; set; }
     public string? Type { get; set; } = null;
 }
 

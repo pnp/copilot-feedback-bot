@@ -112,7 +112,7 @@ public class SurveyTests : AbstractTest
         var answers = new List<SurveyAnswerDB>
         {
             new SurveyAnswerDB
-            { 
+            {
                 ID = 1,
                 ForQuestion = new SurveyQuestionDB
                 {
@@ -165,7 +165,7 @@ public class SurveyTests : AbstractTest
     {
 
         var sm = new SurveyManager(
-            new SqlSurveyManagerDataLoader(_db, GetLogger<SqlSurveyManagerDataLoader>()), 
+            new SqlSurveyManagerDataLoader(_db, GetLogger<SqlSurveyManagerDataLoader>()),
             new FakeSurveyProcessor(),
             GetLogger<SurveyManager>());
 
@@ -220,7 +220,8 @@ public class SurveyTests : AbstractTest
         {
             OverrallRating = 5,
             Requested = DateTime.UtcNow,
-            User = firstUserInDb, RelatedEvent = null,
+            User = firstUserInDb,
+            RelatedEvent = null,
         };
         _db.SurveyResponses.Add(newSurvey);
 

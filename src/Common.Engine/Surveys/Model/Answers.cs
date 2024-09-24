@@ -1,9 +1,4 @@
 ﻿using Entities.DB.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Common.Engine.Surveys.Model;
 
@@ -162,7 +157,7 @@ public class AnswersCollection
         }
     }
 
-    public List<int> AllAnswerIds => 
+    public List<int> AllAnswerIds =>
         StringSurveyAnswers.Select(a => a.Id)
         .Concat(IntSurveyAnswers.Select(a => a.Id))
         .Concat(BooleanSurveyAnswers.Select(a => a.Id))
