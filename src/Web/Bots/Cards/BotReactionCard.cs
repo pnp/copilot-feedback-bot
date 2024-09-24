@@ -34,15 +34,6 @@ public class BotReactionCard : BaseAdaptiveCard
                 MergeArrayHandling = MergeArrayHandling.Union
             });
         }
-        else
-        {
-            var noMoreQuestions = ReadResource(BotConstants.BotReactionNoMoreQuestions);
-            cardBody.Merge(JObject.Parse(noMoreQuestions), new JsonMergeSettings
-            {
-                // Avoid duplicates
-                MergeArrayHandling = MergeArrayHandling.Union
-            });
-        }
 
         return cardBody.ToString();
     }

@@ -190,6 +190,7 @@ public class SurveyDialogue : StoppableDialogue
         else
         {
             BaseAdaptiveCard? responseCard = null;
+            var endDiagWithResponseCard = false;
             await base.GetSurveyManagerService(async surveyManager =>
             {
                 var initialSurveyRatingResponse = JsonSerializer.Deserialize<InitialSurveyResponse>(stepContext.Context.Activity.Text);
@@ -202,6 +203,11 @@ public class SurveyDialogue : StoppableDialogue
                     if (surveyPage != null)
                     {
                         surveyPage.SurveyPageCommonAdaptiveCardTemplateJson = Utils.ReadResource(BotConstants.SurveyCustomPageCommon);
+                    }
+                    else
+                    {
+                        await SendMsg(stepContext.Context, "It looks like there's no more questions to ask.");
+                        endDiagWithResponseCard = true;
                     }
                     if (convoState.CopilotEventForSurveyResult != null)
                     {
@@ -239,7 +245,9 @@ public class SurveyDialogue : StoppableDialogue
                     }
                     else
                     {
-                        responseCard = new BotReactionNoMoreQuestionsCard();
+                        // Send "all done" card
+                        endDiagWithResponseCard = true;
+                        responseCard = null;
                     }
                 }
             });
@@ -248,12 +256,21 @@ public class SurveyDialogue : StoppableDialogue
             // Send reaction card to initial survey with follow-up form for more details
             if (responseCard != null)
             {
-                return await PromptWithCard(stepContext, responseCard);
+                if (!endDiagWithResponseCard)
+                {
+                    // Show card and wait for response
+                    return await PromptWithCard(stepContext, responseCard);
+                }
+                else
+                {
+                    // Just send card
+                    await stepContext.Context.SendActivityAsync(MessageFactory.Attachment(responseCard.GetCardAttachment()), cancellationToken);
+                }
             }
         }
 
-        // If we're here, something wierd happened
-        await SendMsg(stepContext.Context, "Looks like we're done");
+        // If we're here, we must be done
+        await stepContext.Context.SendActivityAsync(MessageFactory.Attachment(new BotDiagFinishedCard().GetCardAttachment()), cancellationToken);
         return await stepContext.EndDialogAsync();
     }
 

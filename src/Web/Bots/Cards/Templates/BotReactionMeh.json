@@ -10,7 +10,7 @@
     },
     {
       "type": "TextBlock",
-      "text": "${Message}",
+      "text": "${Message}. Your feedback is logged so hopefully it'll get better.",
       "wrap": true
     }
   ],

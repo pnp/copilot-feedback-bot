@@ -8,7 +8,7 @@ using Microsoft.Graph;
 
 namespace Web.Bots;
 
-public class FeedbackBot<T> : DialogueBot<T> where T : Dialog
+public class CopilotFeedbackBot<T> : DialogueBot<T> where T : Dialog
 {
     public readonly BotConfig _configuration;
     private readonly BotActionsHelper _helper;
@@ -16,7 +16,7 @@ public class FeedbackBot<T> : DialogueBot<T> where T : Dialog
     BotConversationCache _conversationCache;
     private readonly IConversationResumeHandler _conversationResumeHandler;
 
-    public FeedbackBot(ConversationState conversationState, UserState userState, T dialog, ILogger<DialogueBot<T>> logger, BotActionsHelper helper, GraphServiceClient graphServiceClient,
+    public CopilotFeedbackBot(ConversationState conversationState, UserState userState, T dialog, ILogger<DialogueBot<T>> logger, BotActionsHelper helper, GraphServiceClient graphServiceClient,
         BotConfig configuration, BotConversationCache botConversationCache, IConversationResumeHandler conversationResumeHandler)
         : base(conversationState, userState, dialog, logger)
     {

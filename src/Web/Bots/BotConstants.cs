@@ -12,7 +12,6 @@ public static class BotConstants
     public static string BotDiagFinished => "Web.Bots.Cards.Templates.BotDiagFinished.json";
     public static string BotReactionHappy => "Web.Bots.Cards.Templates.BotReactionHappy.json";
     public static string BotReactionMeh => "Web.Bots.Cards.Templates.BotReactionMeh.json";
-    public static string BotReactionNoMoreQuestions => "Web.Bots.Cards.Templates.BotReactionNoMoreQuestions.json";
     public static string BotResumeConversationIntro => "Web.Bots.Cards.Templates.BotResumeConversationIntro.json";
     public static string CardFileNameCopilotTeamsActionSurvey => "Web.Bots.Cards.Templates.SurveyCardTeamsAction.json";
     public static string CardFileNameCopilotFileActionSurvey => "Web.Bots.Cards.Templates.SurveyCardFileAction.json";
