@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Entities.DB.Entities;
 
 [Table("survey_responses")]
-public class UserSurveyResponse : UserRelatedEntity
+public class UserSurveyResponseDB : UserRelatedEntity
 {
     [Column("responded")]
     public DateTime Responded { get; set; }
@@ -12,32 +12,14 @@ public class UserSurveyResponse : UserRelatedEntity
     [Column("requested")]
     public DateTime Requested { get; set; }
 
-    [Column("rating")]
-    public int Rating { get; set; }
+    [Column("overrall_rating")]
+    public int OverrallRating { get; set; }
 
-    [Column("estimated_time_saved_minutes")]
-    public int? EstimatedTimeSavedMinutes { get; set; }
-
-    [Column("comments")]
-    public string? Comments { get; set; }
-
-    // These questions are fixed and come from https://learn.microsoft.com/en-us/viva/insights/org-team-insights/copilot-dashboard#sentiment
-    [Column("copilot_improves_quality_of_work_agree_rating")]
-    public int? CopilotImprovesQualityOfWorkAgreeRating { get; set; }
-
-    [Column("copilot_helps_with_mundane_tasks_agree_rating")]
-    public int? CopilotHelpsWithMundaneTasksAgreeRating { get; set; }
-
-    [Column("copilot_makes_me_more_productive_agree_rating")]
-    public int? CopilotMakesMeMoreProductiveAgreeRating { get; set; }
-
-    [Column("copilot_allows_task_completion_faster_agree_rating")]
-    public int? CopilotAllowsTaskCompletionFasterAgreeRating { get; set; }
 
     [ForeignKey(nameof(RelatedEvent))]
     [Column("related_audit_event_id")]
     public Guid? RelatedEventId { get; set; }
-    public CommonAuditEvent? RelatedEvent { get; set; } = null!;
+    public CommonAuditEvent? RelatedEvent { get; set; } = null;
 }
 
 /// <summary>
@@ -50,11 +32,95 @@ public class UserSurveyResponseActivityType : AbstractEFEntity
     [ForeignKey(nameof(UserSurveyResponse))]
     [Column("user_response_id")]
     public int UserSurveyResponseId { get; set; }
-    public UserSurveyResponse UserSurveyResponse { get; set; } = null!;
+    public UserSurveyResponseDB UserSurveyResponse { get; set; } = null!;
 
 
     [ForeignKey(nameof(CopilotActivity))]
     [Column("copilot_activity_id")]
     public int CopilotActivityId { get; set; }
     public CopilotActivity CopilotActivity { get; set; } = null!;
+}
+
+
+[Table("survey_pages")]
+public class SurveyPageDB : AbstractEFEntityWithName
+{
+    [Column("is_published")]
+    public bool IsPublished { get; set; }
+    public List<SurveyQuestionDB> Questions { get; set; } = new();
+
+    [Column("index")]
+    public int PageIndex { get; set; }
+
+    [Column("template_json")]
+    public string AdaptiveCardTemplateJson { get; set; } = null!;
+
+}
+
+[Table("survey_questions")]
+public class SurveyQuestionDB : AbstractEFEntity
+{
+    [ForeignKey(nameof(SurveyPageDB))]
+    [Column("for_SurveyPage_id")]
+    public int ForSurveyPageId { get; set; }
+    public SurveyPageDB ForSurveyPage { get; set; } = null!;
+
+    /// <summary>
+    /// For identifying specific questions in the survey
+    /// </summary>
+    [Column("question_id")]
+    public string? QuestionId { get; set; }
+
+    [Column("question")]
+    public required string Question { get; set; }
+
+    [Column("optimal_answer_value")]
+    public string? OptimalAnswerValue { get; set; } = null;
+
+    [Column("optimal_answer_logical_op")]
+    public LogicalOperator? OptimalAnswerLogicalOp { get; set; }
+
+    [Column("data_type")]
+    public required QuestionDatatype DataType { get; set; }
+
+    [Column("index")]
+    public int Index { get; set; }
+}
+
+[Table("survey_answers")]
+public class SurveyAnswerDB : UserRelatedEntity
+{
+    [ForeignKey(nameof(ForQuestion))]
+    [Column("for_question_id")]
+    public int ForQuestionId { get; set; }
+    public SurveyQuestionDB ForQuestion { get; set; } = null!;
+
+    [Column("given_answer")]
+    public required string GivenAnswer { get; set; }
+
+    [Column("timestamp_utc")]
+    public DateTime TimestampUtc { get; set; }
+
+    [ForeignKey(nameof(ParentSurvey))]
+    [Column("parent_survey_response_id")]
+    public int ParentSurveyId { get; set; }
+    public UserSurveyResponseDB ParentSurvey { get; set; } = null!;
+}
+
+
+public enum QuestionDatatype
+{
+    Unknown,
+    String,
+    Int,
+    Bool,
+}
+
+public enum LogicalOperator
+{
+    Unknown,
+    Equals,
+    NotEquals,
+    GreaterThan,
+    LessThan,
 }

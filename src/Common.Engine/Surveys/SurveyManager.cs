@@ -1,4 +1,5 @@
-﻿using Entities.DB.Entities;
+﻿using Common.Engine.Surveys.Model;
+using Entities.DB.Entities;
 using Entities.DB.Entities.AuditLog;
 using Microsoft.Extensions.Logging;
 using System.Text.Json.Serialization;
@@ -11,10 +12,10 @@ namespace Common.Engine.Surveys;
 public class SurveyManager
 {
     private readonly ISurveyManagerDataLoader _dataLoader;
-    private readonly ISurveyProcessor _surveyProcessor;
+    private readonly ISurveyEventsProcessor _surveyProcessor;
     private readonly ILogger _logger;
 
-    public SurveyManager(ISurveyManagerDataLoader dataLoader, ISurveyProcessor surveyProcessor, ILogger<SurveyManager> logger)
+    public SurveyManager(ISurveyManagerDataLoader dataLoader, ISurveyEventsProcessor surveyProcessor, ILogger<SurveyManager> logger)
     {
         _dataLoader = dataLoader;
         _surveyProcessor = surveyProcessor;
@@ -55,6 +56,45 @@ public class SurveyManager
             }
         }
         return result;
+    }
+
+
+    public async Task<SurveyPage?> GetSurveyPage(int pageIndex)
+    {
+        // Load survey questions from the database
+        var publishedPages = await _dataLoader.GetPublishedPages();
+
+        _logger.LogInformation($"Loaded {publishedPages.Count} published survey pages");
+
+        if (publishedPages.Count > pageIndex)
+            return new SurveyPage(publishedPages[pageIndex]);
+        else
+            return null;
+    }
+
+    public async Task<AnswersCollection> SaveCustomSurveyResponse(SurveyPageUserResponse response, int existingSurveyId)
+    {
+        if (!response.IsValid)
+        {
+            _logger.LogWarning($"Invalid survey response for user '{response.UserPrincipalName}'");
+            throw new SurveyEngineDataException("Invalid survey response");
+        }
+        _logger.LogInformation($"Saving survey response for user {response.UserPrincipalName}");
+
+        var user = await _dataLoader.GetUser(response.UserPrincipalName);
+        if (user != null)
+        {
+            var savedAnswers = await _dataLoader.SaveAnswers(user, response.Answers, existingSurveyId);
+            _logger.LogInformation($"Survey response saved for user {response.UserPrincipalName}");
+
+            return new AnswersCollection(savedAnswers);
+        }
+        else
+        {
+            _logger.LogError($"User '{response.UserPrincipalName}' not found");
+
+            throw new SurveyEngineDataException("User not found");
+        }
     }
 
     public ISurveyManagerDataLoader Loader => _dataLoader;

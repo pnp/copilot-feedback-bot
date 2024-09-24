@@ -1,4 +1,5 @@
-﻿using Entities.DB.Entities;
+﻿using Common.Engine.Surveys.Model;
+using Entities.DB.Entities;
 using Entities.DB.Entities.AuditLog;
 
 namespace Common.Engine.Surveys;
@@ -10,12 +11,12 @@ public interface ISurveyManagerDataLoader
     Task<User> GetUser(string upn);
     Task<List<User>> GetUsersWithActivity();
 
-    Task LogSurveyFollowUp(int surveyIdUpdatedOrCreated, SurveyFollowUpModel surveyFollowUp);
+
 
     /// <summary>
     /// Log survey result for a user, but for no specific copilot event. Returns the ID of the survey response created
     /// </summary>
-    Task<int> LogDisconnectedSurveyResult(int scoreGiven, string userUpn);
+    Task<int> LogDisconnectedSurveyResultWithInitialScore(int scoreGiven, string userUpn);
     Task<int> LogSurveyRequested(CommonAuditEvent @event);
 
     Task StopBotheringUser(string upn, DateTime until);
@@ -24,9 +25,11 @@ public interface ISurveyManagerDataLoader
     /// First response to the survey. Returns the ID of the survey response created
     /// </summary>
     Task<int> UpdateSurveyResultWithInitialScore(CommonAuditEvent @event, int score);
+    Task<List<SurveyAnswerDB>> SaveAnswers(User user, List<SurveyPageUserResponse.RawResponse> answers, int existingSurveyId);
+    Task<List<SurveyPageDB>> GetPublishedPages();
 }
 
-public interface ISurveyProcessor
+public interface ISurveyEventsProcessor
 {
     Task ProcessSurveyRequest(SurveyPendingActivities activities);
 }

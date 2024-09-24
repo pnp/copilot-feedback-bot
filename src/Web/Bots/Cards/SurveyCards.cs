@@ -8,7 +8,7 @@ public abstract class SurveyCard : BaseAdaptiveCard
     public SurveyCard()
     {
         // Replace in JSON the variables with the actual values
-        CardBody = ReadResource(BotConstants.SurveyCommonBody)
+        CardBody = ReadResource(BotConstants.SurveyOverrallSatisfactionCommonBody)
             .Replace(GetJsonVarName(nameof(BotConstants.SurveyAnswerRating1)), BotConstants.SurveyAnswerRating1)
             .Replace(GetJsonVarName(nameof(BotConstants.SurveyAnswerRating2)), BotConstants.SurveyAnswerRating2)
             .Replace(GetJsonVarName(nameof(BotConstants.SurveyAnswerRating3)), BotConstants.SurveyAnswerRating3)

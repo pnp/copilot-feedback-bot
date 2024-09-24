@@ -1,10 +1,11 @@
 ﻿using Common.Engine.Surveys;
+using Common.Engine.Surveys.Model;
 using Entities.DB.Entities;
 using Entities.DB.Entities.AuditLog;
 
 namespace UnitTests.FakeLoaderClasses;
 
-internal class FakeSurveyProcessor : ISurveyProcessor
+internal class FakeSurveyProcessor : ISurveyEventsProcessor
 {
     public Task ProcessSurveyRequest(SurveyPendingActivities activities)
     {
@@ -96,20 +97,45 @@ internal class FakeSurveyManagerDataLoader : ISurveyManagerDataLoader
         return Task.CompletedTask;
     }
 
-    public Task<int> LogDisconnectedSurveyResult(int scoreGiven, string userUpn)
+    public Task<int> LogDisconnectedSurveyResultWithInitialScore(int scoreGiven, string userUpn)
     {
         Console.WriteLine($"Fake user logged disconnected survey result with score {scoreGiven}");
         return Task.FromResult(1);
-    }
-
-    public Task LogSurveyFollowUp(int surveyIdUpdatedOrCreated, SurveyFollowUpModel surveyFollowUp)
-    {
-        throw new NotImplementedException();
     }
 
     Task<int> ISurveyManagerDataLoader.LogSurveyRequested(CommonAuditEvent @event)
     {
         _ids.Add(@event.Id);
         return Task.FromResult(1);
+    }
+
+    public Task<List<SurveyAnswerDB>> SaveAnswers(User user, List<SurveyPageUserResponse.RawResponse> answers, int existingSurveyId)
+    {
+        Console.WriteLine($"Fake user saved answers for {user.UserPrincipalName}");
+        return Task.FromResult(new List<SurveyAnswerDB>());
+    }
+
+    public Task<List<SurveyPageDB>> GetPublishedPages()
+    {
+        return Task.FromResult(new List<SurveyPageDB>()
+        { 
+            new SurveyPageDB
+            {
+                Questions = new List<SurveyQuestionDB>
+                {
+                    new SurveyQuestionDB
+                    {
+                        ID = 1,
+                        Question = "Question 1",
+                        DataType = QuestionDatatype.Int
+                    },
+                    new SurveyQuestionDB
+                    {
+                        ID = 2,
+                        Question = "Question 2",
+                        DataType = QuestionDatatype.String
+                    }
+                }
+            } });
     }
 }

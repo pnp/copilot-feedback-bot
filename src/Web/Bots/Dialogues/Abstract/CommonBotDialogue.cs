@@ -44,14 +44,14 @@ public abstract class CommonBotDialogue : ComponentDialog
         return await stepContext.PromptAsync(nameof(TextPrompt), opts);
     }
 
-    protected SurveyInitialResponse? GetSurveyInitialResponseFrom(string? text)
+    protected InitialSurveyResponse? GetSurveyInitialResponseFrom(string? text)
     {
-        SurveyInitialResponse? surveyInitialResponse = null;
+        InitialSurveyResponse? surveyInitialResponse = null;
         if (text != null)
         {
             try
             {
-                surveyInitialResponse = JsonSerializer.Deserialize<SurveyInitialResponse>(text);
+                surveyInitialResponse = JsonSerializer.Deserialize<InitialSurveyResponse>(text);
             }
             catch (JsonException)
             {

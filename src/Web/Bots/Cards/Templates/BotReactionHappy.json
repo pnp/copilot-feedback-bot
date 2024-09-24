@@ -10,7 +10,7 @@
     },
     {
       "type": "TextBlock",
-      "text": "${Message}. I've saved your feedback so far, but if you could add some context...",
+      "text": "${Message}",
       "wrap": true
     }
   ],

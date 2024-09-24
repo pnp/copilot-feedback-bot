@@ -2,6 +2,7 @@
 using Entities.DB.Entities.AuditLog;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json.Linq;
 
 namespace Entities.DB;
 
@@ -56,6 +57,9 @@ public class DbInitialiser
                 context.CopilotActivities.Add(new CopilotActivity { Name = "Ask question", ActivityType = activityTypeChat });
                 context.CopilotActivities.Add(new CopilotActivity { Name = "Other", ActivityType = activityTypeOther });
 
+                // Add some base survey pages
+                AddTestSurveyPages(context);
+
 #if DEBUG
                 DirtyTestDataHackInserts(context, logger, editDoc, getHighlights);
                 await context.SaveChangesAsync();
@@ -69,6 +73,66 @@ public class DbInitialiser
                 logger.LogWarning("No default user set, skipping base data");
             }
         }
+    }
+
+    public static void AddTestSurveyPages(DataContext dataContext)
+    {
+        var cardContent = new JObject
+        {
+            ["type"] = $"AdaptiveCard",
+            ["version"] = "1.3",
+            ["body"] = new JArray
+                    {
+                        new JObject
+                        {
+                            ["type"] = "TextBlock",
+                            ["text"] = "Page 1/2 - Extra info",
+                            ["wrap"] = true
+                        }
+                    },
+            ["$schema"] = "http://adaptivecards.io/schemas/adaptive-card.json"
+        };
+        var page1 = new SurveyPageDB { Name = "Page 1", PageIndex = 1, IsPublished = true, AdaptiveCardTemplateJson = cardContent.ToString() };
+        page1.Questions.AddRange([
+            new SurveyQuestionDB 
+            { 
+                Question = "One word to describe copilot?", 
+                ForSurveyPage = page1, DataType = QuestionDatatype.String, 
+                OptimalAnswerValue = null
+            },
+            new SurveyQuestionDB
+            {
+                Question = "How many minutes has copilot saved you this time?", 
+                ForSurveyPage = page1, DataType = QuestionDatatype.Int, 
+                OptimalAnswerValue = "0", 
+                OptimalAnswerLogicalOp = LogicalOperator.GreaterThan,
+                QuestionId = "MinutesSaved"
+            },
+        ]);
+
+        // Override content body
+        cardContent["body"] = new JArray
+        {
+            new JObject
+            {
+                ["type"] = "TextBlock",
+                ["text"] = "Page 2/2 - Do you value Copilot in O365?",
+                ["wrap"] = true
+            }
+        };
+        var page2 = new SurveyPageDB { Name = "Page 2", PageIndex = 2, IsPublished = true, AdaptiveCardTemplateJson = cardContent.ToString() };
+        page2.Questions.AddRange([
+            new SurveyQuestionDB
+            {
+                Question = "Does copilot help you be more productive generally?",
+                ForSurveyPage = page2, DataType = QuestionDatatype.Bool,
+                OptimalAnswerValue = "true",
+                OptimalAnswerLogicalOp = LogicalOperator.Equals,
+                QuestionId = "MakesGenerallyProductive"
+            },
+        ]);
+
+        dataContext.SurveyPages.AddRange([page1, page2]);
     }
 
     public static async Task GenerateFakeCopilotFor(string forUpn, DataContext context, ILogger logger)
@@ -234,7 +298,7 @@ public class DbInitialiser
                         TimeStamp = DateTime.Now.AddDays(allEvents.Count * -2),
                         Operation = fileOp
                     },
-                    
+
                 },
                 FileName = testFileName,
                 FileExtension = GetSPEventFileExtension(f.Split('.').Last()),
@@ -261,7 +325,7 @@ public class DbInitialiser
         // Add some "very happy" fake survey responses for meetings and documents. Use Teams events for the feedback
         for (int i = 0; i < 10; i++)
         {
-            AddMeetingAndFileEvent(DateTime.Now, i, 4, 5, context, allUsers, rnd, editDocCopilotActivity, 
+            AddMeetingAndFileEvent(DateTime.Now, i, 4, 5, context, allUsers, rnd, editDocCopilotActivity,
                 getHighlightsCopilotActivity, "Very happy",
                 allMeetingEvents[rnd.Next(0, allMeetingEvents.Count - 1)].RelatedChat.AuditEvent);
         }
@@ -280,15 +344,13 @@ public class DbInitialiser
     }
 
     private static void AddMeetingAndFileEvent(DateTime from, int i, int ratingFrom, int ratingTo, DataContext context, List<User> allUsers,
-        Random rnd, CopilotActivity docActivity, CopilotActivity meetingActivity, string responseCommentPrefix, 
+        Random rnd, CopilotActivity docActivity, CopilotActivity meetingActivity, string responseCommentPrefix,
         CommonAuditEvent related)
     {
         var dt = from.AddDays(i * -1);
-        var testFileOpResponse = new UserSurveyResponse
+        var testFileOpResponse = new UserSurveyResponseDB
         {
-            Comments = $"{responseCommentPrefix} - copilot helped with file {i}",
-            EstimatedTimeSavedMinutes = rnd.Next(i),
-            Rating = rnd.Next(ratingFrom, ratingTo),
+            OverrallRating = rnd.Next(ratingFrom, ratingTo),
             Requested = dt,
             Responded = dt.AddMinutes(i),
             User = allUsers[rnd.Next(0, allUsers.Count)],
@@ -296,11 +358,9 @@ public class DbInitialiser
         context.SurveyResponses.Add(testFileOpResponse);
         context.SurveyResponseActivityTypes.Add(new UserSurveyResponseActivityType { CopilotActivity = docActivity, UserSurveyResponse = testFileOpResponse });
 
-        var testMeetingResponse = new UserSurveyResponse
+        var testMeetingResponse = new UserSurveyResponseDB
         {
-            Comments = $"{responseCommentPrefix} - copilot helped with meeting {i}",
-            EstimatedTimeSavedMinutes = 60 - rnd.Next(i),
-            Rating = rnd.Next(1, 5),
+            OverrallRating = rnd.Next(1, 5),
             Requested = dt,
             Responded = dt.AddMinutes(i),
             User = allUsers[rnd.Next(0, allUsers.Count)],

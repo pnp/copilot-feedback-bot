@@ -1,33 +1,48 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Common.Engine.Surveys;
+using Newtonsoft.Json.Linq;
 
 namespace Web.Bots.Cards;
 
 public class BotReactionCard : BaseAdaptiveCard
 {
     private readonly bool _isHappy;
+    private readonly SurveyPage? _firstSurveyPage;
 
-    public BotReactionCard(string message, bool isHappy)
+    public BotReactionCard(string reactionMessage, bool isHappy, SurveyPage? firstSurveyPage)
     {
-        Message = message;
+        ReactionMessage = reactionMessage;
         _isHappy = isHappy;
+        _firstSurveyPage = firstSurveyPage;
     }
 
-    public string Message { get; set; }
+    public string ReactionMessage { get; set; }
 
 
     public override string GetCardContent()
     {
         var jsonReactionSpecific = _isHappy ? ReadResource(BotConstants.BotReactionHappy) : ReadResource(BotConstants.BotReactionMeh);
 
-        jsonReactionSpecific = jsonReactionSpecific.Replace(BotConstants.FIELD_NAME_MESSAGE, Message);
+        jsonReactionSpecific = jsonReactionSpecific.Replace(BotConstants.FIELD_NAME_MESSAGE, ReactionMessage);
 
         // Merge the common part of the card with the specific part
         var cardBody = JObject.Parse(jsonReactionSpecific);
-        cardBody.Merge(JObject.Parse(ReadResource(BotConstants.BotReactionCommon)), new JsonMergeSettings
+        if (_firstSurveyPage != null)
         {
-            // Avoid duplicates
-            MergeArrayHandling = MergeArrayHandling.Union
-        });
+            cardBody.Merge(_firstSurveyPage.BuildAdaptiveCard(), new JsonMergeSettings
+            {
+                // Avoid duplicates
+                MergeArrayHandling = MergeArrayHandling.Union
+            });
+        }
+        else
+        {
+            var noMoreQuestions = ReadResource(BotConstants.BotReactionNoMoreQuestions);
+            cardBody.Merge(JObject.Parse(noMoreQuestions), new JsonMergeSettings
+            {
+                // Avoid duplicates
+                MergeArrayHandling = MergeArrayHandling.Union
+            });
+        }
 
         return cardBody.ToString();
     }

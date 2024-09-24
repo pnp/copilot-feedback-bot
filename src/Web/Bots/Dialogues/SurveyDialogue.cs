@@ -2,7 +2,7 @@
 using Common.Engine.Config;
 using Common.Engine.Notifications;
 using Common.Engine.Surveys;
-using Entities.DB.Entities.AuditLog;
+using Common.Engine.Surveys.Model;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Builder.Dialogs.Choices;
@@ -13,6 +13,7 @@ using Web.Bots.Dialogues.Abstract;
 
 namespace Web.Bots.Dialogues;
 
+
 /// <summary>
 /// Entrypoint to all new conversations
 /// </summary>
@@ -22,8 +23,9 @@ public class SurveyDialogue : StoppableDialogue
     private readonly BotActionsHelper _botActionsHelper;
     private readonly UserState _userState;
     private readonly IConversationResumeHandler _conversationResumeHandler;
-    const string CACHE_NAME_NEXT_COPILOT_ACTION_TO_SURVEY = "NextCopilotAction";
-    const string CACHE_NAME_SURVEY_ID = "SurveyId";
+
+    const string CACHE_NAME_CONVO_STATE = "CACHE_NAME_CONVO_STATE";
+
     const string BTN_SEND_SURVEY = "Go on then";
 
     /// <summary>
@@ -45,19 +47,21 @@ public class SurveyDialogue : StoppableDialogue
         [
             NewChat,
             SendSurveyOrNot,
-            ProcessInitialSurveyResponse,
+            ProcessSurveyResponse,
             ProcessFollowUp
         ]));
         AddDialog(new ChoicePrompt(nameof(ChoicePrompt)));
         InitialDialogId = nameof(WaterfallDialog);
     }
 
-
     /// <summary>
     /// Main entry-point for bot new chat. User is either responding to the intro card or has said something to the bot.
     /// </summary>
     private async Task<DialogTurnResult> NewChat(WaterfallStepContext stepContext, CancellationToken cancellationToken)
     {
+        // Get/set state
+        var convoState = await GetConvoStateAsync(stepContext.Context);
+
         // Check if user wants to stop the bot from bothering them
         var cancel = await base.InterruptAsync(stepContext, cancellationToken);
         if (cancel != null)
@@ -86,12 +90,13 @@ public class SurveyDialogue : StoppableDialogue
 
         var prevActionText = stepContext.Context?.Activity?.Text;
 
-        // Figure out why we're here
+        // Figure out why we're here. 
         var surveyInitialResponse = GetSurveyInitialResponseFrom(stepContext.Context?.Activity?.Text);
         if (surveyInitialResponse != null)
         {
             // User has responded to the initial survey card probably from the bot new thread event, so we can skip the intro card
-            return await stepContext.NextAsync(surveyInitialResponse);
+            convoState.LastResponse = surveyInitialResponse;
+            return await stepContext.NextAsync();
         }
 
         if (prevActionText == "{}" || prevActionText == "Start Survey")              // In teams, this is empty JSon for some reason, unlike in Bot Framework SDK client
@@ -115,10 +120,13 @@ public class SurveyDialogue : StoppableDialogue
     /// </summary>
     private async Task<DialogTurnResult> SendSurveyOrNot(WaterfallStepContext stepContext, CancellationToken cancellationToken)
     {
-        if (stepContext.Result is SurveyInitialResponse surveyInitialResponse)
+        // Get/set state
+        var convoState = await GetConvoStateAsync(stepContext.Context);
+
+        if (convoState.LastResponse != null)
         {
             // User has responded to the initial survey card outside of the dialogue (bot new thread event probably).
-            return await stepContext.NextAsync(surveyInitialResponse);
+            return await stepContext.NextAsync(convoState.LastResponse);
         }
         else if (stepContext.Result is string resultString)
         {
@@ -146,8 +154,8 @@ public class SurveyDialogue : StoppableDialogue
 
                 if (nextCopilotEvent != null)
                 {
-                    // Remember selected copilot action user is being surveyed for
-                    await _userState.CreateProperty<BaseCopilotSpecificEvent>(CACHE_NAME_NEXT_COPILOT_ACTION_TO_SURVEY).SetAsync(stepContext.Context, nextCopilotEvent);
+                    // Remember copilot action user is being surveyed for
+                    convoState.CopilotEventForSurveyResult = nextCopilotEvent;
                 }
 
                 return await PromptWithCard(stepContext, surveyCard);
@@ -166,114 +174,157 @@ public class SurveyDialogue : StoppableDialogue
     }
 
     /// <summary>
-    /// User responds to initial survey card
+    /// User responds to initial survey card, or we're in a loop showing custom survey pages
     /// </summary>
-    private async Task<DialogTurnResult> ProcessInitialSurveyResponse(WaterfallStepContext stepContext, CancellationToken cancellationToken)
+    private async Task<DialogTurnResult> ProcessSurveyResponse(WaterfallStepContext stepContext, CancellationToken cancellationToken)
     {
-        var result = JsonSerializer.Deserialize<SurveyInitialResponse>(stepContext.Context.Activity.Text);
+        // Get/set state
+        var convoState = await GetConvoStateAsync(stepContext.Context);
 
-        // Get selected survey, if there is one
-        var userPropNextCopilotEvent = _userState.CreateProperty<CopilotChat?>(CACHE_NAME_NEXT_COPILOT_ACTION_TO_SURVEY);
-        var surveyedEvent = await userPropNextCopilotEvent.GetAsync(stepContext.Context, () => null);
-
-        // Process response
-        if (result != null)
+        // Save survey data?
+        var botUser = await BotUserUtils.GetBotUserAsync(stepContext.Context, _botConfig, _graphServiceClient);
+        SurveyPage? surveyPage = null;
+        var chatUserAndConvo = await base.GetCachedUser(botUser);
+        if (chatUserAndConvo == null || chatUserAndConvo.UserPrincipalName == null)
+            await SendMsg(stepContext.Context, "Oops, can't report feedback for anonymous users. Your login is needed even if we don't report on it. Thanks for letting me know anyway.");
+        else
         {
-            var parsedResponse = result.Response;
-            if (parsedResponse == null)
+            BaseAdaptiveCard? responseCard = null;
+            await base.GetSurveyManagerService(async surveyManager =>
             {
-                await SendMsg(stepContext.Context, "Oops, I got a survey response back I can't understand. Sorry about that...");
-                return await stepContext.EndDialogAsync();
-            }
-
-            // Respond if valid
-            if (parsedResponse.ScoreGiven > 0)
-            {
-                // Save survey data?
-                var botUser = await BotUserUtils.GetBotUserAsync(stepContext.Context, _botConfig, _graphServiceClient);
-                var chatUserAndConvo = await base.GetCachedUser(botUser);
-                if (chatUserAndConvo == null || chatUserAndConvo.UserPrincipalName == null)
-                    await SendMsg(stepContext.Context, "Oops, can't report feedback for anonymous users. Your login is needed even if we don't report on it. Thanks for letting me know anyway.");
-                else
+                var initialSurveyRatingResponse = JsonSerializer.Deserialize<InitialSurveyResponse>(stepContext.Context.Activity.Text);
+                if (initialSurveyRatingResponse?.Response != null)
                 {
-                    // Update survey data using the survey manager
-                    var surveyIdUpdatedOrCreated = 0;
-                    await base.GetSurveyManagerService(async surveyManager =>
-                    {
-                        if (surveyedEvent != null)
-                        {
-                            // Log survey result for specific copilot event
-                            try
-                            {
-                                surveyIdUpdatedOrCreated = await surveyManager.Loader.UpdateSurveyResultWithInitialScore(surveyedEvent.AuditEvent, parsedResponse.ScoreGiven);
-                            }
-                            catch (ArgumentOutOfRangeException)
-                            {
-                                _tracer.LogWarning($"Survey record doesn't exist for event {surveyedEvent.AuditEvent.Id} to update with score.");
-                                // Survey record doesn't exist for this event, for some reason. Ignore and end the conversation.
-                            }
-                            await userPropNextCopilotEvent.DeleteAsync(stepContext.Context);
-                        }
-                        else
-                        {
-                            // Log survey result for general survey
-                            surveyIdUpdatedOrCreated = await surveyManager.Loader.LogDisconnectedSurveyResult(parsedResponse.ScoreGiven, chatUserAndConvo.UserPrincipalName);
-                        }
-                    });
+                    // We're here because the user has responded to the initial overral rating survey card
 
-                    if (surveyIdUpdatedOrCreated == 0)
+                    // Start custom surveys flow
+                    surveyPage = await surveyManager.GetSurveyPage(0);
+                    if (surveyPage != null)
                     {
-                        await SendMsg(stepContext.Context, "Oops, I can't find the event you're responding to. Sorry about that...");
-                        return await stepContext.EndDialogAsync();
+                        surveyPage.SurveyPageCommonAdaptiveCardTemplateJson = Utils.ReadResource(BotConstants.SurveyCustomPageCommon);
+                    }
+                    if (convoState.CopilotEventForSurveyResult != null)
+                    {
+                        // Log survey result for specific copilot event
+                        try
+                        {
+                            convoState.SurveyIdUpdatedOrCreated = await surveyManager.Loader.UpdateSurveyResultWithInitialScore(convoState.CopilotEventForSurveyResult.RelatedChat.AuditEvent, initialSurveyRatingResponse.Response.ScoreGiven);
+                        }
+                        catch (ArgumentOutOfRangeException)
+                        {
+                            _tracer.LogWarning($"Survey record doesn't exist for event {convoState.CopilotEventForSurveyResult.RelatedChat.AuditEvent.Id} to update with score.");
+                            // Survey record doesn't exist for this event, for some reason. Ignore and end the conversation.
+                        }
+                        convoState.CopilotEventForSurveyResult = null;
                     }
                     else
                     {
-                        // Remember the survey ID for follow-up questions
-                        await _userState.CreateProperty<int>(CACHE_NAME_SURVEY_ID).SetAsync(stepContext.Context, surveyIdUpdatedOrCreated);
+                        // Log survey result for general survey
+                        convoState.SurveyIdUpdatedOrCreated = await surveyManager.Loader.LogDisconnectedSurveyResultWithInitialScore(initialSurveyRatingResponse.Response.ScoreGiven, chatUserAndConvo.UserPrincipalName);
+                    }
+
+                    responseCard = new BotReactionCard(initialSurveyRatingResponse.Response.ReplyToFeedback, initialSurveyRatingResponse.Response.IsHappy, surveyPage);
+
+                    // Cycle through custom survey pages, starting at 0
+                    convoState.NextCopilotCustomPage = 0;
+                }
+                else if (initialSurveyRatingResponse?.Response == null && convoState.NextCopilotCustomPage.HasValue)
+                {
+                    // We're here because we're on a loop through custom survey pages. Get next page and send
+                    surveyPage = await surveyManager.GetSurveyPage(convoState.NextCopilotCustomPage.Value);
+                    if (surveyPage != null)
+                    {
+                        surveyPage.SurveyPageCommonAdaptiveCardTemplateJson = Utils.ReadResource(BotConstants.SurveyCustomPageCommon);
+                        responseCard = new CustomSurveyPageCard(surveyPage);
+                    }
+                    else
+                    {
+                        responseCard = new BotReactionNoMoreQuestionsCard();
                     }
                 }
+            });
 
-                // Send reaction card to initial survey with follow-up form for more details
-                var responseCard = new BotReactionCard(parsedResponse.Msg, parsedResponse.IsHappy);
+
+            // Send reaction card to initial survey with follow-up form for more details
+            if (responseCard != null)
+            {
                 return await PromptWithCard(stepContext, responseCard);
             }
         }
 
-        // If we're here, the survey response was invalid for one reason or another
-        await SendMsg(stepContext.Context, "Oops, I got a survey response back I can't understand. Sorry about that...");
+        // If we're here, something wierd happened
+        await SendMsg(stepContext.Context, "Looks like we're done");
         return await stepContext.EndDialogAsync();
     }
 
     private async Task<DialogTurnResult> ProcessFollowUp(WaterfallStepContext stepContext, CancellationToken cancellationToken)
     {
-        var surveyIdUpdatedOrCreated = await _userState.CreateProperty<int>(CACHE_NAME_SURVEY_ID).GetAsync(stepContext.Context);
+        // Get/set state
+        var convoState = await GetConvoStateAsync(stepContext.Context);
 
         var result = stepContext.Context.Activity.Text;
-        SurveyFollowUpModel? surveyFollowUp = null;
-        try
-        {
-            surveyFollowUp = JsonSerializer.Deserialize<SurveyFollowUpModel>(result);
-        }
-        catch (JsonException)
-        {
-            // Ignore
-        }
-        if (surveyFollowUp != null && surveyIdUpdatedOrCreated > 0)
-        {
-            await base.GetSurveyManagerService(async surveyManager =>
-            {
-                // Add follow-up survey data
-                await surveyManager.Loader.LogSurveyFollowUp(surveyIdUpdatedOrCreated, surveyFollowUp);
-            });
+        var botUser = await BotUserUtils.GetBotUserAsync(stepContext.Context, _botConfig, _graphServiceClient);
 
-            // Sign off & say thanks
-            var allDoneCard = new BotDiagFinishedCard().GetCardAttachment();
-            await stepContext.Context.SendActivityAsync(MessageFactory.Attachment(allDoneCard), cancellationToken);
+        var chatUserAndConvo = await base.GetCachedUser(botUser);
+
+        if (chatUserAndConvo?.UserPrincipalName != null)
+        {
+            var surveyResponse = new SurveyPageUserResponse(result, chatUserAndConvo.UserPrincipalName);
+
+            if (convoState.SurveyIdUpdatedOrCreated > 0 && surveyResponse.IsValid)
+            {
+                var goAroundAgain = false;
+                await base.GetSurveyManagerService(async surveyManager =>
+                {
+                    // Add follow-up survey data
+                    await surveyManager.SaveCustomSurveyResponse(surveyResponse, convoState.SurveyIdUpdatedOrCreated.Value);
+
+                    // Get next survey page
+                    var nextPageNumber = (convoState.NextCopilotCustomPage ?? 0) + 1;
+                    var surveyPage = await surveyManager.GetSurveyPage(nextPageNumber);
+                    if (surveyPage != null)
+                    {
+                        convoState.NextCopilotCustomPage = nextPageNumber;
+                        goAroundAgain = true;
+                    }
+                    else
+                    {
+                        // Sign off & say thanks
+                        var allDoneCard = new BotDiagFinishedCard().GetCardAttachment();
+                        goAroundAgain = false;
+                        await stepContext.Context.SendActivityAsync(MessageFactory.Attachment(allDoneCard), cancellationToken);
+                    }
+                });
+
+                if (goAroundAgain)
+                {
+                    // "Thanks for that. Let's move on to the next question..." - diag will send next card on previous step
+                    return await stepContext.ReplaceDialogAsync(nameof(WaterfallDialog));
+                }
+            }
+            else
+            {
+                await SendMsg(stepContext.Context, "Oops, didn't get that for some reason. Oh well; everything else seemed to work. Thanks & byee!");
+            }
+
         }
         else
         {
-            await SendMsg(stepContext.Context, "Oops, didn't get that for some reason. Oh well; everything else seemed to work. Thanks & byee!");
+            await SendMsg(stepContext.Context, "Oops, can't report feedback for anonymous users. Your login is needed even if we don't report on it. Thanks for letting me know anyway.");
         }
+
         return await stepContext.EndDialogAsync();
     }
+    async Task<SurveyDialogueConvoState> GetConvoStateAsync(ITurnContext context)
+    {
+        var convoStateProp = _userState.CreateProperty<SurveyDialogueConvoState>(CACHE_NAME_CONVO_STATE);
+        var convoState = await convoStateProp.GetAsync(context);
+        if (convoState == null)
+        {
+            convoState = new SurveyDialogueConvoState();
+            await convoStateProp.SetAsync(context, convoState);
+        }
+        return convoState;
+    }
+
 }

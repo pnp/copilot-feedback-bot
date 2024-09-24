@@ -1,4 +1,5 @@
-﻿using Entities.DB;
+﻿using Common.Engine.Surveys.Model;
+using Entities.DB;
 using Entities.DB.Entities;
 using Entities.DB.Entities.AuditLog;
 using Microsoft.EntityFrameworkCore;
@@ -13,6 +14,10 @@ public class SqlSurveyManagerDataLoader(DataContext db, ILogger<SqlSurveyManager
 {
     public async Task<User> GetUser(string upn)
     {
+        if (string.IsNullOrWhiteSpace(upn))
+        {
+            throw new ArgumentNullException(nameof(upn));
+        }
         return await db.Users.Where(u => u.UserPrincipalName == upn).FirstOrDefaultAsync() ?? throw new ArgumentOutOfRangeException(nameof(upn));
     }
 
@@ -57,7 +62,7 @@ public class SqlSurveyManagerDataLoader(DataContext db, ILogger<SqlSurveyManager
 
     public async Task<int> LogSurveyRequested(CommonAuditEvent @event)
     {
-        var survey = new UserSurveyResponse { RelatedEventId = @event.Id, Requested = DateTime.UtcNow, UserID = @event.UserId };
+        var survey = new UserSurveyResponseDB { RelatedEventId = @event.Id, Requested = DateTime.UtcNow, UserID = @event.UserId };
         db.SurveyResponses.Add(survey);
         await db.SaveChangesAsync();
         return survey.ID;
@@ -80,7 +85,7 @@ public class SqlSurveyManagerDataLoader(DataContext db, ILogger<SqlSurveyManager
         var response = await db.SurveyResponses.Where(e => e.RelatedEvent == @event).FirstOrDefaultAsync();
         if (response != null)
         {
-            response.Rating = score;
+            response.OverrallRating = score;
             await db.SaveChangesAsync();
             return response.ID;
         }
@@ -88,7 +93,7 @@ public class SqlSurveyManagerDataLoader(DataContext db, ILogger<SqlSurveyManager
         throw new ArgumentOutOfRangeException(nameof(@event));
     }
 
-    public async Task<int> LogDisconnectedSurveyResult(int scoreGiven, string userUpn)
+    public async Task<int> LogDisconnectedSurveyResultWithInitialScore(int scoreGiven, string userUpn)
     {
         var user = await db.Users.Where(u => u.UserPrincipalName == userUpn).FirstOrDefaultAsync();
         if (user == null)
@@ -96,7 +101,7 @@ public class SqlSurveyManagerDataLoader(DataContext db, ILogger<SqlSurveyManager
             user = new User { UserPrincipalName = userUpn };
         }
 
-        var survey = new UserSurveyResponse { Rating = scoreGiven, Requested = DateTime.UtcNow, User = user };
+        var survey = new UserSurveyResponseDB { OverrallRating = scoreGiven, Requested = DateTime.UtcNow, User = user };
         db.SurveyResponses.Add(survey);
         await db.SaveChangesAsync();
         return survey.ID;
@@ -117,18 +122,40 @@ public class SqlSurveyManagerDataLoader(DataContext db, ILogger<SqlSurveyManager
         }
     }
 
-    public async Task LogSurveyFollowUp(int surveyId, SurveyFollowUpModel surveyFollowUp)
+    public async Task<List<SurveyAnswerDB>> SaveAnswers(User user, List<SurveyPageUserResponse.RawResponse> answers, int existingSurveyId)
     {
-        var survey = await db.SurveyResponses.Where(e => e.ID == surveyId).FirstOrDefaultAsync();
-        if (survey != null)
+        if (answers.Select(a=> a.QuestionId).Contains(0))
         {
-            survey.CopilotMakesMeMoreProductiveAgreeRating = surveyFollowUp.CopilotMakesMeMoreProductiveAgreeRating.HasValue ? (int)surveyFollowUp.CopilotMakesMeMoreProductiveAgreeRating.Value : null;
-            survey.CopilotImprovesQualityOfWorkAgreeRating = surveyFollowUp.CopilotImprovesQualityOfWorkAgreeRating.HasValue ? (int)surveyFollowUp.CopilotImprovesQualityOfWorkAgreeRating.Value : null;
-            survey.CopilotHelpsWithMundaneTasksAgreeRating = surveyFollowUp.CopilotHelpsWithMundaneTasksAgreeRating.HasValue ? (int)surveyFollowUp.CopilotHelpsWithMundaneTasksAgreeRating.Value : null;
-            survey.CopilotAllowsTaskCompletionFasterAgreeRating = surveyFollowUp.CopilotAllowsTaskCompletionFasterAgreeRating.HasValue ? (int)surveyFollowUp.CopilotAllowsTaskCompletionFasterAgreeRating.Value : null;
-            survey.Comments = surveyFollowUp.Comments;
-
-            await db.SaveChangesAsync();
+            throw new ArgumentOutOfRangeException("Cannot save answers for question ID 0");
         }
+        var responses = answers
+            .Select(a => new SurveyAnswerDB 
+            { 
+                ForQuestionId = a.QuestionId, 
+                GivenAnswer = a.Response, 
+                User = user, 
+                TimestampUtc = DateTime.UtcNow,
+                ParentSurveyId = existingSurveyId
+            }).ToList();
+        db.SurveyAnswers.AddRange(responses);
+        await db.SaveChangesAsync();
+
+        // Deep load questions
+        var savedAnswers = await db.SurveyAnswers
+            .Include(a=> a.ForQuestion)
+            .Where(a => responses.Select(r => r.ID).Contains(a.ID))
+            .ToListAsync();
+
+        return savedAnswers;
+    }
+
+    public async Task<List<SurveyPageDB>> GetPublishedPages()
+    {
+        // Load survey questions from the database
+        return await db.SurveyPages
+            .Where(p => p.IsPublished)
+            .Include(p => p.Questions)
+            .OrderBy(p => p.PageIndex)
+            .ToListAsync();
     }
 }

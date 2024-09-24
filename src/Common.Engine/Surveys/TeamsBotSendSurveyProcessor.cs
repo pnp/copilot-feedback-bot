@@ -3,7 +3,7 @@ using Common.Engine.Notifications;
 
 namespace Common.Engine.Surveys;
 
-public class TeamsBotSendSurveyProcessor : ISurveyProcessor
+public class TeamsBotSendSurveyProcessor : ISurveyEventsProcessor
 {
     private readonly IBotConvoResumeManager _botConvoResumeManager;
     private readonly AppConfig _botConfig;

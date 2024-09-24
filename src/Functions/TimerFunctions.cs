@@ -9,12 +9,12 @@ public class TimerFunctions
     private readonly ILogger<TimerFunctions> _tracer;
     private readonly ILogger<SurveyManager> _loggerSM;
     private readonly ISurveyManagerDataLoader _surveyManagerDataLoader;
-    private readonly ISurveyProcessor _surveyProcessor;
+    private readonly ISurveyEventsProcessor _surveyProcessor;
 
     const string CRON_TIME = "0 0 * * * *";       // Every hour for debugging
 
 
-    public TimerFunctions(ILogger<TimerFunctions> tracer, ILogger<SurveyManager> loggerSM, ISurveyManagerDataLoader surveyManagerDataLoader, ISurveyProcessor surveyProcessor)
+    public TimerFunctions(ILogger<TimerFunctions> tracer, ILogger<SurveyManager> loggerSM, ISurveyManagerDataLoader surveyManagerDataLoader, ISurveyEventsProcessor surveyProcessor)
     {
         _tracer = tracer;
         _loggerSM = loggerSM;
