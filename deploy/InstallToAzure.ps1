@@ -151,8 +151,12 @@ function ValidateAndInstall ($configFileName) {
 		WriteS -message "Resource group '$($config.ResourceGroupName)' already exists."
 	}
 
-	$deploySuccess = InstallAzComponents($config)
-	if ($true -eq $deploySuccess) {
+	$solutionDeploySuccess = InstallAzComponents($config)
+	if (-not $solutionDeploySuccess) {
+		WriteE -message "Solution installation failed."
+	}
+	else {
+		
 		# Add the client's public IP to the SQL firewall
 		$firewallConfigured = AddClientPublicIpToSqlFirewall $config
 		TriggerAppServiceWebJob $config (Get-AppServiceNameArmTemplateValue $config)
@@ -174,12 +178,9 @@ function ValidateAndInstall ($configFileName) {
 			WriteE -message "Error: Unable to add URL filters to the database. Please add manually to table 'import_url_filter'"
 		}
 
-		WriteS -message "Solution installed successfully. Next steps: "
+		WriteS -message "Solution installed successfully. Next steps:"
 		WriteS -message "1. Verify import job is running in the web app and trace logs in Application Insights."
 		WriteS -message "2. Check SQL tables have data once an import has finished."
-	}
-	else {
-		WriteE -message "Solution installation failed."
 	}
 }
 
@@ -313,24 +314,14 @@ function InstallAzComponents {
 	
 	# Deploy the ARM template
 	$deploySuccess = DeployARMTemplate $config
-	if (-not $deploySuccess) {
-		# Wait for the code deployment to sync
-		WriteI -message "Waiting for code deployment to sync..." 
-
-		$appServicesNames = [System.Collections.ArrayList]@(
-			$webAppName, 
-			$funcWebAppName
-		)
-
-		# Check deployment status...
-		WaitForCodeDeploymentSync $config $appServicesNames.Clone()
-                
+	if (-not $deploySuccess) {  
 		WriteE -message "Deployment failed. Please check the logs above for more information and try again."
+		return $false
 	}
 	else {
 		WriteS -message "ARM template deployment succeeded."
+		return $true
 	}
-	return $deploySuccess
 }
 
 
@@ -357,49 +348,6 @@ function DeployARMTemplate {
 		WriteE -message "ARM template deployment failed. Check messages above to make sure no naming conflict, but for now we'll assume it's because the app services aren't ready" 
 		return $false
 	}
-}
-
-function WaitForCodeDeploymentSync {
-	Param(
-		[Parameter(Mandatory = $true)] $config,
-		[Parameter(Mandatory = $true)] $appServicesNames
-	)
-
-	$appserviceCodeSyncSuccess = $true
-	while ($appServicesNames.Count -gt 0) {
-		WriteI -message "Checking source control deployment progress..."
-		For ($i = 0; $i -le $appServicesNames.Count; $i++) {
-			$appService = $appServicesNames[$i]
-			if ($null -ne $appService) {
-
-				$uri = "https://management.azure.com/subscriptions/$($config.SubcriptionId)/resourcegroups/$($config.ResourceGroupName)/providers/Microsoft.Web/sites/$appService/deployments?api-version=2019-08-01"
-				
-				$deploymentResponseRaw = Invoke-AzRestMethod -Method GET -Path $uri
-				$deploymentResponse = $deploymentResponseRaw.Content | ConvertFrom-Json
-				$deploymentsList = $deploymentResponse.value
-				if ($deploymentsList.length -eq 0 -or $deploymentsList[0].properties.complete) {
-					$appserviceCodeSyncSuccess = $appserviceCodeSyncSuccess -and ($deploymentsList.length -eq 0 -or $deploymentsList[0].properties.status -ne 3) # 3 means sync fail
-					$appServicesNames.remove($appService)
-					WriteS -message "$appService deployment has finished."
-					$i--;
-				}
-			}
-		}
-
-		if ($appServicesNames.Count -gt 0) {
-			WriteI -message "Source control deployment is still in progress. Next check in 2 minutes."
-			Start-Sleep -Seconds 120
-		}
-	}
-
-
-	if ($appserviceCodeSyncSuccess) {
-		WriteS -message "Source control deployment is done."
-	}
-	else {
-		WriteE -message "Source control deployment failed."
-	}
-	return $appserviceCodeSyncSuccess
 }
 
 function ValidateConfig {
