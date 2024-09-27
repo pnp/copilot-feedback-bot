@@ -15,3 +15,4 @@ src/Functions/Properties/ServiceDependencies/copilotfeedback-function-ag - Zip D
 /deploy/ARM/parameters.json
 /Teams App/manifest.json
 /src/Web/web.client/dist
+/src/Web/web.client/.env.development
