@@ -6,6 +6,12 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <InvariantGlobalization>false</InvariantGlobalization>
     <UserSecretsId>ae8ee577-91bc-4ce6-826b-554211828541</UserSecretsId>
+
+	  <SpaRoot>..\web.client</SpaRoot>
+	  <DefaultItemExcludes>$(DefaultItemExcludes);$(SpaRoot)node_modules\**</DefaultItemExcludes>
+	  <SpaProxyServerUrl>https://localhost:5173</SpaProxyServerUrl>
+	  <SpaProxyLaunchCommand>npm run dev</SpaProxyLaunchCommand>
+	  
   </PropertyGroup>
 
   <ItemGroup>
@@ -20,8 +26,15 @@
     <Content Remove="Bots\Cards\Templates\SurveyCustomPageCommon.json" />
     <Content Remove="Bots\Cards\Templates\SurveyOverrallSatisfactionCommonBody.json" />
   </ItemGroup>
+	
+	<ItemGroup>
+		<ProjectReference Include="..\web.client\web.client.esproj">
+			<ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+		</ProjectReference>
+	</ItemGroup>
 
-  <ItemGroup>
+
+	<ItemGroup>
     <EmbeddedResource Include="Bots\Cards\Templates\BotDiagFinished.json" />
     <EmbeddedResource Include="Bots\Cards\Templates\SurveyCustomPageCommon.json" />
     <EmbeddedResource Include="Bots\Cards\Templates\BotFirstIntro.json" />
@@ -35,6 +48,10 @@
   </ItemGroup>
 
   <ItemGroup>
+	  <PackageReference Include="Microsoft.AspNetCore.SpaProxy">
+		  <Version>8.*-*</Version>
+	  </PackageReference>
+	  
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.22.0" />
     <PackageReference Include="Microsoft.Bot.Builder.Dialogs" Version="4.22.7" />
     <PackageReference Include="Microsoft.Bot.Builder.Integration.AspNet.Core" Version="4.22.7" />
