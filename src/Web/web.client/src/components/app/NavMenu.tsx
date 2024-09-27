@@ -1,13 +1,9 @@
 import { Component } from 'react';
-import { IPublicClientApplication } from '@azure/msal-browser';
 import { NavLink } from 'react-router-dom';
+import { BaseApiLoader } from '../../api/ApiLoader';
 
-export class NavMenu extends Component<{ instance: IPublicClientApplication }> {
+export class NavMenu extends Component<{ apiLoader?: BaseApiLoader }> {
   static displayName = NavMenu.name;
-
-  logout(instance: IPublicClientApplication) {
-    instance.logoutRedirect({ postLogoutRedirectUri: "/" })
-  }
 
   render() {
     return (
@@ -24,11 +20,16 @@ export class NavMenu extends Component<{ instance: IPublicClientApplication }> {
           </li>
         </NavLink>
 
-        <button onClick={() => this.logout(this.props.instance)} style={{ backgroundColor: 'transparent', borderColor: 'transparent', width: '100%' }}>
-          <li className="logout">
-            <div className="menu-item"><span>Logout</span></div>
-          </li>
-        </button>
+
+        {this.props.apiLoader &&
+
+          <button onClick={this.props.apiLoader.logOut} style={{ backgroundColor: 'transparent', borderColor: 'transparent', width: '100%' }}>
+            <li className="logout">
+              <div className="menu-item"><span>Logout</span></div>
+            </li>
+          </button>
+        }
+
       </ul>
     );
   }

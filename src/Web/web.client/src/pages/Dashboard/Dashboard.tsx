@@ -4,15 +4,16 @@ import 'chartjs-adapter-date-fns'
 import { BaseApiLoader } from '../../api/ApiLoader';
 import { getClientConfig, ServiceConfiguration } from '../../api/ApiCalls';
 
-export const Dashboard: React.FC<{loader: BaseApiLoader}> = (props) => {
+export const Dashboard: React.FC<{ loader?: BaseApiLoader }> = (props) => {
 
   const [config, setConfig] = React.useState<ServiceConfiguration | null>(null);
 
   React.useEffect(() => {
-    getClientConfig(props.loader).then((config) => {
-      setConfig(config);
-    });
-}, []);
+    if (props.loader)
+      getClientConfig(props.loader).then((config) => {
+        setConfig(config);
+      });
+  }, [props.loader]);
 
   return (
     <div>

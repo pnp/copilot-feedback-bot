@@ -5,6 +5,8 @@ import { IPublicClientApplication } from "@azure/msal-browser";
 export abstract class BaseApiLoader {
     abstract getToken: () => Promise<string>;
 
+    abstract logOut: () => void;
+
     loadFromApi = async (url: string, method: string, body?: any, onError?: Function): Promise<string> => {
 
         const token: string = await this.getToken();
@@ -57,6 +59,9 @@ export class MsalApiLoader extends BaseApiLoader {
         this.accounts = accounts;
     }
 
+    logOut = () => {
+        this.instance.logoutRedirect({ postLogoutRedirectUri: "/" });
+    }
 
     getToken: () => Promise<string> = async () => {
 

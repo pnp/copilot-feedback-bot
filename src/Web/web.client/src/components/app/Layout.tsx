@@ -1,9 +1,9 @@
-import { IPublicClientApplication } from '@azure/msal-browser';
 import { NavMenu } from './NavMenu';
 import { NavMenuProfile } from '../common/controls/NavMenuProfile';
 import { PropsWithChildren } from 'react';
+import { BaseApiLoader } from '../../api/ApiLoader';
 
-export const Layout: React.FC<PropsWithChildren<{ instance: IPublicClientApplication }>> = (props) => {
+export const Layout: React.FC<PropsWithChildren<{ apiLoader?: BaseApiLoader }>> = (props) => {
 
   return (
 
@@ -16,7 +16,7 @@ export const Layout: React.FC<PropsWithChildren<{ instance: IPublicClientApplica
           </div>
         </a>
 
-        <NavMenu instance={props.instance} />
+        <NavMenu apiLoader={props.apiLoader} />
         <NavMenuProfile />
         <p className="site-overlay">
           <img className="close-btn" src="img/close.svg" alt="close" height="24" width="24" />
@@ -39,7 +39,7 @@ export const Layout: React.FC<PropsWithChildren<{ instance: IPublicClientApplica
 
             <div className="nav-links">
               <nav className="main-nav">
-                <NavMenu instance={props.instance} />
+                <NavMenu apiLoader={props.apiLoader} />
               </nav>
             </div>
 

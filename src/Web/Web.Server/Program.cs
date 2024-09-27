@@ -29,6 +29,8 @@ public class Program
                 o.ClientId = config.AuthConfig.ClientId; 
                 o.TenantId = config.AuthConfig.TenantId;
                 o.ClientSecret = config.AuthConfig.ClientSecret;
+                o.Authority = $"https://login.microsoftonline.com/{config.AuthConfig.TenantId}";
+                o.Instance = "https://login.microsoftonline.com/";
             });
 
         // Bot services --->
