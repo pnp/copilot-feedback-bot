@@ -15,9 +15,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnitTests", "UnitTests\Unit
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Common.Engine", "Common.Engine\Common.Engine.csproj", "{F17E98D0-992F-46E8-B08C-CAAA29AE7E1B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Web", "Web\Web.csproj", "{DD59F148-130C-42CB-BB2A-7040992DA9C3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Web.Server", "Web\Web.Server\Web.Server.csproj", "{DD59F148-130C-42CB-BB2A-7040992DA9C3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Functions", "Functions\Functions.csproj", "{FDA2EA6F-FAA4-4BF2-8B2C-8228C3A8D7F2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Functions", "Functions\Functions.csproj", "{FDA2EA6F-FAA4-4BF2-8B2C-8228C3A8D7F2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
