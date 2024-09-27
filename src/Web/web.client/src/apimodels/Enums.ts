@@ -7,15 +7,3 @@ export enum ChartView {
   SixMonths,
   OneYear
 }
-
-export enum DataViewSetting {
-  Financial,
-  Rubric
-}
-
-
-export enum PageViewMode {
-  View,
-  Edit,
-  New
-}

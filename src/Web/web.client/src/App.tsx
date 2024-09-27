@@ -3,25 +3,9 @@ import React, { useState } from 'react';
 import { Layout } from './components/app/Layout';
 import { Dashboard } from './pages/Dashboard/Dashboard';
 import { Login } from './pages/Login/Login';
-import { LoginsList } from './pages/LoginsList/LoginsList';
 import { AuthenticatedTemplate, UnauthenticatedTemplate, useIsAuthenticated, useMsal } from "@azure/msal-react";
 import { loginRequest } from "./authConfig";
-import { SkillsInsights } from './pages/SkillsInsights/SkillsInsightsPage';
-import { Imports } from './pages/Imports/Imports';
-import { LoginsInvite } from './pages/LoginsInvite/LoginsInvite';
-import { LoginsInviteFailed } from './pages/LoginsInvite/LoginsInviteFailed';
-import { SkillsFlowHome } from './pages/SkillsInVsOut/SkillsFlowHome';
-import { InitiativesPage } from './pages/Initiatives/InitiativesPage';
-import { DataQualityDashboard } from './pages/DataQuality/DataQualityDashboard';
 import { Redirect, Route } from "react-router-dom";
-import { WikiHome } from './pages/Wiki/WikiHome';
-
-declare global {
-    interface Window {
-        initMainJs: () => void;
-        initCharts: (overallChange: number, monthChange: number, sevenDayChange: number) => void;
-    }
-}
 
 export default function App() {
 
@@ -29,8 +13,6 @@ export default function App() {
     const [initialised, setInitialised] = useState<boolean>(false);
     const isAuthenticated = useIsAuthenticated();
     const { instance, accounts } = useMsal();
-
-    const [loginProfile, setLoginProfile] = React.useState<LoginProfile | null>();
 
     const RequestAccessToken = React.useCallback(() => {
         const request = {
@@ -73,34 +55,19 @@ export default function App() {
         };
 
         initializeMsal();
-
-        window.initMainJs();
     }, []);
 
     return (
         <div>
             {accessToken ?
                 (
-                    <Layout profile={loginProfile!} instance={instance}>
+                    <Layout instance={instance}>
                         <AuthenticatedTemplate>
                             <Route exact path="/">
                                 <Redirect to="/dashboard" />
                             </Route>
-                            <Route exact path='/dashboard' render={() => <Dashboard {... { token: accessToken! }} profileLoaded={(p: LoginProfile) => setLoginProfile(p)} />} />
-                            <Route exact path='/inviteFailed' render={() => <LoginsInviteFailed />} />
+                            <Route exact path='/dashboard' render={() => <Dashboard />} />
 
-                            {loginProfile &&
-                                <>
-                                    <Route exact path='/skills' render={() => <SkillsInsights {... { token: accessToken! }} client={loginProfile.client} />} />
-                                    <Route exact path='/skillsflow' render={() => <SkillsFlowHome {... { token: accessToken! }} client={loginProfile.client} />} />
-                                    <Route exact path='/initiatives' render={() => <InitiativesPage {... { token: accessToken! }} client={loginProfile.client} />} />
-                                    <Route exact path='/importLogs' render={() => <Imports {... { token: accessToken! }} client={loginProfile.client} />} />
-                                    <Route exact path='/loginsList' render={() => <LoginsList {... { token: accessToken! }} client={loginProfile.client} />} />
-                                    <Route exact path='/loginsInvite' render={() => <LoginsInvite {... { token: accessToken! }} client={loginProfile.client} />} />
-                                    <Route exact path='/DataQuality' render={() => <DataQualityDashboard {... { token: accessToken! }} />} />
-                                    <Route exact path='/wiki' render={() => <WikiHome {... { token: accessToken! }} />} />
-                                </>
-                            }
                         </AuthenticatedTemplate>
                         <UnauthenticatedTemplate>
                             <Route exact path='/' component={Login} />
@@ -109,10 +76,9 @@ export default function App() {
                 )
                 :
                 (
-                    <Layout profile={null} instance={instance}>
+                    <Layout instance={instance}>
                         <UnauthenticatedTemplate>
                             <Route exact path='/' component={Login} />
-                            <Route exact path='/inviteFailed' render={() => <LoginsInviteFailed />} />
                         </UnauthenticatedTemplate>
                         <AuthenticatedTemplate>
                             <p>Loading access token for API...</p>

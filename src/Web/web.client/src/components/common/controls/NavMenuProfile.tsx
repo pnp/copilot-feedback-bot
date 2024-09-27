@@ -1,6 +1,6 @@
 import { IMsalContext, useMsal } from "@azure/msal-react";
 
-export const NavMenuProfile: React.FC<{ profile: LoginProfile | null }> = (props) => {
+export const NavMenuProfile: React.FC<{ }> = () => {
   const userCtx: IMsalContext = useMsal();
   const loginClaims = (userCtx && userCtx.accounts[0] ? userCtx.accounts[0].idTokenClaims : null) as IdTokenClaims | null;
 
@@ -11,7 +11,7 @@ export const NavMenuProfile: React.FC<{ profile: LoginProfile | null }> = (props
       </div>
       <div className="user-txt">
         <p><strong>{loginClaims?.given_name} {loginClaims?.family_name}</strong></p>
-        <p className="role">{props.profile?.client.name}</p>
+        <p className="role">Contoso Inc</p>
       </div>
     </div>
   );

@@ -3,7 +3,7 @@ import { NavMenu } from './NavMenu';
 import { NavMenuProfile } from '../common/controls/NavMenuProfile';
 import { PropsWithChildren } from 'react';
 
-export const Layout: React.FC<PropsWithChildren<{ profile: LoginProfile | null, instance: IPublicClientApplication }>> = (props) => {
+export const Layout: React.FC<PropsWithChildren<{ instance: IPublicClientApplication }>> = (props) => {
 
   return (
 
@@ -14,14 +14,10 @@ export const Layout: React.FC<PropsWithChildren<{ profile: LoginProfile | null, 
           <div className="logo">
             <img className="companyLogo" src="img/sc-logo.png" alt="Skill Cap"></img>
           </div>
-        </a>	
+        </a>
 
-        <NavMenu profile={props.profile} instance={props.instance} />
-
-        {props.profile &&
-          <NavMenuProfile profile={props.profile} />
-        }
-
+        <NavMenu instance={props.instance} />
+        <NavMenuProfile />
         <p className="site-overlay">
           <img className="close-btn" src="img/close.svg" alt="close" height="24" width="24" />
         </p>
@@ -39,15 +35,15 @@ export const Layout: React.FC<PropsWithChildren<{ profile: LoginProfile | null, 
               <div className="logo">
                 <img className="companyLogo" src="img/sc-logo.png" alt="Skill Cap"></img>
               </div>
-            </a>	
+            </a>
 
             <div className="nav-links">
               <nav className="main-nav">
-                <NavMenu profile={props.profile} instance={props.instance} />
+                <NavMenu instance={props.instance} />
               </nav>
             </div>
 
-            <NavMenuProfile profile={props.profile} />
+            <NavMenuProfile />
 
           </div>
         </div>
