@@ -31,8 +31,8 @@ if (!fs.existsSync(certFilePath) || !fs.existsSync(keyFilePath)) {
 }
 
 const target = env.ASPNETCORE_HTTPS_PORT ? `https://localhost:${env.ASPNETCORE_HTTPS_PORT}` :
-    env.ASPNETCORE_URLS ? env.ASPNETCORE_URLS.split(';')[0] : 'https://localhost:7095';
-
+    env.ASPNETCORE_URLS ? env.ASPNETCORE_URLS.split(';')[0] : 'https://localhost:7053';
+console.info(`Proxying to ${target}`);
 // https://vitejs.dev/config/
 export default defineConfig({
     plugins: [plugin()],
@@ -46,47 +46,7 @@ export default defineConfig({
     },
     server: {
         proxy: {
-            "^/Users": {
-                target,
-                secure: false
-            },
-            "^/Clients": {
-                target,
-                secure: false
-            },
-            "^/Stats": {
-                target,
-                secure: false
-            },
-            "^/SkillsInsightsReports": {
-                target,
-                secure: false
-            },
-            "^/Lookups": {
-                target,
-                secure: false
-            },
-            "^/Charts": {
-                target,
-                secure: false
-            },
-            "^/Imports": {
-                target,
-                secure: false
-            },
-            "^/SkillsInitiatives": {
-                target,
-                secure: false
-            },
-            "^/ImportConfigurations": {
-                target,
-                secure: false
-            },
-            "^/Secrets": {
-                target,
-                secure: false
-            },
-            "^/Reports": {
+            "/api": {
                 target,
                 secure: false
             }

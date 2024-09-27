@@ -2,7 +2,7 @@ import React from 'react';
 import { loginRequest } from "../../authConfig";
 import { useMsal } from "@azure/msal-react";
 
-export function Login() {
+export function LoginRedirect() {
 
   const { instance } = useMsal();
 

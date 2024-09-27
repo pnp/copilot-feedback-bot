@@ -1,11 +1,13 @@
 using Common.Engine;
 using Common.Engine.Notifications;
 using Entities.DB;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Bot.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Graph;
 using Web.Bots;
 using Web.Bots.Dialogues;
+using Microsoft.Identity.Web;
 
 namespace Web;
 
@@ -20,6 +22,14 @@ public class Program
         builder.Services.AddSwaggerGen();
 
         var config = DependencyInjection.AddBotServices(builder.Services, builder.Configuration);
+
+        builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddMicrosoftIdentityWebApi(ops => { }, o => 
+            { 
+                o.ClientId = config.AuthConfig.ClientId; 
+                o.TenantId = config.AuthConfig.TenantId;
+                o.ClientSecret = config.AuthConfig.ClientSecret;
+            });
 
         // Bot services --->
         // Create the Bot Framework Adapter with error handling enabled.

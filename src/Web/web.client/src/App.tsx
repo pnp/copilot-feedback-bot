@@ -2,39 +2,21 @@ import React, { useState } from 'react';
 
 import { Layout } from './components/app/Layout';
 import { Dashboard } from './pages/Dashboard/Dashboard';
-import { Login } from './pages/Login/Login';
+import { LoginRedirect } from './pages/Login/LoginRedirect';
 import { AuthenticatedTemplate, UnauthenticatedTemplate, useIsAuthenticated, useMsal } from "@azure/msal-react";
-import { loginRequest } from "./authConfig";
 import { Redirect, Route } from "react-router-dom";
+import { BaseApiLoader, MsalApiLoader } from './api/ApiLoader';
 
 export default function App() {
 
-    const [accessToken, setAccessToken] = useState<string | null>();
+    const [apiLoader, setApiLoader] = useState<BaseApiLoader | null>();
     const [initialised, setInitialised] = useState<boolean>(false);
     const isAuthenticated = useIsAuthenticated();
     const { instance, accounts } = useMsal();
 
-    const RequestAccessToken = React.useCallback(() => {
-        const request = {
-            ...loginRequest,
-            account: accounts[0]
-        };
-
-        console.info(request);
-
+    const InitMSAL = React.useCallback(() => {
         if (initialised) {
-            instance.acquireTokenSilent(request).then((response) => {
-                console.debug(response);
-                console.debug("Got token via cached account: " + response.accessToken);
-                setAccessToken(response.accessToken);
-            }).catch((error) => {
-                console.log(error);
-                instance.acquireTokenPopup(request).then((response) => {
-                    console.debug(response);
-                    console.debug("Got token via popup: " + response.accessToken);
-                    setAccessToken(response.accessToken);
-                });
-            });
+            setApiLoader(new MsalApiLoader(instance, accounts));
         }
         else
             console.warn("Can't get access token; MSAL not initialised yet...");
@@ -44,11 +26,10 @@ export default function App() {
     React.useEffect(() => {
 
         // Get OAuth token
-        if (initialised && isAuthenticated && !accessToken) {
-            console.debug("Requesting access token");
-            RequestAccessToken();
+        if (initialised && isAuthenticated && !apiLoader) {
+            InitMSAL();
         }
-    }, [accessToken, RequestAccessToken, isAuthenticated, initialised]);
+    }, [apiLoader, InitMSAL, isAuthenticated, initialised]);
 
     React.useEffect(() => {
         const initializeMsal = async () => {
@@ -61,14 +42,14 @@ export default function App() {
 
     return (
         <div>
-            {accessToken ?
+            {apiLoader ?
                 (
                     <Layout instance={instance}>
                         <AuthenticatedTemplate>
                             <Route exact path="/">
                                 <Redirect to="/dashboard" />
                             </Route>
-                            <Route exact path='/dashboard' render={() => <Dashboard />} />
+                            <Route exact path='/dashboard' render={() => <Dashboard loader={apiLoader} />} />
                         </AuthenticatedTemplate>
                     </Layout>
                 )
@@ -76,7 +57,7 @@ export default function App() {
                 (
                     <Layout instance={instance}>
                         <UnauthenticatedTemplate>
-                            <Route exact path='/' component={Login} />
+                            <Route exact path='/' component={LoginRedirect} />
                         </UnauthenticatedTemplate>
                         <AuthenticatedTemplate>
                             <p>Loading access token for API...</p>
