@@ -1,8 +1,7 @@
 export const msalConfig = {
   auth: {
-    clientId: String(import.meta.env.VITE_B2C_CLIENT_ID),
-    authority: String(import.meta.env.VITE_B2C_AUTHORITY),
-    knownAuthorities: [String(import.meta.env.VITE_B2C_KNOWN_AUTHORITIES)],
+    clientId: String(import.meta.env.VITE_MSAL_CLIENT_ID),
+    authority: String(import.meta.env.VITE_MSAL_AUTHORITY),
   },
   cache: {
     cacheLocation: "sessionStorage", // This configures where your cache will be stored
@@ -12,6 +11,6 @@ export const msalConfig = {
 
 // Add scopes here for ID token to be used at Microsoft identity platform endpoints.
 export const loginRequest = {
-  scopes: [String(import.meta.env.VITE_B2C_SCOPES)]
+  scopes: [String(import.meta.env.VITE_MSAL_SCOPES)]
 };
 

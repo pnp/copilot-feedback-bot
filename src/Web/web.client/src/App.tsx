@@ -20,6 +20,8 @@ export default function App() {
             account: accounts[0]
         };
 
+        console.info(request);
+
         if (initialised) {
             instance.acquireTokenSilent(request).then((response) => {
                 console.debug(response);
@@ -67,11 +69,7 @@ export default function App() {
                                 <Redirect to="/dashboard" />
                             </Route>
                             <Route exact path='/dashboard' render={() => <Dashboard />} />
-
                         </AuthenticatedTemplate>
-                        <UnauthenticatedTemplate>
-                            <Route exact path='/' component={Login} />
-                        </UnauthenticatedTemplate>
                     </Layout>
                 )
                 :

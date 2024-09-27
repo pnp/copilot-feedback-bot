@@ -9,16 +9,6 @@ export function avg(array: number[]): number {
     return sum / array.length
   }
   
-  export function getTotalValue(allStats: ValueForDateSpan[]) : number
-  {
-    let total = 0;
-    allStats.forEach(s=> {
-      total += s.skillValueOnDate.value;
-    });
-
-    return total;
-  }
-  
   export function getDateFromNow(length: ChartView) : Date
   {
     let dateFrom = moment(new Date()).add(-7, 'days').toDate();

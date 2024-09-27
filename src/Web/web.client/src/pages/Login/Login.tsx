@@ -11,7 +11,6 @@ export function Login() {
     console.info(loginRequest);
     instance.loginRedirect(loginRequest)
 
-    // eslint-disable-next-line
   }, []);
 
   return (

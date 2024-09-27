@@ -1,4 +1,3 @@
-import React from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import App from './App';
 import { MsalProvider } from "@azure/msal-react";
@@ -11,7 +10,6 @@ import ReactDOM from 'react-dom/client'
 const msalInstance = new PublicClientApplication(msalConfig);
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
     <MsalProvider instance={msalInstance}>
       <BrowserRouter basename={import.meta.env.BASE_URL}>
         <LocalizationProvider dateAdapter={AdapterMoment}>
@@ -19,5 +17,4 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         </LocalizationProvider>
       </BrowserRouter>
     </MsalProvider>
-  </React.StrictMode>
   );
