@@ -19,9 +19,8 @@ export const Dashboard: React.FC<{ loader?: BaseApiLoader }> = (props) => {
     <div>
       <section className="page--header">
         <div className="page-title">
-          <h1>Home</h1>
+          <h1>Survey Editor</h1>
 
-          {config && <h2>{config.storageInfo.accountURI}</h2>}
           <p>Welcome to the copilot feedback bot control panel app.</p>
         </div>
       </section>

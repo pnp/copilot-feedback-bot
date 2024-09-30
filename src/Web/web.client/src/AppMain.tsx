@@ -16,9 +16,9 @@ export const AppMain : React.FC<PropsWithChildren<{apiLoader?: BaseApiLoader}>> 
                     <Layout apiLoader={props.apiLoader}>
                         <AuthenticatedTemplate>
                             <Route exact path="/">
-                                <Redirect to="/dashboard" />
+                                <Redirect to="/tabhome" />
                             </Route>
-                            <Route exact path='/dashboard' render={() => <Dashboard loader={props.apiLoader} />} />
+                            <Route exact path='/tabhome' render={() => <Dashboard loader={props.apiLoader} />} />
                         </AuthenticatedTemplate>
                     </Layout>
                 )

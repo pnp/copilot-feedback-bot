@@ -36,10 +36,12 @@ export abstract class BaseApiLoader {
                     if (!onError) {
                         const errorTitle = `Error ${response.status} ${method}ing to/from API '${url}'`;
 
+                        /*
                         if (dataText !== "")
                             alert(`${errorTitle}: ${dataText}`)
                         else
                             alert(errorTitle);
+                        */
                     }
                     else
                         onError(dataText);

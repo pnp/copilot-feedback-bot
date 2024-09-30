@@ -7,30 +7,30 @@ export class NavMenu extends Component<{ apiLoader?: BaseApiLoader }> {
 
   render() {
     return (
-      <ul className="menu">
-        <NavLink to="/dashboard">
-          <li className="dashboard">
-            <div className="menu-item"><span>Dashboard</span></div>
-          </li>
-        </NavLink>
-
-        <NavLink to="/skills">
-          <li className="analytics">
-            <div className="menu-item"><span>Skills Value</span></div>
-          </li>
-        </NavLink>
-
-
-        {this.props.apiLoader &&
-
-          <button onClick={this.props.apiLoader.logOut} style={{ backgroundColor: 'transparent', borderColor: 'transparent', width: '100%' }}>
-            <li className="logout">
-              <div className="menu-item"><span>Logout</span></div>
+      <div className='nav'>
+        <ul>
+          <NavLink to="/tabhome">
+            <li>
+              <div className="menu-item"><span>Home</span></div>
             </li>
-          </button>
-        }
+          </NavLink>
 
-      </ul>
+          <NavLink to="/surveyedit">
+            <li>
+              <div className="menu-item"><span>Survey Editor</span></div>
+            </li>
+          </NavLink>
+
+          {this.props.apiLoader &&
+            <button onClick={this.props.apiLoader.logOut} style={{ backgroundColor: 'transparent', borderColor: 'transparent', width: '100%' }}>
+              <li>
+                <div className="menu-item"><span>Logout</span></div>
+              </li>
+            </button>
+          }
+
+        </ul>
+      </div>
     );
   }
 }
