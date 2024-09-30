@@ -390,8 +390,7 @@ function DeployARMTemplate {
 		$failedSourceControlOperations = Get-AzResourceGroupDeploymentOperation -ResourceGroupName ($config.ResourceGroupName) -Name "FeedbackBotDeployment" | Where-Object { $_.ProvisioningState -eq "Failed" -and $_.TargetResource -clike "*sourcecontrols/web" }
 
 		if ($failedSourceControlOperations.Count -gt 0) {
-
-			WriteI -message "Waiting for code deployment to sync..." 
+			WriteW "ARM template deployment failed because of source control deployment. Waiting for code deployment to sync..." 
 
 			$appServicesNames = [System.Collections.ArrayList]@(
 				$webAppName, 
@@ -401,20 +400,18 @@ function DeployARMTemplate {
 			# wait couple of minutes & check deployment status...
 			$appserviceCodeSyncSuccess = WaitForCodeDeploymentSync $config $appServicesNames.Clone()
 			if ($appserviceCodeSyncSuccess) {
-				WriteW -message "ARM deploy failed but app service deploy jobs succeeded. Re-running deployment in 2 mins as ARM template can fail with long deploy jobs..."
-				Start-Sleep -Seconds 120
-				DeployARMTemplate $config
+				WriteW -message "ARM deploy failed but app service deploy jobs succeeded. This can happen."
+				return $true
 			}
 			else {
-				Throw "ERROR: Unkown ARM template deployment error."
+				WriteE "ERROR: Unkown ARM template deployment error."
+				return $false
 			}
 		}
 		else {
-			WriteE -message "ARM template deployment failed. Check messages above to make sure no naming conflict, but for now we'll assume it's because the app services aren't ready" 
+			WriteE -message "ARM template deployment failed. Check messages above to troubleshoot why." 
 			return $false
-			
 		}
-		
 	}
 }
 
