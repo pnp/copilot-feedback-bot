@@ -276,6 +276,48 @@ function TriggerAppServiceWebJob {
 		}
 	}
 }
+function WaitForCodeDeploymentSync {
+	Param(
+		[Parameter(Mandatory = $true)] $config,
+		[Parameter(Mandatory = $true)] $appServicesNames
+	)
+
+	$appserviceCodeSyncSuccess = $true
+	while ($appServicesNames.Count -gt 0) {
+		WriteI -message "Checking source control deployment progress..."
+		For ($i = 0; $i -le $appServicesNames.Count; $i++) {
+			$appService = $appServicesNames[$i]
+			if ($null -ne $appService) {
+
+				$uri = "https://management.azure.com/subscriptions/$($config.SubcriptionId)/resourcegroups/$($config.ResourceGroupName)/providers/Microsoft.Web/sites/$appService/deployments?api-version=2019-08-01"
+				
+				$deploymentResponseRaw = Invoke-AzRestMethod -Method GET -Path $uri
+				$deploymentResponse = $deploymentResponseRaw.Content | ConvertFrom-Json
+				$deploymentsList = $deploymentResponse.value
+				if ($deploymentsList.length -eq 0 -or $deploymentsList[0].properties.complete) {
+					$appserviceCodeSyncSuccess = $appserviceCodeSyncSuccess -and ($deploymentsList.length -eq 0 -or $deploymentsList[0].properties.status -ne 3) # 3 means sync fail
+					$appServicesNames.remove($appService)
+					WriteS -message "$appService deployment has finished."
+					$i--;
+				}
+			}
+		}
+
+		if ($appServicesNames.Count -gt 0) {
+			WriteI -message "Source control deployment is still in progress. Next check in 2 minutes."
+			Start-Sleep -Seconds 120
+		}
+	}
+
+
+	if ($appserviceCodeSyncSuccess) {
+		WriteS -message "Source control deployment is done."
+	}
+	else {
+		WriteE -message "Source control deployment failed."
+	}
+	return $appserviceCodeSyncSuccess
+}
 
 function RemoveAppServiceDeployment {
 	param (
@@ -345,8 +387,34 @@ function DeployARMTemplate {
 		return $true
 	}
 	else {
-		WriteE -message "ARM template deployment failed. Check messages above to make sure no naming conflict, but for now we'll assume it's because the app services aren't ready" 
-		return $false
+		$failedSourceControlOperations = Get-AzResourceGroupDeploymentOperation -ResourceGroupName ($config.ResourceGroupName) -Name "FeedbackBotDeployment" | Where-Object { $_.ProvisioningState -eq "Failed" -and $_.TargetResource -clike "*sourcecontrols/web" }
+
+		if ($failedSourceControlOperations.Count -gt 0) {
+
+			WriteI -message "Waiting for code deployment to sync..." 
+
+			$appServicesNames = [System.Collections.ArrayList]@(
+				$webAppName, 
+				$funcWebAppName
+			)
+
+			# wait couple of minutes & check deployment status...
+			$appserviceCodeSyncSuccess = WaitForCodeDeploymentSync $config $appServicesNames.Clone()
+			if ($appserviceCodeSyncSuccess) {
+				WriteW -message "ARM deploy failed but app service deploy jobs succeeded. Re-running deployment in 2 mins as ARM template can fail with long deploy jobs..."
+				Start-Sleep -Seconds 120
+				DeployARMTemplate $config
+			}
+			else {
+				Throw "ERROR: Unkown ARM template deployment error."
+			}
+		}
+		else {
+			WriteE -message "ARM template deployment failed. Check messages above to make sure no naming conflict, but for now we'll assume it's because the app services aren't ready" 
+			return $false
+			
+		}
+		
 	}
 }
 
