@@ -225,7 +225,7 @@
             "type": "Microsoft.Web/sites",
             "apiVersion": "2023-12-01",
             "name": "[parameters('app_service_name')]",
-            "location": "West Europe",
+            "location": "[parameters('location')]",
             "dependsOn": [
                 "[resourceId('Microsoft.Web/serverfarms', parameters('app_service_plan_name'))]"
             ],

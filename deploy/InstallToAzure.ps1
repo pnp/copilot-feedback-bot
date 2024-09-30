@@ -151,8 +151,12 @@ function ValidateAndInstall ($configFileName) {
 		WriteS -message "Resource group '$($config.ResourceGroupName)' already exists."
 	}
 
-	$deploySuccess = InstallAzComponents($config)
-	if ($true -eq $deploySuccess) {
+	$solutionDeploySuccess = InstallAzComponents($config)
+	if (-not $solutionDeploySuccess) {
+		WriteE -message "Solution installation failed."
+	}
+	else {
+		
 		# Add the client's public IP to the SQL firewall
 		$firewallConfigured = AddClientPublicIpToSqlFirewall $config
 		TriggerAppServiceWebJob $config (Get-AppServiceNameArmTemplateValue $config)
@@ -174,12 +178,9 @@ function ValidateAndInstall ($configFileName) {
 			WriteE -message "Error: Unable to add URL filters to the database. Please add manually to table 'import_url_filter'"
 		}
 
-		WriteS -message "Solution installed successfully. Next steps: "
+		WriteS -message "Solution installed successfully. Next steps:"
 		WriteS -message "1. Verify import job is running in the web app and trace logs in Application Insights."
 		WriteS -message "2. Check SQL tables have data once an import has finished."
-	}
-	else {
-		WriteE -message "Solution installation failed."
 	}
 }
 
@@ -275,90 +276,6 @@ function TriggerAppServiceWebJob {
 		}
 	}
 }
-
-function RemoveAppServiceDeployment {
-	param (
-		[Parameter(Mandatory = $true)] $config,
-		$webAppName
-	)
-	$uri = "/subscriptions/$($config.SubcriptionId)/resourceGroups/$($config.ResourceGroupName)/providers/Microsoft.Web/sites/$webAppName/config/web?api-version=2023-12-01"
-	$responseRaw = Invoke-AzRestMethod -Method PATCH -Path $uri `
-		-Payload (@{ properties = @{ scmType = "None" } } | ConvertTo-Json) -Verbose
-
-	if ($responseRaw.StatusCode -eq 200) {
-		WriteS "App service deployment removed successfully."
-	}
-	else {
-		if ($responseRaw.StatusCode -eq 404) {
-			WriteW -message "App service deployment not found." 
-		}
-		else {
-			WriteE -message "Error: App service deployment removal failed. Response: $($responseRaw.Content)" 
-		}
-	}
-}
-
-function InstallAzComponents {
-	param (
-		[Parameter(Mandatory = $true)] $config
-	)
-
-	WriteI "Removing previous App Service deployments..." 
-	$webAppName = Get-AppServiceNameArmTemplateValue $config
-	$funcWebAppName = Get-FunctionAppServiceNameArmTemplateValue $config
-
-	# Remove the previous deployments so the ARM template can deploy the new ones
-	RemoveAppServiceDeployment $config $webAppName	
-	RemoveAppServiceDeployment $config $funcWebAppName
-	
-	# Deploy the ARM template
-	$deploySuccess = DeployARMTemplate $config
-	if (-not $deploySuccess) {
-		# Wait for the code deployment to sync
-		WriteI -message "Waiting for code deployment to sync..." 
-
-		$appServicesNames = [System.Collections.ArrayList]@(
-			$webAppName, 
-			$funcWebAppName
-		)
-
-		# Check deployment status...
-		WaitForCodeDeploymentSync $config $appServicesNames.Clone()
-                
-		WriteE -message "Deployment failed. Please check the logs above for more information and try again."
-	}
-	else {
-		WriteS -message "ARM template deployment succeeded."
-	}
-	return $deploySuccess
-}
-
-
-function DeployARMTemplate {
-	param (
-		[Parameter(Mandatory = $true)] $config
-	)
-
-	# Deploy the ARM template
-	WriteI -message "Deploying ARM template..."
-	$templateLocation = "$scriptPath\ARM\template.json"
-	$paramsLocation = $scriptPath + "\" + $config.ARMParametersFile
-
-	$armDeploy = New-AzResourceGroupDeployment -ResourceGroupName $config.ResourceGroupName -TemplateFile $templateLocation -TemplateParameterFile $paramsLocation -Name "FeedbackBotDeployment" -Verbose
-
-	if ($null -eq $armDeploy) {
-		Throw "Error: ARM template deployment fataly failed to resource group '$($config.ResourceGroupName)'. Check previous errors." 
-	}
-	if ($armDeploy.ProvisioningState -eq "Succeeded") {
-		WriteS "ARM template deployment succeeded to resource group '$($config.ResourceGroupName)'." 
-		return $true
-	}
-	else {
-		WriteE -message "ARM template deployment failed. Check messages above to make sure no naming conflict, but for now we'll assume it's because the app services aren't ready" 
-		return $false
-	}
-}
-
 function WaitForCodeDeploymentSync {
 	Param(
 		[Parameter(Mandatory = $true)] $config,
@@ -400,6 +317,102 @@ function WaitForCodeDeploymentSync {
 		WriteE -message "Source control deployment failed."
 	}
 	return $appserviceCodeSyncSuccess
+}
+
+function RemoveAppServiceDeployment {
+	param (
+		[Parameter(Mandatory = $true)] $config,
+		$webAppName
+	)
+	$uri = "/subscriptions/$($config.SubcriptionId)/resourceGroups/$($config.ResourceGroupName)/providers/Microsoft.Web/sites/$webAppName/config/web?api-version=2023-12-01"
+	$responseRaw = Invoke-AzRestMethod -Method PATCH -Path $uri `
+		-Payload (@{ properties = @{ scmType = "None" } } | ConvertTo-Json) -Verbose
+
+	if ($responseRaw.StatusCode -eq 200) {
+		WriteS "App service deployment removed successfully."
+	}
+	else {
+		if ($responseRaw.StatusCode -eq 404) {
+			WriteW -message "App service deployment not found." 
+		}
+		else {
+			WriteE -message "Error: App service deployment removal failed. Response: $($responseRaw.Content)" 
+		}
+	}
+}
+
+function InstallAzComponents {
+	param (
+		[Parameter(Mandatory = $true)] $config
+	)
+
+	WriteI "Removing previous App Service deployments..." 
+	$webAppName = Get-AppServiceNameArmTemplateValue $config
+	$funcWebAppName = Get-FunctionAppServiceNameArmTemplateValue $config
+
+	# Remove the previous deployments so the ARM template can deploy the new ones
+	RemoveAppServiceDeployment $config $webAppName	
+	RemoveAppServiceDeployment $config $funcWebAppName
+	
+	# Deploy the ARM template
+	$deploySuccess = DeployARMTemplate $config
+	if (-not $deploySuccess) {  
+		WriteE -message "Deployment failed. Please check the logs above for more information and try again."
+		return $false
+	}
+	else {
+		WriteS -message "ARM template deployment succeeded."
+		return $true
+	}
+}
+
+
+function DeployARMTemplate {
+	param (
+		[Parameter(Mandatory = $true)] $config
+	)
+
+	# Deploy the ARM template
+	WriteI -message "Deploying ARM template..."
+	$templateLocation = "$scriptPath\ARM\template.json"
+	$paramsLocation = $scriptPath + "\" + $config.ARMParametersFile
+
+	$armDeploy = New-AzResourceGroupDeployment -ResourceGroupName $config.ResourceGroupName -TemplateFile $templateLocation -TemplateParameterFile $paramsLocation -Name "FeedbackBotDeployment" -Verbose
+
+	if ($null -eq $armDeploy) {
+		Throw "Error: ARM template deployment fataly failed to resource group '$($config.ResourceGroupName)'. Check previous errors." 
+	}
+	if ($armDeploy.ProvisioningState -eq "Succeeded") {
+		WriteS "ARM template deployment succeeded to resource group '$($config.ResourceGroupName)'." 
+		return $true
+	}
+	else {
+		$failedSourceControlOperations = Get-AzResourceGroupDeploymentOperation -ResourceGroupName ($config.ResourceGroupName) -Name "FeedbackBotDeployment" | Where-Object { $_.ProvisioningState -eq "Failed" -and $_.TargetResource -clike "*sourcecontrols/web" }
+
+		if ($failedSourceControlOperations.Count -gt 0) {
+			WriteW "ARM template deployment failed because of source control deployment. Waiting for code deployment to sync..." 
+
+			$appServicesNames = [System.Collections.ArrayList]@(
+				$webAppName, 
+				$funcWebAppName
+			)
+
+			# wait couple of minutes & check deployment status...
+			$appserviceCodeSyncSuccess = WaitForCodeDeploymentSync $config $appServicesNames.Clone()
+			if ($appserviceCodeSyncSuccess) {
+				WriteW -message "ARM deploy failed but app service deploy jobs succeeded. This can happen."
+				return $true
+			}
+			else {
+				WriteE "ERROR: Unkown ARM template deployment error."
+				return $false
+			}
+		}
+		else {
+			WriteE -message "ARM template deployment failed. Check messages above to troubleshoot why." 
+			return $false
+		}
+	}
 }
 
 function ValidateConfig {

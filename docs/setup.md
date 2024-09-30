@@ -10,7 +10,6 @@ You need Teams admin rights and rights to assign sensitive privileges for this s
 1. Go to: https://dev.teams.microsoft.com/bots and create a new bot (or alternatively in the Azure Portal, create a new Azure bot - the 1st link doesn't require an Azure subscription).
 2. Create a new client secret for the bot application registration. Note down the client ID & the secret of the bot.
 3. Grant permissions (specified below) and have an admin grant consent.
-4. Optional: you can create another app registration for the more sensitive privileges if you need (service account). The config supports having x2 accounts, but one can be used for both. 
 
 Next, create a Teams app from the template:
 4. In "Teams App" root dir, copy file "manifest-template.json" to "manifest.json".
