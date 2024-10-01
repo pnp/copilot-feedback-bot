@@ -3,10 +3,12 @@ import React from 'react';
 import { BaseApiLoader } from '../../api/ApiLoader';
 import { getSurveyPages } from '../../api/ApiCalls';
 import { SurveyPageDB } from '../../apimodels/Models';
+import { SurveyPage } from './SurveyPage';
 
 export const SurveyEditPage: React.FC<{ loader?: BaseApiLoader }> = (props) => {
 
   const [surveyPages, setSurveyPages] = React.useState<SurveyPageDB[] | null>(null);
+  const [surveyPageEdit, setSurveyPageEdit] = React.useState<SurveyPageDB | null>(null);
 
   React.useEffect(() => {
     if (props.loader)
@@ -14,6 +16,12 @@ export const SurveyEditPage: React.FC<{ loader?: BaseApiLoader }> = (props) => {
         setSurveyPages(r);
       });
   }, [props.loader]);
+
+  const deletePage = React.useCallback((page: SurveyPageDB) => {
+  }, [surveyPages]);
+
+  const updatePage = React.useCallback((page: SurveyPageDB) => {
+  }, [surveyPages]);
 
   return (
     <div>
@@ -23,7 +31,11 @@ export const SurveyEditPage: React.FC<{ loader?: BaseApiLoader }> = (props) => {
 
           <p>Edit the questions the bot sends to users about copilot.</p>
           {surveyPages ?
-            <p>There are {surveyPages.length} survey pages.</p>
+            <p>
+              {surveyPages.map((page) => {
+                return <SurveyPage key={page.id} page={page} onDelete={deletePage} onEdited={updatePage} />;
+              })}
+            </p>
             :
             <p>Loading...</p>
           }

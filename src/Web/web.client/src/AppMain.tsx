@@ -7,11 +7,14 @@ import { AuthenticatedTemplate, UnauthenticatedTemplate } from "@azure/msal-reac
 import { Redirect, Route } from "react-router-dom";
 import { BaseApiLoader } from './api/ApiLoader';
 import { SurveyEditPage } from './pages/SurveyEdit/SurveyEditPage';
+import { FluentProvider, teamsLightTheme } from '@fluentui/react-components';
 
 export const AppMain : React.FC<PropsWithChildren<{apiLoader?: BaseApiLoader}>> = (props) => {
 
     return (
-        <div>
+        <FluentProvider
+        theme={teamsLightTheme}
+      >
             {props.apiLoader ?
                 (
                     <Layout apiLoader={props.apiLoader}>
@@ -35,7 +38,7 @@ export const AppMain : React.FC<PropsWithChildren<{apiLoader?: BaseApiLoader}>> 
                         </AuthenticatedTemplate>
                     </Layout>
                 )}
-        </div>
+        </FluentProvider>
     );
 
 }
