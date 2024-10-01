@@ -1,5 +1,4 @@
 .narrow {
-  width: 900px;
   margin: 0 auto;
 }
 
@@ -18,6 +17,11 @@
   justify-content: space-between;
   margin: 4rem auto;
   border-bottom: none;
+}
+
+.adaptiveCardContainer
+{
+  max-width: 300px;
 }
 
 .welcome.page > .narrow > ul > li {

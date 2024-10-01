@@ -2,13 +2,13 @@
 import React from 'react';
 import { BaseApiLoader } from '../../api/ApiLoader';
 import { getSurveyPages } from '../../api/ApiCalls';
-import { SurveyPageDB } from '../../apimodels/Models';
+import { SurveyPageDB } from '../../apimodels/Models'; // Ensure SurveyPageDB is a class or constructor function
 import { SurveyPage } from './SurveyPage';
+import { Button } from '@fluentui/react-components';
 
 export const SurveyEditPage: React.FC<{ loader?: BaseApiLoader }> = (props) => {
 
   const [surveyPages, setSurveyPages] = React.useState<SurveyPageDB[] | null>(null);
-  const [surveyPageEdit, setSurveyPageEdit] = React.useState<SurveyPageDB | null>(null);
 
   React.useEffect(() => {
     if (props.loader)
@@ -20,26 +20,43 @@ export const SurveyEditPage: React.FC<{ loader?: BaseApiLoader }> = (props) => {
   const deletePage = React.useCallback((page: SurveyPageDB) => {
   }, [surveyPages]);
 
-  const updatePage = React.useCallback((page: SurveyPageDB) => {
+  const updatedPage = React.useCallback((page: SurveyPageDB) => {
+  }, [surveyPages]);
+
+  const onNewPage = React.useCallback(() => {
+    if (surveyPages) {
+      const newPage: SurveyPageDB = {
+        id: '', // Add appropriate default values for the properties
+        name: 'New Page',
+        adaptiveCardTemplateJson: '{}',
+        pageIndex: surveyPages.length,
+        questions: [],
+        isPublished: false
+      };
+      setSurveyPages([...surveyPages, newPage]);
+      
+    }
   }, [surveyPages]);
 
   return (
-    <div>
+    <div className='surveyPage'>
       <section className="page--header">
         <div className="page-title">
           <h1>Survey Editor</h1>
 
           <p>Edit the questions the bot sends to users about copilot.</p>
           {surveyPages ?
-            <p>
+            <>
               {surveyPages.map((page) => {
-                return <SurveyPage key={page.id} page={page} onDelete={deletePage} onEdited={updatePage} />;
+                return <SurveyPage key={page.id} page={page} onDelete={deletePage} onEdited={updatedPage} />;
               })}
-            </p>
+            </>
             :
             <p>Loading...</p>
           }
 
+          <p>Add pages to the questionaire list:</p>
+          <Button appearance="primary" onClick={onNewPage}>New Page</Button>
         </div>
       </section>
 

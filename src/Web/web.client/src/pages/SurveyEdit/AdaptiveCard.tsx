@@ -16,9 +16,10 @@ export const AdaptiveCard: React.FC<{ json: string }> = (props) => {
   }, []);
 
   return (
-    <div>
+    <div className="adaptiveCardContainer">
       {card &&
         <div ref={(n) => n && n.appendChild(card)}></div>
-      }</div>
+      }
+    </div>
   );
 };
