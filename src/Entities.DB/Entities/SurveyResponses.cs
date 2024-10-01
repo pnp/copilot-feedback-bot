@@ -118,9 +118,9 @@ public enum QuestionDatatype
 
 public enum LogicalOperator
 {
-    Unknown,
-    Equals,
-    NotEquals,
-    GreaterThan,
-    LessThan,
+    Unknown = 0,
+    Equals = 1,
+    NotEquals = 2,
+    GreaterThan = 3,
+    LessThan = 4,
 }

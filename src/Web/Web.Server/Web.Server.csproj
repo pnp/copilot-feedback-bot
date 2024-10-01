@@ -48,6 +48,9 @@
   </ItemGroup>
 
   <ItemGroup>
+	  <PackageReference Include="Azure.Storage.Blobs" Version="12.20.0" />
+	  <PackageReference Include="Azure.Storage.Files.Shares" Version="12.18.0" />
+	  <PackageReference Include="Azure.Storage.Queues" Version="12.18.0" />
 	  <PackageReference Include="Microsoft.AspNetCore.SpaProxy">
 		  <Version>8.*-*</Version>
 	  </PackageReference>
@@ -55,6 +58,7 @@
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.22.0" />
     <PackageReference Include="Microsoft.Bot.Builder.Dialogs" Version="4.22.7" />
     <PackageReference Include="Microsoft.Bot.Builder.Integration.AspNet.Core" Version="4.22.7" />
+    <PackageReference Include="Microsoft.Extensions.Azure" Version="1.7.3" />
     <PackageReference Include="Microsoft.Identity.Web" Version="3.2.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.7.3" />
   </ItemGroup>

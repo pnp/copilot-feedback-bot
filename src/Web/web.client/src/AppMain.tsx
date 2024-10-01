@@ -6,6 +6,7 @@ import { LoginRedirect } from './pages/Login/LoginRedirect';
 import { AuthenticatedTemplate, UnauthenticatedTemplate } from "@azure/msal-react";
 import { Redirect, Route } from "react-router-dom";
 import { BaseApiLoader } from './api/ApiLoader';
+import { SurveyEditPage } from './pages/SurveyEdit/SurveyEditPage';
 
 export const AppMain : React.FC<PropsWithChildren<{apiLoader?: BaseApiLoader}>> = (props) => {
 
@@ -19,6 +20,7 @@ export const AppMain : React.FC<PropsWithChildren<{apiLoader?: BaseApiLoader}>> 
                                 <Redirect to="/tabhome" />
                             </Route>
                             <Route exact path='/tabhome' render={() => <Dashboard loader={props.apiLoader} />} />
+                            <Route exact path='/surveyedit' render={() => <SurveyEditPage loader={props.apiLoader} />} />
                         </AuthenticatedTemplate>
                     </Layout>
                 )

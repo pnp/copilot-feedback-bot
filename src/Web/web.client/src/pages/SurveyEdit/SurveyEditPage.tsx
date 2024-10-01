@@ -1,17 +1,17 @@
 
 import React from 'react';
-import 'chartjs-adapter-date-fns'
 import { BaseApiLoader } from '../../api/ApiLoader';
-import { getClientConfig, ServiceConfiguration } from '../../api/ApiCalls';
+import { getSurveyPages } from '../../api/ApiCalls';
+import { SurveyPageDB } from '../../apimodels/Models';
 
-export const Dashboard: React.FC<{ loader?: BaseApiLoader }> = (props) => {
+export const SurveyEditPage: React.FC<{ loader?: BaseApiLoader }> = (props) => {
 
-  const [config, setConfig] = React.useState<ServiceConfiguration | null>(null);
+  const [surveyPages, setSurveyPages] = React.useState<SurveyPageDB[] | null>(null);
 
   React.useEffect(() => {
     if (props.loader)
-      getClientConfig(props.loader).then((config) => {
-        setConfig(config);
+      getSurveyPages(props.loader).then((r) => {
+        setSurveyPages(r);
       });
   }, [props.loader]);
 
@@ -21,7 +21,13 @@ export const Dashboard: React.FC<{ loader?: BaseApiLoader }> = (props) => {
         <div className="page-title">
           <h1>Survey Editor</h1>
 
-          <p>Welcome to the copilot feedback bot control panel app.</p>
+          <p>Edit the questions the bot sends to users about copilot.</p>
+          {surveyPages ?
+            <p>There are {surveyPages.length} survey pages.</p>
+            :
+            <p>Loading...</p>
+          }
+
         </div>
       </section>
 
