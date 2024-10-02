@@ -18,9 +18,11 @@ export const SurveyEditPage: React.FC<{ loader?: BaseApiLoader }> = (props) => {
   }, [props.loader]);
 
   const deletePage = React.useCallback((page: SurveyPageDB) => {
+    console.log("Deleting page: ", page);
   }, [surveyPages]);
 
   const updatedPage = React.useCallback((page: SurveyPageDB) => {
+    console.log("Updated page: ", page);
   }, [surveyPages]);
 
   const onNewPage = React.useCallback(() => {

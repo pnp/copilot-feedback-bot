@@ -18,7 +18,9 @@ public class SurveyQuestionsController(ILogger<SurveyQuestionsController> logger
     public async Task<List<SurveyPageDB>> SurveyQuestions()
     {
         logger.LogInformation("Called GetSurveyQuestions");
-        var allPages = await context.SurveyPages.ToListAsync();
+        var allPages = await context.SurveyPages
+            .Include(d=> d.Questions)
+            .ToListAsync();
         return allPages;
     }
 

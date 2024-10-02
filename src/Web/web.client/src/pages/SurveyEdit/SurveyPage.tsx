@@ -14,7 +14,7 @@ export const SurveyPage: React.FC<{ page: SurveyPageDB, onEdited: Function, onDe
   const [pageName, setPageName] = React.useState<string>(props.page.name);
   const [pageIndex, setPageIndex] = React.useState<number>(props.page.pageIndex);
   const [pageJson, setPageJson] = React.useState<string>(props.page.adaptiveCardTemplateJson);
-  
+
   const [pageQuestions, setPageQuestions] = React.useState<SurveyQuestionDB[]>(props.page.questions);
 
   const onEditToggle = React.useCallback(() => {
@@ -24,7 +24,7 @@ export const SurveyPage: React.FC<{ page: SurveyPageDB, onEdited: Function, onDe
   const onDelete = React.useCallback(() => {
   }, [props.onDelete]);
 
-  
+
   const onDeleteQuestion = React.useCallback((q: SurveyQuestionDB) => {
     console.log("Deleting question: ", q);
     const newQuestions = pageQuestions.filter((question) => question.id !== q.id);
@@ -49,7 +49,7 @@ export const SurveyPage: React.FC<{ page: SurveyPageDB, onEdited: Function, onDe
           <Checkbox
             checked={pageIsPublished}
             onChange={(_ev, data) => setPageIsPublished(data.checked === true)}
-            label="Published"
+            label="Survey page published (bot will send this page)"
           />
 
           <Field label="Adaptive card JSon">
@@ -57,7 +57,8 @@ export const SurveyPage: React.FC<{ page: SurveyPageDB, onEdited: Function, onDe
           </Field>
 
 
-          <Field label="Questions in page">
+          <label>Questions in page</label>
+          <div className="pageQuestions">
             {pageQuestions.length > 0 ?
               <>
                 {pageQuestions.map((q) => {
@@ -67,14 +68,15 @@ export const SurveyPage: React.FC<{ page: SurveyPageDB, onEdited: Function, onDe
               :
               <div>No questions for this page</div>
             }
-            <Link onClick={() => {
-              const newQuestion: SurveyQuestionDB = { id: "0", question: "New Question", questionId: "0", dataType: QuestionDatatype.String };
-              setPageQuestions([...pageQuestions, newQuestion]);
-            }}>
-              Add Question
-            </Link>
 
-          </Field>
+          </div>
+
+          <Link onClick={() => {
+            const newQuestion: SurveyQuestionDB = { id: "0", question: "New Question", questionId: "0", dataType: QuestionDatatype.String };
+            setPageQuestions([...pageQuestions, newQuestion]);
+          }}>
+            Add new question
+          </Link>
 
           <div className='nav'>
             <ul>

@@ -23,6 +23,9 @@
 {
   max-width: 300px;
 }
+.pageQuestions{
+  margin-left: 20px;
+}
 
 .welcome.page > .narrow > ul > li {
   background-color: inherit;

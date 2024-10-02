@@ -6,9 +6,9 @@ import { LogicalOperator, QuestionDatatype } from "../../apimodels/Enums";
 export const SurveyQuestion: React.FC<{ q: SurveyQuestionDB, deleteQuestion: Function }> = (props) => {
 
   const [question, setQuestion] = React.useState<string>(props.q.question);
-  const [logicalOp, setLogicalOp] = React.useState<LogicalOperator>(props.q.optimalAnswerLogicalOp ?? LogicalOperator.Unknown);
-  const [dataType, setDataType] = React.useState<QuestionDatatype>(props.q.dataType ?? QuestionDatatype.Unknown);
-  const [hasOptimalAnswerValue, setHasOptimalAnswerValue] = React.useState<boolean>(props.q.optimalAnswerValue !== undefined);
+  const [logicalOp, setLogicalOp] = React.useState<LogicalOperator>(props.q.optimalAnswerLogicalOp ?? LogicalOperator.Equals);
+  const [dataType, setDataType] = React.useState<QuestionDatatype>(props.q.dataType ?? QuestionDatatype.String);
+  const [hasOptimalAnswerValue, setHasOptimalAnswerValue] = React.useState<boolean>(props.q.optimalAnswerValue !== null);
   const [optimalAnswerValue, setOptimalAnswerValue] = React.useState<string | undefined>(props.q.optimalAnswerValue);
 
   const hasOptimalAnswerValueClick = React.useCallback(() => {
@@ -52,8 +52,8 @@ export const SurveyQuestion: React.FC<{ q: SurveyQuestionDB, deleteQuestion: Fun
 
   return (
     <div className="pageQuestion">
-      <h3>Question: {question}</h3>
-      <Field label="Question">
+      <h3>---</h3>
+      <Field label="Question text">
         <Input onChange={(e) => setQuestion(e.target.value)} value={question} />
       </Field>
       <Field label="Optimal value">
@@ -69,9 +69,9 @@ export const SurveyQuestion: React.FC<{ q: SurveyQuestionDB, deleteQuestion: Fun
         <label>Data type</label>
         <Select onChange={onSetDataTypeChange} value={dataType}>
           <option value={LogicalOperator.Unknown}>Select...</option>
-          <option value={QuestionDatatype.Bool}>Boolean</option>
-          <option value={QuestionDatatype.Int}>Integer</option>
-          <option value={QuestionDatatype.String}>String</option>
+          <option value={QuestionDatatype.Bool}>Yes/no</option>
+          <option value={QuestionDatatype.Int}>Numeric</option>
+          <option value={QuestionDatatype.String}>Text</option>
         </Select>
       </div>
       <div>
