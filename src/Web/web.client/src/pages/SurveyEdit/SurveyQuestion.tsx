@@ -52,7 +52,6 @@ export const SurveyQuestion: React.FC<{ q: SurveyQuestionDB, deleteQuestion: Fun
 
   return (
     <div className="pageQuestion">
-      <h3>---</h3>
       <Field label="Question text">
         <Input onChange={(e) => setQuestion(e.target.value)} value={question} />
       </Field>

@@ -1,21 +1,40 @@
 import React from "react";
-import { SurveyPageDB, SurveyQuestionDB } from "../../apimodels/Models";
+import { SurveyPageEditViewModel } from "../../apimodels/Models";
 import { AdaptiveCard } from "./AdaptiveCard";
-import { Button, Checkbox, Field, Input, Link, Textarea } from "@fluentui/react-components";
-import { SurveyQuestion } from "./SurveyQuestion";
-import { QuestionDatatype } from "../../apimodels/Enums";
+import { Button, makeStyles, SelectTabData, SelectTabEvent, Tab, TabList, TabValue, tokens } from "@fluentui/react-components";
+import { SurveyPageEditQuestions } from "./SurveyPageEditQuestions";
+import { SurveyPageEditPage } from "./SurveyPageEditPage";
 
 
-export const SurveyPage: React.FC<{ page: SurveyPageDB, onEdited: Function, onDelete: Function }> = (props) => {
+const useStyles = makeStyles({
+  root: {
+    alignItems: "flex-start",
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "flex-start",
+    padding: "50px 20px",
+    rowGap: "20px",
+  },
+  panels: {
+    padding: "0 10px",
+    "& th": {
+      textAlign: "left",
+      padding: "0 30px 0 0",
+    },
+  },
+  propsTable: {
+    "& td:first-child": {
+      fontWeight: tokens.fontWeightSemibold,
+    },
+    "& td": {
+      padding: "0 30px 0 0",
+    },
+  },
+});
+
+export const SurveyPage: React.FC<{ page: SurveyPageEditViewModel, onEdited: Function, onDelete: Function }> = (props) => {
 
   const [editMode, setEditMode] = React.useState<boolean>(false);
-
-  const [pageIsPublished, setPageIsPublished] = React.useState<boolean>(props.page.isPublished);
-  const [pageName, setPageName] = React.useState<string>(props.page.name);
-  const [pageIndex, setPageIndex] = React.useState<number>(props.page.pageIndex);
-  const [pageJson, setPageJson] = React.useState<string>(props.page.adaptiveCardTemplateJson);
-
-  const [pageQuestions, setPageQuestions] = React.useState<SurveyQuestionDB[]>(props.page.questions);
 
   const onEditToggle = React.useCallback(() => {
     setEditMode(!editMode);
@@ -25,12 +44,13 @@ export const SurveyPage: React.FC<{ page: SurveyPageDB, onEdited: Function, onDe
   }, [props.onDelete]);
 
 
-  const onDeleteQuestion = React.useCallback((q: SurveyQuestionDB) => {
-    console.log("Deleting question: ", q);
-    const newQuestions = pageQuestions.filter((question) => question.id !== q.id);
-    console.log("New questions: ", newQuestions);
-    setPageQuestions(newQuestions);
-  }, [props.onDelete]);
+
+  const [selectedValue, setSelectedValue] = React.useState<TabValue>("SurveyPageEditPage");
+
+  const onTabSelect = (_event: SelectTabEvent, data: SelectTabData) => {
+    setSelectedValue(data.value);
+  };
+  const styles = useStyles();
 
   return (
     <div>
@@ -38,45 +58,21 @@ export const SurveyPage: React.FC<{ page: SurveyPageDB, onEdited: Function, onDe
 
       {editMode ?
         <>
-          <Field label="Page Name">
-            <Input onChange={(e) => setPageName(e.target.value)} value={pageName} />
-          </Field>
 
-          <Field label="Page Index">
-            <Input value={pageIndex.toString()} type="number" onChange={(e) => setPageIndex(Number(e.target.value))} />
-          </Field>
-
-          <Checkbox
-            checked={pageIsPublished}
-            onChange={(_ev, data) => setPageIsPublished(data.checked === true)}
-            label="Survey page published (bot will send this page)"
-          />
-
-          <Field label="Adaptive card JSon">
-            <Textarea onChange={(e) => setPageJson(e.target.value)}>{pageJson}</Textarea>
-          </Field>
-
-
-          <label>Questions in page</label>
-          <div className="pageQuestions">
-            {pageQuestions.length > 0 ?
-              <>
-                {pageQuestions.map((q) => {
-                  return <SurveyQuestion key={q.id} q={q} deleteQuestion={() => onDeleteQuestion(q)} />
-                })}
-              </>
-              :
-              <div>No questions for this page</div>
-            }
-
+          <TabList selectedValue={selectedValue} onTabSelect={onTabSelect}>
+            <Tab id="SurveyPageEditPage" value="SurveyPageEditPage">
+              Survey Page
+            </Tab>
+            <Tab id="SurveyPageEditQuestions" value="SurveyPageEditQuestions">
+              Questions
+            </Tab>
+          </TabList>
+          <div className={styles.panels}>
+            {selectedValue === "SurveyPageEditPage" && <SurveyPageEditPage onDelete={props.onDelete} onEdited={props.onEdited} page={props.page} />}
+            {selectedValue === "SurveyPageEditQuestions" && <SurveyPageEditQuestions
+              onDelete={props.onDelete} onEdited={props.onEdited} page={props.page} />}
           </div>
 
-          <Link onClick={() => {
-            const newQuestion: SurveyQuestionDB = { id: "0", question: "New Question", questionId: "0", dataType: QuestionDatatype.String };
-            setPageQuestions([...pageQuestions, newQuestion]);
-          }}>
-            Add new question
-          </Link>
 
           <div className='nav'>
             <ul>
@@ -92,7 +88,7 @@ export const SurveyPage: React.FC<{ page: SurveyPageDB, onEdited: Function, onDe
         :
         <>
           <div>
-            <AdaptiveCard json={props.page.adaptiveCardTemplateJson} />
+            <AdaptiveCard json={props.page.adaptiveCardTemplateJsonWithQuestions} />
           </div>
           <div className='nav'>
             <ul>

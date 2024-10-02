@@ -2,13 +2,13 @@
 import React from 'react';
 import { BaseApiLoader } from '../../api/ApiLoader';
 import { getSurveyPages } from '../../api/ApiCalls';
-import { SurveyPageDB } from '../../apimodels/Models'; // Ensure SurveyPageDB is a class or constructor function
+import { SurveyPageDB, SurveyPageEditViewModel } from '../../apimodels/Models'; // Ensure SurveyPageDB is a class or constructor function
 import { SurveyPage } from './SurveyPage';
 import { Button } from '@fluentui/react-components';
 
 export const SurveyEditPage: React.FC<{ loader?: BaseApiLoader }> = (props) => {
 
-  const [surveyPages, setSurveyPages] = React.useState<SurveyPageDB[] | null>(null);
+  const [surveyPages, setSurveyPages] = React.useState<SurveyPageEditViewModel[] | null>(null);
 
   React.useEffect(() => {
     if (props.loader)
@@ -27,10 +27,11 @@ export const SurveyEditPage: React.FC<{ loader?: BaseApiLoader }> = (props) => {
 
   const onNewPage = React.useCallback(() => {
     if (surveyPages) {
-      const newPage: SurveyPageDB = {
+      const newPage: SurveyPageEditViewModel = {
         id: '', // Add appropriate default values for the properties
         name: 'New Page',
         adaptiveCardTemplateJson: '{}',
+        adaptiveCardTemplateJsonWithQuestions: '{}',
         pageIndex: surveyPages.length,
         questions: [],
         isPublished: false

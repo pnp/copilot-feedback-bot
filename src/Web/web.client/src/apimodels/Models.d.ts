@@ -16,6 +16,10 @@ interface SurveyPageDB extends AbstractEFEntityWithName {
   isPublished: boolean;
 }
 
+interface SurveyPageEditViewModel extends SurveyPageDB {
+  adaptiveCardTemplateJsonWithQuestions: string;
+}
+
 interface SurveyQuestionDB extends AbstractEFEntity {
   questionId: string;
   question: string;
