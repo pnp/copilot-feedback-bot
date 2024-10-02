@@ -59,7 +59,7 @@ export const SurveyPageEdit: React.FC<{ page: SurveyPageEditViewModel, onPageEdi
           </TabList>
           <div className={styles.panels}>
             {selectedValue === "SurveyPageEditPage" && 
-              <EditSurveyPage onEdited={props.onPageEdited} page={props.page} />}
+              <EditSurveyPage onPageEdited={props.onPageEdited} page={props.page} />}
             {selectedValue === "SurveyPageEditQuestions" && 
               <EditSurveyQuestions onQuestionEdited={props.onQuestionEdited} onQuestionDeleted={props.onQuestionDeleted} page={props.page} />}
           </div>

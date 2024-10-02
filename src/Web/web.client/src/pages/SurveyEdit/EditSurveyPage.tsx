@@ -3,12 +3,25 @@ import { SurveyPageDB } from "../../apimodels/Models";
 import { Checkbox, Field, Input, Textarea } from "@fluentui/react-components";
 
 
-export const EditSurveyPage: React.FC<{ page: SurveyPageDB, onEdited: Function }> = (props) => {
+export const EditSurveyPage: React.FC<{ page: SurveyPageDB, onPageEdited: Function }> = (props) => {
 
   const [pageIsPublished, setPageIsPublished] = React.useState<boolean>(props.page.isPublished);
   const [pageName, setPageName] = React.useState<string>(props.page.name);
   const [pageIndex, setPageIndex] = React.useState<number>(props.page.pageIndex);
   const [pageJson, setPageJson] = React.useState<string>(props.page.adaptiveCardTemplateJson);
+
+    // Send updated question to parent
+    React.useEffect(() => {
+      const p: SurveyPageDB = {
+        id: props.page.id,
+        name: pageName,
+        pageIndex: pageIndex,
+        adaptiveCardTemplateJson: pageJson,
+        isPublished: pageIsPublished,
+        questions: props.page.questions
+      };
+      props.onPageEdited(p);
+    }, [pageIsPublished, pageName, pageIndex, pageJson]);
 
   return (
     <div className="pageEditTab">

@@ -2,7 +2,7 @@
 import React from 'react';
 import { BaseApiLoader } from '../../api/ApiLoader';
 import { getSurveyPages } from '../../api/ApiCalls';
-import { SurveyPageDB, SurveyPageEditViewModel } from '../../apimodels/Models'; // Ensure SurveyPageDB is a class or constructor function
+import { SurveyPageDB, SurveyPageEditViewModel, SurveyQuestionDB } from '../../apimodels/Models'; // Ensure SurveyPageDB is a class or constructor function
 import { SurveyPageEdit } from './SurveyPageEdit';
 import { Button, Spinner } from '@fluentui/react-components';
 import { SurveyPageView } from './SurveyPageView';
@@ -23,8 +23,6 @@ export const SurveyManagerPage: React.FC<{ loader?: BaseApiLoader }> = (props) =
     console.log("Deleting page: ", page);
   }, [surveyPages]);
 
-
-
   const startEditPage = React.useCallback((page: SurveyPageEditViewModel) => {
     console.log("Editing page: ", page);
     setEditingSurveyPage(page);
@@ -40,13 +38,13 @@ export const SurveyManagerPage: React.FC<{ loader?: BaseApiLoader }> = (props) =
   }, [surveyPages]);
 
   
-  const onQuestionEdited = React.useCallback((page: SurveyPageDB) => {
-    console.log("Updated question: ", page);
+  const onQuestionEdited = React.useCallback((q: SurveyQuestionDB) => {
+    console.log("Updated question: ", q);
   }, [surveyPages]);
 
   
-  const onQuestionDeleted = React.useCallback((page: SurveyPageDB) => {
-    console.log("Deleted question: ", page);
+  const onQuestionDeleted = React.useCallback((q: SurveyQuestionDB) => {
+    console.log("Deleted question: ", q);
   }, [surveyPages]);
 
 
