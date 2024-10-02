@@ -3,7 +3,7 @@ import { SurveyQuestionDB } from "../../apimodels/Models";
 import { Checkbox, Field, Input, Link, Select, SelectOnChangeData } from "@fluentui/react-components";
 import { LogicalOperator, QuestionDatatype } from "../../apimodels/Enums";
 
-export const SurveyQuestion: React.FC<{ q: SurveyQuestionDB, deleteQuestion: Function }> = (props) => {
+export const SurveyQuestion: React.FC<{ q: SurveyQuestionDB, deleteQuestion: Function, questionsUpdated: Function }> = (props) => {
 
   const [question, setQuestion] = React.useState<string>(props.q.question);
   const [logicalOp, setLogicalOp] = React.useState<LogicalOperator>(props.q.optimalAnswerLogicalOp ?? LogicalOperator.Equals);

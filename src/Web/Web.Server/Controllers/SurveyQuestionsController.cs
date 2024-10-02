@@ -41,7 +41,7 @@ public class SurveyPageEditViewModel : SurveyPageDB
         this.Questions = surveyPageDB.Questions;
         this.IsPublished = surveyPageDB.IsPublished;
         this.PageIndex = surveyPageDB.PageIndex;
-
+        this.Name = surveyPageDB.Name;
         var model = new SurveyPage(surveyPageDB);
         this.AdaptiveCardTemplateJsonWithQuestions = model.BuildAdaptiveCard().ToString();
     }

@@ -3,7 +3,7 @@ import { SurveyPageDB } from "../../apimodels/Models";
 import { Checkbox, Field, Input, Textarea } from "@fluentui/react-components";
 
 
-export const SurveyPageEditPage: React.FC<{ page: SurveyPageDB, onEdited: Function, onDelete: Function }> = (props) => {
+export const EditSurveyPage: React.FC<{ page: SurveyPageDB, onEdited: Function }> = (props) => {
 
   const [pageIsPublished, setPageIsPublished] = React.useState<boolean>(props.page.isPublished);
   const [pageName, setPageName] = React.useState<string>(props.page.name);
@@ -23,11 +23,11 @@ export const SurveyPageEditPage: React.FC<{ page: SurveyPageDB, onEdited: Functi
       <Checkbox
         checked={pageIsPublished}
         onChange={(_ev, data) => setPageIsPublished(data.checked === true)}
-        label="Survey page published (bot will send this page)"
+        label="Survey page published"
       />
 
       <Field label="Adaptive card JSon template (minus questions)">
-        <Textarea style={{height: 150}} onChange={(e) => setPageJson(e.target.value)}>{pageJson}</Textarea>
+        <Textarea style={{height: 150}} onChange={(e) => setPageJson(e.target.value)} value={pageJson}></Textarea>
       </Field>
 
     </div>

@@ -4,7 +4,7 @@ import { Link } from "@fluentui/react-components";
 import { SurveyQuestion } from "./SurveyQuestion";
 import { QuestionDatatype } from "../../apimodels/Enums";
 
-export const SurveyPageEditQuestions: React.FC<{ page: SurveyPageDB, onEdited: Function, onDelete: Function }> = (props) => {
+export const EditSurveyQuestions: React.FC<{ page: SurveyPageDB, onQuestionEdited: Function, onQuestionDeleted: Function }> = (props) => {
 
   const [pageQuestions, setPageQuestions] = React.useState<SurveyQuestionDB[]>(props.page.questions);
 
@@ -13,7 +13,7 @@ export const SurveyPageEditQuestions: React.FC<{ page: SurveyPageDB, onEdited: F
     const newQuestions = pageQuestions.filter((question) => question.id !== q.id);
     console.log("New questions: ", newQuestions);
     setPageQuestions(newQuestions);
-  }, [props.onDelete]);
+  }, [props.onQuestionDeleted, pageQuestions]);
 
 
   return (
@@ -33,6 +33,7 @@ export const SurveyPageEditQuestions: React.FC<{ page: SurveyPageDB, onEdited: F
       <Link onClick={() => {
         const newQuestion: SurveyQuestionDB = { id: "0", question: "New Question", questionId: "0", dataType: QuestionDatatype.String };
         setPageQuestions([...pageQuestions, newQuestion]);
+        props.onQuestionEdited(newQuestion);
       }}>
         Add new question
       </Link>
