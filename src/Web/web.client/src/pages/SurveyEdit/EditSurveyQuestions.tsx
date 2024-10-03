@@ -6,8 +6,6 @@ import { QuestionDatatype } from "../../apimodels/Enums";
 
 export const EditSurveyQuestions: React.FC<{ page: SurveyPageDB, onQuestionEdited: Function, onQuestionDeleted: Function }> = (props) => {
 
-  console.log("EditSurveyQuestions: ", props);
-
   return (
     <div className="pageEditTab">
       <div>

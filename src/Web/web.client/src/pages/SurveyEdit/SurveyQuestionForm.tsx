@@ -2,6 +2,8 @@ import React, { ChangeEvent } from "react";
 import { SurveyQuestionDB } from "../../apimodels/Models";
 import { Checkbox, Field, Input, Link, Select, SelectOnChangeData } from "@fluentui/react-components";
 import { LogicalOperator, QuestionDatatype } from "../../apimodels/Enums";
+import isEqual from 'lodash.isequal';
+import { set } from "lodash";
 
 export interface SurveyQuestionProps {
   q: SurveyQuestionDB;
@@ -16,6 +18,9 @@ export const SurveyQuestionForm: React.FC<SurveyQuestionProps> = (props) => {
   const [dataType, setDataType] = React.useState<QuestionDatatype>(props.q.dataType ?? QuestionDatatype.String);
   const [hasOptimalAnswerValue, setHasOptimalAnswerValue] = React.useState<boolean>(props.q.optimalAnswerValue !== null);
   const [optimalAnswerValue, setOptimalAnswerValue] = React.useState<string | undefined>(props.q.optimalAnswerValue);
+
+  const [lastQuestionObject, setLastQuestionObject] = React.useState<SurveyQuestionDB>(props.q);
+
 
   const hasOptimalAnswerValueClick = React.useCallback(() => {
     setHasOptimalAnswerValue(!hasOptimalAnswerValue);
@@ -32,6 +37,13 @@ export const SurveyQuestionForm: React.FC<SurveyQuestionProps> = (props) => {
       questionId: props.q.questionId,
       forSurveyPageId: props.q.forSurveyPageId,
     };
+
+    if (isEqual(q, lastQuestionObject)) {
+      console.log("No changes detected");
+      return;
+    }
+    setLastQuestionObject(q);
+
     console.log("Updating question with parent: ", q);
     props.onQuestionEdited(q);
   }, [question, logicalOp, dataType, hasOptimalAnswerValue, optimalAnswerValue]);
