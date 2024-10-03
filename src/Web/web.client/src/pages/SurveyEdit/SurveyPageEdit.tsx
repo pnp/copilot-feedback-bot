@@ -31,17 +31,29 @@ const useStyles = makeStyles({
   },
 });
 
-export const SurveyPageEdit: React.FC<{ page: SurveyPageEditViewModel, onPageEdited: Function, onQuestionEdited: Function, onPageDeleted: Function, onQuestionDeleted: Function }> = (props) => {
+interface SurveyPageEditProps {
+  page: SurveyPageEditViewModel,
+  onPageEdited: Function, 
+  onQuestionEdited: Function,
+  onPageDeleted: Function, 
+  onQuestionDeleted: Function,
+  onEditCancel: Function,
+}
+
+export const SurveyPageEdit: React.FC<SurveyPageEditProps> = (props) => {
 
   const onSave = React.useCallback(() => {
-    console.log("Saving page: ", props.page);
     props.onPageEdited(props.page);
   }, [props.onPageEdited, props.page]);
 
-  const [selectedValue, setSelectedValue] = React.useState<TabValue>("SurveyPageEditPage");
+  const onEditCancel = React.useCallback(() => {
+    props.onEditCancel();
+  }, [props.onPageEdited, props.page]);
+
+  const [selectedTabValue, setSelectedTabValue] = React.useState<TabValue>("SurveyPageEditPage");
 
   const onTabSelect = (_event: SelectTabEvent, data: SelectTabData) => {
-    setSelectedValue(data.value);
+    setSelectedTabValue(data.value);
   };
   const styles = useStyles();
 
@@ -49,29 +61,32 @@ export const SurveyPageEdit: React.FC<{ page: SurveyPageEditViewModel, onPageEdi
     <div>
       <h2>{props.page.name}</h2>
 
-          <TabList selectedValue={selectedValue} onTabSelect={onTabSelect}>
-            <Tab id="SurveyPageEditPage" value="SurveyPageEditPage">
-              Survey Page
-            </Tab>
-            <Tab id="SurveyPageEditQuestions" value="SurveyPageEditQuestions">
-              Questions
-            </Tab>
-          </TabList>
-          <div className={styles.panels}>
-            {selectedValue === "SurveyPageEditPage" && 
-              <EditSurveyPage onPageEdited={props.onPageEdited} page={props.page} />}
-            {selectedValue === "SurveyPageEditQuestions" && 
-              <EditSurveyQuestions onQuestionEdited={props.onQuestionEdited} onQuestionDeleted={props.onQuestionDeleted} page={props.page} />}
-          </div>
+      <TabList selectedValue={selectedTabValue} onTabSelect={onTabSelect}>
+        <Tab id="SurveyPageEditPage" value="SurveyPageEditPage">
+          Survey Page
+        </Tab>
+        <Tab id="SurveyPageEditQuestions" value="SurveyPageEditQuestions">
+          Questions
+        </Tab>
+      </TabList>
+      <div className={styles.panels}>
+        {selectedTabValue === "SurveyPageEditPage" &&
+          <EditSurveyPage onPageEdited={props.onPageEdited} page={props.page} />}
+        {selectedTabValue === "SurveyPageEditQuestions" &&
+          <EditSurveyQuestions onQuestionEdited={props.onQuestionEdited} onQuestionDeleted={props.onQuestionDeleted} page={props.page} />}
+      </div>
 
 
-          <div className='nav'>
-            <ul>
-              <li>
-                <Button appearance="primary" onClick={onSave}>Save</Button>
-              </li>
-            </ul>
-          </div>
+      <div className='nav'>
+        <ul>
+          <li>
+            <Button appearance="primary" onClick={onSave}>Save</Button>
+          </li>
+          <li>
+            <Button appearance="secondary" onClick={onEditCancel}>Cancel</Button>
+          </li>
+        </ul>
+      </div>
     </div>
   );
 };

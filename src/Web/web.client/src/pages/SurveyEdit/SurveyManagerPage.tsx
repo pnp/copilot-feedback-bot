@@ -23,35 +23,41 @@ export const SurveyManagerPage: React.FC<{ loader?: BaseApiLoader }> = (props) =
 
   const deletePage = React.useCallback((page: SurveyPageDB) => {
     console.log("Deleting page: ", page);
-    
+
     if (!surveyPages) return;
     var pageIndex = surveyPages.findIndex((p) => p.id === page.id);
-    var updatedPages = update(surveyPages, { $splice: [[pageIndex, 1]] } );
+    var updatedPages = update(surveyPages, { $splice: [[pageIndex, 1]] });
     setSurveyPages(updatedPages);
+    console.log("Updated pages: ", updatedPages);
   }, [surveyPages]);
 
-  const startEditPage = React.useCallback((page: SurveyPageEditViewModel) => {
-    console.log("Editing page: ", page);
+  const startEditPage = React.useCallback((page: SurveyPageEditViewModel | null) => {
+    console.log("Start editing page: ", page);
     setEditingSurveyPage(page);
   }, [editingSurveyPage]);
 
-  const onPageEdited = React.useCallback((page: SurveyPageDB) => {
+  const onPageEdited = React.useCallback((page: SurveyPageEditViewModel) => {
     console.log("Updated page: ", page);
-    var updatedPages = update(surveyPages, { $: [page] });
+    if (!surveyPages) return;
+
+    var pageIndex = surveyPages.findIndex((p) => p.id === page.id);
+    const updatedPages = update(surveyPages, { [pageIndex]: { $set: page } });
+    setSurveyPages(updatedPages);
+    console.log("Updated pages: ", updatedPages);
 
   }, [surveyPages]);
 
-  
+
   const onPageDeleted = React.useCallback((page: SurveyPageDB) => {
     console.log("Deleted page: ", page);
   }, [surveyPages]);
 
-  
+
   const onQuestionEdited = React.useCallback((q: SurveyQuestionDB) => {
     console.log("Updated question: ", q);
   }, [surveyPages]);
 
-  
+
   const onQuestionDeleted = React.useCallback((q: SurveyQuestionDB) => {
     console.log("Deleted question: ", q);
   }, [surveyPages]);
@@ -80,14 +86,15 @@ export const SurveyManagerPage: React.FC<{ loader?: BaseApiLoader }> = (props) =
 
           <p>Edit the questions the bot sends to users about copilot.</p>
           {editingSurveyPage ?
-            <SurveyPageEdit page={editingSurveyPage} onPageEdited={onPageEdited} onPageDeleted={onPageDeleted} 
-              onQuestionDeleted={onQuestionDeleted} onQuestionEdited={onQuestionEdited} />
+            <SurveyPageEdit page={editingSurveyPage} onPageEdited={onPageEdited} onPageDeleted={onPageDeleted}
+              onQuestionDeleted={onQuestionDeleted} onQuestionEdited={onQuestionEdited} 
+              onEditCancel={()=> startEditPage(null)}/>
             :
             <>
               {surveyPages ?
                 <>
                   {surveyPages.map((page) => {
-                    return <SurveyPageView key={page.id} onStartEdit={startEditPage} page={page} onDelete={deletePage}  />;
+                    return <SurveyPageView key={page.id} onStartEdit={startEditPage} page={page} onDelete={deletePage} />;
                   })}
                 </>
                 :
