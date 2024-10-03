@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { SurveyPageEditViewModel, SurveyQuestionDB } from '../../apimodels/Models'; // Ensure SurveyPageDB is a class or constructor function
+import { SurveyQuestionDB } from '../../apimodels/Models'; // Ensure SurveyPageDB is a class or constructor function
 
 export const QuestionsList: React.FC<{ qs: SurveyQuestionDB[] }> = (props) => {
 

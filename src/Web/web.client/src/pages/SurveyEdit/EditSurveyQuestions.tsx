@@ -23,12 +23,12 @@ export const EditSurveyQuestions: React.FC<{ page: SurveyPageDB, onQuestionEdite
       </div>
 
       <Link onClick={() => {
-        const newQuestion: SurveyQuestionDB = 
-        { 
-          id: "0", question: 
-          "New Question", questionId: "0", 
-          dataType: QuestionDatatype.String, 
-          forSurveyPageId: props.page.id 
+        if (!props.page.id) return;
+        const newQuestion: SurveyQuestionDB =
+        {
+          question: "New Question", questionId: "0",
+          dataType: QuestionDatatype.String,
+          forSurveyPageId: props.page.id
         };
         props.onQuestionEdited(newQuestion);
       }}>

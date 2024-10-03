@@ -5,10 +5,9 @@ import { getSurveyPages } from '../../api/ApiCalls';
 import { SurveyPageDB, SurveyPageEditViewModel, SurveyQuestionDB } from '../../apimodels/Models'; // Ensure SurveyPageDB is a class or constructor function
 import { SurveyPageEdit } from './SurveyPageEdit';
 import { Button, Spinner } from '@fluentui/react-components';
-import { SurveyPageView } from './SurveyPageView';
 
 import update from 'immutability-helper';
-import { SurveyPagesList } from './SurveyPagesList';
+import { SurveyPagesList } from './SurveyPagesViewList';
 
 export const SurveyManagerPage: React.FC<{ loader?: BaseApiLoader }> = (props) => {
 
@@ -44,7 +43,10 @@ export const SurveyManagerPage: React.FC<{ loader?: BaseApiLoader }> = (props) =
     var pageIndex = surveyPages.findIndex((p) => p.id === page.id);
     const updatedPages = update(surveyPages, { [pageIndex]: { $set: page } });
     setSurveyPages(updatedPages);
-    console.log("Updated pages: ", updatedPages);
+    console.log("Updated pages after page edited: ", updatedPages);
+
+    // Update page being edited
+    setEditingSurveyPage(page);
 
   }, [surveyPages]);
 
@@ -55,19 +57,35 @@ export const SurveyManagerPage: React.FC<{ loader?: BaseApiLoader }> = (props) =
 
 
   const onQuestionEdited = React.useCallback((q: SurveyQuestionDB) => {
-    console.log("Updated question: ", q);
     if (!surveyPages) return;
 
     var pageIndex = surveyPages.findIndex((p) => p.id === q.forSurveyPageId);
-    if (pageIndex === -1) return;
+    let updatedPages : SurveyPageEditViewModel[] = [];
+    if (!q.id) {
+      console.debug("New question: ", q);
+      if (pageIndex === -1) return;
 
-    const page = surveyPages[pageIndex];
-    var questionIndex = page.questions.findIndex((qq) => qq.id === q.id);
-    if (questionIndex === -1) return;
-    const updatedPages = update(surveyPages, { [pageIndex]: { questions: { [questionIndex]: { $set: q } } } });
+      updatedPages = update(surveyPages, { [pageIndex]: { questions: { $push: [q] } } });
+      console.debug("Updated pages after question added: ", updatedPages);
+    }
+    else {
+      if (pageIndex === -1) return;
+      console.debug("Updated question: ", q);
+      const page = surveyPages[pageIndex];
+      var questionIndex = page.questions.findIndex((qq) => qq.id === q.id);
+      if (questionIndex === -1) return;
+
+      updatedPages = update(surveyPages, { [pageIndex]: { questions: { [questionIndex]: { $set: q } } } });
+      console.debug("Updated pages after question edited: ", updatedPages);
+    }
     setSurveyPages(updatedPages);
-    console.log("Updated pages: ", updatedPages);
 
+    // Find the updated page
+    const updatedPageIndex = updatedPages.findIndex((p) => p.id === q.forSurveyPageId);
+    const updatedPage = updatedPages[updatedPageIndex];
+
+    // Update page being edited
+    setEditingSurveyPage(updatedPage);
   }, [surveyPages]);
 
 
@@ -78,12 +96,19 @@ export const SurveyManagerPage: React.FC<{ loader?: BaseApiLoader }> = (props) =
     var pageIndex = surveyPages.findIndex((p) => p.id === q.forSurveyPageId);
     if (pageIndex === -1) return;
 
-    const page = surveyPages[pageIndex];
-    var questionIndex = page.questions.findIndex((qq) => qq.id === q.id);
+    const pageOld = surveyPages[pageIndex];
+    var questionIndex = pageOld.questions.findIndex((qq) => qq.id === q.id);
     if (questionIndex === -1) return;
     const updatedPages = update(surveyPages, { [pageIndex]: { questions: { $splice: [[questionIndex, 1]] } } });
     setSurveyPages(updatedPages);
-    console.log("Updated pages: ", updatedPages);
+    console.log("Updated pages after question deleted: ", updatedPages);
+
+    // Find the updated page
+    const updatedPageIndex = updatedPages.findIndex((p) => p.id === q.forSurveyPageId);
+    const updatedPage = updatedPages[updatedPageIndex];
+
+    // Update page being edited
+    setEditingSurveyPage(updatedPage);
   }, [surveyPages]);
 
 
@@ -108,13 +133,6 @@ export const SurveyManagerPage: React.FC<{ loader?: BaseApiLoader }> = (props) =
         <div className="page-title">
           <h1>Survey Editor</h1>
 
-          {surveyPages &&
-            <>
-              <SurveyPagesList pages={surveyPages} />
-            </>
-          }
-
-          <div>{JSON.stringify(surveyPages)}</div>
           <p>Edit the questions the bot sends to users about copilot.</p>
           {editingSurveyPage ?
             <SurveyPageEdit page={editingSurveyPage} onPageEdited={onPageEdited} onPageDeleted={onPageDeleted}
@@ -124,10 +142,7 @@ export const SurveyManagerPage: React.FC<{ loader?: BaseApiLoader }> = (props) =
             <>
               {surveyPages ?
                 <>
-                  {surveyPages.map((page) => {
-                    console.log("surveyPages map: ", page);
-                    return <SurveyPageView key={page.id} onStartEdit={startEditPage} page={page} onDelete={deletePage} />;
-                  })}
+                  <SurveyPagesList pages={surveyPages} onStartEdit={startEditPage} onDelete={deletePage} />
                 </>
                 :
                 <Spinner />

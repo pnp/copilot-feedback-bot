@@ -1,6 +1,6 @@
 
 abstract interface AbstractEFEntityWithName extends AbstractEFEntity { name: string }
-abstract interface AbstractEFEntity { id: string }
+abstract interface AbstractEFEntity { id?: string }
 
 interface IdTokenClaims {
   at_hash: string,

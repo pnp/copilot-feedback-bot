@@ -67,7 +67,7 @@ export const SurveyPageEdit: React.FC<SurveyPageEditProps> = (props) => {
 
   return (
     <div>
-      <h2>{props.page.name}</h2>
+      <h2>{props.page.name} - Edit</h2>
 
       <div>{JSON.stringify(page)}</div>
 
