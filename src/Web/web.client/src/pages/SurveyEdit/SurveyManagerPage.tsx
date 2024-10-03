@@ -8,6 +8,7 @@ import { Button, Spinner } from '@fluentui/react-components';
 import { SurveyPageView } from './SurveyPageView';
 
 import update from 'immutability-helper';
+import { SurveyPagesList } from './SurveyPagesList';
 
 export const SurveyManagerPage: React.FC<{ loader?: BaseApiLoader }> = (props) => {
 
@@ -107,16 +108,24 @@ export const SurveyManagerPage: React.FC<{ loader?: BaseApiLoader }> = (props) =
         <div className="page-title">
           <h1>Survey Editor</h1>
 
+          {surveyPages &&
+            <>
+              <SurveyPagesList pages={surveyPages} />
+            </>
+          }
+
+          <div>{JSON.stringify(surveyPages)}</div>
           <p>Edit the questions the bot sends to users about copilot.</p>
           {editingSurveyPage ?
             <SurveyPageEdit page={editingSurveyPage} onPageEdited={onPageEdited} onPageDeleted={onPageDeleted}
-              onQuestionDeleted={onQuestionDeleted} onQuestionEdited={onQuestionEdited} 
-              onEditCancel={()=> startEditPage(null)}/>
+              onQuestionDeleted={onQuestionDeleted} onQuestionEdited={onQuestionEdited}
+              onEditCancel={() => startEditPage(null)} />
             :
             <>
               {surveyPages ?
                 <>
                   {surveyPages.map((page) => {
+                    console.log("surveyPages map: ", page);
                     return <SurveyPageView key={page.id} onStartEdit={startEditPage} page={page} onDelete={deletePage} />;
                   })}
                 </>

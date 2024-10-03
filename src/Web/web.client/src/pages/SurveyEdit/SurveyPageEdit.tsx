@@ -52,6 +52,14 @@ export const SurveyPageEdit: React.FC<SurveyPageEditProps> = (props) => {
 
   const [selectedTabValue, setSelectedTabValue] = React.useState<TabValue>("SurveyPageEditPage");
 
+  
+  const [page, setPage] = React.useState<SurveyPageEditViewModel>(props.page);
+
+  React.useEffect(() => {
+    setPage(props.page);
+    console.log("Page updated: ", props.page);
+  }, [props.page]);
+
   const onTabSelect = (_event: SelectTabEvent, data: SelectTabData) => {
     setSelectedTabValue(data.value);
   };
@@ -61,7 +69,7 @@ export const SurveyPageEdit: React.FC<SurveyPageEditProps> = (props) => {
     <div>
       <h2>{props.page.name}</h2>
 
-      <div>{JSON.stringify(props.page)}</div>
+      <div>{JSON.stringify(page)}</div>
 
       <TabList selectedValue={selectedTabValue} onTabSelect={onTabSelect}>
         <Tab id="SurveyPageEditPage" value="SurveyPageEditPage">
