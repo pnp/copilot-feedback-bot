@@ -7,6 +7,8 @@ import { SurveyPageEdit } from './SurveyPageEdit';
 import { Button, Spinner } from '@fluentui/react-components';
 import { SurveyPageView } from './SurveyPageView';
 
+import update from 'immutability-helper';
+
 export const SurveyManagerPage: React.FC<{ loader?: BaseApiLoader }> = (props) => {
 
   const [surveyPages, setSurveyPages] = React.useState<SurveyPageEditViewModel[] | null>(null);
@@ -21,6 +23,11 @@ export const SurveyManagerPage: React.FC<{ loader?: BaseApiLoader }> = (props) =
 
   const deletePage = React.useCallback((page: SurveyPageDB) => {
     console.log("Deleting page: ", page);
+    
+    if (!surveyPages) return;
+    var pageIndex = surveyPages.findIndex((p) => p.id === page.id);
+    var updatedPages = update(surveyPages, { $splice: [[pageIndex, 1]] } );
+    setSurveyPages(updatedPages);
   }, [surveyPages]);
 
   const startEditPage = React.useCallback((page: SurveyPageEditViewModel) => {
@@ -30,6 +37,8 @@ export const SurveyManagerPage: React.FC<{ loader?: BaseApiLoader }> = (props) =
 
   const onPageEdited = React.useCallback((page: SurveyPageDB) => {
     console.log("Updated page: ", page);
+    var updatedPages = update(surveyPages, { $: [page] });
+
   }, [surveyPages]);
 
   
