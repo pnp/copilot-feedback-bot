@@ -14,6 +14,7 @@ export const getSurveyPages = async (loader: BaseApiLoader): Promise<SurveyPageE
   return loader.loadFromApi('api/SurveyQuestions', 'GET')
     .then(async response => {
       const d: SurveyPageEditViewModel[] = JSON.parse(response);
+
       return d;
     })
 }

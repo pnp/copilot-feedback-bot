@@ -61,6 +61,8 @@ export const SurveyPageEdit: React.FC<SurveyPageEditProps> = (props) => {
     <div>
       <h2>{props.page.name}</h2>
 
+      <div>{JSON.stringify(props.page)}</div>
+
       <TabList selectedValue={selectedTabValue} onTabSelect={onTabSelect}>
         <Tab id="SurveyPageEditPage" value="SurveyPageEditPage">
           Survey Page
@@ -73,9 +75,8 @@ export const SurveyPageEdit: React.FC<SurveyPageEditProps> = (props) => {
         {selectedTabValue === "SurveyPageEditPage" &&
           <EditSurveyPage onPageEdited={props.onPageEdited} page={props.page} />}
         {selectedTabValue === "SurveyPageEditQuestions" &&
-          <EditSurveyQuestions onQuestionEdited={props.onQuestionEdited} onQuestionDeleted={props.onQuestionDeleted} page={props.page} />}
+          <EditSurveyQuestions {...props} page={props.page} />}
       </div>
-
 
       <div className='nav'>
         <ul>

@@ -6,6 +6,7 @@ import { QuestionDatatype } from "../../apimodels/Enums";
 
 export const EditSurveyQuestions: React.FC<{ page: SurveyPageDB, onQuestionEdited: Function, onQuestionDeleted: Function }> = (props) => {
 
+  console.log("EditSurveyQuestions: ", props);
 
   return (
     <div className="pageEditTab">
@@ -22,7 +23,13 @@ export const EditSurveyQuestions: React.FC<{ page: SurveyPageDB, onQuestionEdite
       </div>
 
       <Link onClick={() => {
-        const newQuestion: SurveyQuestionDB = { id: "0", question: "New Question", questionId: "0", dataType: QuestionDatatype.String };
+        const newQuestion: SurveyQuestionDB = 
+        { 
+          id: "0", question: 
+          "New Question", questionId: "0", 
+          dataType: QuestionDatatype.String, 
+          forSurveyPageId: props.page.id 
+        };
         props.onQuestionEdited(newQuestion);
       }}>
         Add new question

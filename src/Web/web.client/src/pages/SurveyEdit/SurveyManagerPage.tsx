@@ -55,11 +55,34 @@ export const SurveyManagerPage: React.FC<{ loader?: BaseApiLoader }> = (props) =
 
   const onQuestionEdited = React.useCallback((q: SurveyQuestionDB) => {
     console.log("Updated question: ", q);
+    if (!surveyPages) return;
+
+    var pageIndex = surveyPages.findIndex((p) => p.id === q.forSurveyPageId);
+    if (pageIndex === -1) return;
+
+    const page = surveyPages[pageIndex];
+    var questionIndex = page.questions.findIndex((qq) => qq.id === q.id);
+    if (questionIndex === -1) return;
+    const updatedPages = update(surveyPages, { [pageIndex]: { questions: { [questionIndex]: { $set: q } } } });
+    setSurveyPages(updatedPages);
+    console.log("Updated pages: ", updatedPages);
+
   }, [surveyPages]);
 
 
   const onQuestionDeleted = React.useCallback((q: SurveyQuestionDB) => {
     console.log("Deleted question: ", q);
+    if (!surveyPages) return;
+
+    var pageIndex = surveyPages.findIndex((p) => p.id === q.forSurveyPageId);
+    if (pageIndex === -1) return;
+
+    const page = surveyPages[pageIndex];
+    var questionIndex = page.questions.findIndex((qq) => qq.id === q.id);
+    if (questionIndex === -1) return;
+    const updatedPages = update(surveyPages, { [pageIndex]: { questions: { $splice: [[questionIndex, 1]] } } });
+    setSurveyPages(updatedPages);
+    console.log("Updated pages: ", updatedPages);
   }, [surveyPages]);
 
 

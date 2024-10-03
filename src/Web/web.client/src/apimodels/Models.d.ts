@@ -22,6 +22,7 @@ interface SurveyPageEditViewModel extends SurveyPageDB {
 
 interface SurveyQuestionDB extends AbstractEFEntity {
   questionId: string;
+  forSurveyPageId: string;
   question: string;
   optimalAnswerValue?: string;
   dataType: QuestionDatatype;

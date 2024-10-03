@@ -6,6 +6,7 @@ import { LogicalOperator, QuestionDatatype } from "../../apimodels/Enums";
 export interface SurveyQuestionProps {
   q: SurveyQuestionDB;
   onQuestionEdited: Function;
+  onQuestionDeleted: Function;
 }
 
 export const SurveyQuestionForm: React.FC<SurveyQuestionProps> = (props) => {
@@ -29,7 +30,9 @@ export const SurveyQuestionForm: React.FC<SurveyQuestionProps> = (props) => {
       optimalAnswerValue: hasOptimalAnswerValue ? optimalAnswerValue : undefined,
       id: props.q.id,
       questionId: props.q.questionId,
+      forSurveyPageId: props.q.forSurveyPageId,
     };
+    console.log("Updating question with parent: ", q);
     props.onQuestionEdited(q);
   }, [question, logicalOp, dataType, hasOptimalAnswerValue, optimalAnswerValue]);
 
@@ -103,7 +106,7 @@ export const SurveyQuestionForm: React.FC<SurveyQuestionProps> = (props) => {
         </Select>
       </div>
       <div>
-        <Link>Remove question</Link>
+        <Link onClick={() => props.onQuestionDeleted(props.q)}>Remove question</Link>
       </div>
     </div>
   );
