@@ -10,21 +10,30 @@ export const EditSurveyPage: React.FC<{ page: SurveyPageDB, onPageEdited: Functi
   const [pageIndex, setPageIndex] = React.useState<number>(props.page.pageIndex);
   const [pageJson, setPageJson] = React.useState<string>(props.page.adaptiveCardTemplateJson);
 
-    // Send updated question to parent
-    React.useEffect(() => {
-      const p: SurveyPageDB = {
-        id: props.page.id,
-        name: pageName,
-        pageIndex: pageIndex,
-        adaptiveCardTemplateJson: pageJson,
-        isPublished: pageIsPublished,
-        questions: props.page.questions
-      };
-      props.onPageEdited(p);
-    }, [pageIsPublished, pageName, pageIndex, pageJson]);
+  // Send updated question to parent
+  React.useEffect(() => {
+    const p: SurveyPageDB = {
+      id: props.page.id,
+      name: pageName,
+      pageIndex: pageIndex,
+      adaptiveCardTemplateJson: pageJson,
+      isPublished: pageIsPublished,
+      questions: props.page.questions
+    };
+    props.onPageEdited(p);
+  }, [pageIsPublished, pageName, pageIndex, pageJson]);
+
+  React.useEffect(() => {
+    setPageIsPublished(props.page.isPublished);
+    setPageName(props.page.name);
+    setPageIndex(props.page.pageIndex);
+    setPageJson(props.page.adaptiveCardTemplateJson);
+    console.log("EditSurveyPage: Updated page data: ", props.page);
+  }, [props.page]);
 
   return (
     <div className="pageEditTab">
+      <div>{JSON.stringify(props.page)}</div>
       <Field label="Page Name">
         <Input onChange={(e) => setPageName(e.target.value)} value={pageName} />
       </Field>
@@ -40,7 +49,7 @@ export const EditSurveyPage: React.FC<{ page: SurveyPageDB, onPageEdited: Functi
       />
 
       <Field label="Adaptive card JSon template (minus questions)">
-        <Textarea style={{height: 150}} onChange={(e) => setPageJson(e.target.value)} value={pageJson}></Textarea>
+        <Textarea style={{ height: 150 }} onChange={(e) => setPageJson(e.target.value)} value={pageJson}></Textarea>
       </Field>
 
     </div>

@@ -7,7 +7,7 @@ import { SurveyPageEdit } from './SurveyPageEdit';
 import { Button, Spinner } from '@fluentui/react-components';
 
 import update from 'immutability-helper';
-import { SurveyPagesList } from './SurveyPagesViewList';
+import { SurveyPagesViewList } from './SurveyPagesViewList';
 
 export const SurveyManagerPage: React.FC<{ loader?: BaseApiLoader }> = (props) => {
 
@@ -21,42 +21,54 @@ export const SurveyManagerPage: React.FC<{ loader?: BaseApiLoader }> = (props) =
       });
   }, [props.loader]);
 
-  const deletePage = React.useCallback((page: SurveyPageDB) => {
-    console.log("Deleting page: ", page);
-
-    if (!surveyPages) return;
-    var pageIndex = surveyPages.findIndex((p) => p.id === page.id);
-    var updatedPages = update(surveyPages, { $splice: [[pageIndex, 1]] });
-    setSurveyPages(updatedPages);
-    console.log("Updated pages: ", updatedPages);
-  }, [surveyPages]);
+  const updateSurveyPages = React.useCallback((pages: SurveyPageEditViewModel[]) => {
+    setSurveyPages(pages);
+    console.debug("Updated pages data: ", pages);
+  }, []);
 
   const startEditPage = React.useCallback((page: SurveyPageEditViewModel | null) => {
-    console.log("Start editing page: ", page);
+    console.debug("Start editing page: ", page);
     setEditingSurveyPage(page);
   }, [editingSurveyPage]);
 
+  const onNewPage = React.useCallback(() => {
+    if (surveyPages) {
+      console.debug("Creating new page");
+      const newPage: SurveyPageEditViewModel = {
+        name: 'New Page',
+        adaptiveCardTemplateJson: '{}',
+        adaptiveCardTemplateJsonWithQuestions: '{}',
+        pageIndex: surveyPages.length,
+        questions: [],
+        isPublished: false
+      };
+      startEditPage(newPage);
+    }
+  }, [surveyPages]);
+
   const onPageEdited = React.useCallback((page: SurveyPageEditViewModel) => {
-    console.log("Updated page: ", page);
+    console.debug("Updated page: ", page);
     if (!surveyPages) return;
 
     var pageIndex = surveyPages.findIndex((p) => p.id === page.id);
     const updatedPages = update(surveyPages, { [pageIndex]: { $set: page } });
-    setSurveyPages(updatedPages);
-    console.log("Updated pages after page edited: ", updatedPages);
+    updateSurveyPages(updatedPages);
 
     // Update page being edited
     setEditingSurveyPage(page);
 
   }, [surveyPages]);
 
-
   const onPageDeleted = React.useCallback((page: SurveyPageDB) => {
-    console.log("Deleted page: ", page);
+    console.debug("Deleting page: ", page);
+
+    if (!surveyPages) return;
+    var pageIndex = surveyPages.findIndex((p) => p.id === page.id);
+    var updatedPages = update(surveyPages, { $splice: [[pageIndex, 1]] });
+    updateSurveyPages(updatedPages);
   }, [surveyPages]);
 
-
-  const onQuestionEdited = React.useCallback((q: SurveyQuestionDB) => {
+  const onQuestionEditedOrCreated = React.useCallback((q: SurveyQuestionDB) => {
     if (!surveyPages) return;
 
     var pageIndex = surveyPages.findIndex((p) => p.id === q.forSurveyPageId);
@@ -66,7 +78,6 @@ export const SurveyManagerPage: React.FC<{ loader?: BaseApiLoader }> = (props) =
       if (pageIndex === -1) return;
 
       updatedPages = update(surveyPages, { [pageIndex]: { questions: { $push: [q] } } });
-      console.debug("Updated pages after question added: ", updatedPages);
     }
     else {
       if (pageIndex === -1) return;
@@ -76,9 +87,8 @@ export const SurveyManagerPage: React.FC<{ loader?: BaseApiLoader }> = (props) =
       if (questionIndex === -1) return;
 
       updatedPages = update(surveyPages, { [pageIndex]: { questions: { [questionIndex]: { $set: q } } } });
-      console.debug("Updated pages after question edited: ", updatedPages);
     }
-    setSurveyPages(updatedPages);
+    updateSurveyPages(updatedPages);
 
     // Find the updated page
     const updatedPageIndex = updatedPages.findIndex((p) => p.id === q.forSurveyPageId);
@@ -88,9 +98,8 @@ export const SurveyManagerPage: React.FC<{ loader?: BaseApiLoader }> = (props) =
     setEditingSurveyPage(updatedPage);
   }, [surveyPages]);
 
-
-  const onQuestionDeleted = React.useCallback((q: SurveyQuestionDB) => {
-    console.log("Deleted question: ", q);
+  const onPageQuestionDeleted = React.useCallback((q: SurveyQuestionDB) => {
+    console.debug("Deleted question: ", q);
     if (!surveyPages) return;
 
     var pageIndex = surveyPages.findIndex((p) => p.id === q.forSurveyPageId);
@@ -100,8 +109,7 @@ export const SurveyManagerPage: React.FC<{ loader?: BaseApiLoader }> = (props) =
     var questionIndex = pageOld.questions.findIndex((qq) => qq.id === q.id);
     if (questionIndex === -1) return;
     const updatedPages = update(surveyPages, { [pageIndex]: { questions: { $splice: [[questionIndex, 1]] } } });
-    setSurveyPages(updatedPages);
-    console.log("Updated pages after question deleted: ", updatedPages);
+    updateSurveyPages(updatedPages);
 
     // Find the updated page
     const updatedPageIndex = updatedPages.findIndex((p) => p.id === q.forSurveyPageId);
@@ -109,22 +117,6 @@ export const SurveyManagerPage: React.FC<{ loader?: BaseApiLoader }> = (props) =
 
     // Update page being edited
     setEditingSurveyPage(updatedPage);
-  }, [surveyPages]);
-
-
-  const onNewPage = React.useCallback(() => {
-    if (surveyPages) {
-      const newPage: SurveyPageEditViewModel = {
-        id: '', // Add appropriate default values for the properties
-        name: 'New Page',
-        adaptiveCardTemplateJson: '{}',
-        adaptiveCardTemplateJsonWithQuestions: '{}',
-        pageIndex: surveyPages.length,
-        questions: [],
-        isPublished: false
-      };
-      setEditingSurveyPage(newPage);
-    }
   }, [surveyPages]);
 
   return (
@@ -136,13 +128,13 @@ export const SurveyManagerPage: React.FC<{ loader?: BaseApiLoader }> = (props) =
           <p>Edit the questions the bot sends to users about copilot.</p>
           {editingSurveyPage ?
             <SurveyPageEdit page={editingSurveyPage} onPageEdited={onPageEdited} onPageDeleted={onPageDeleted}
-              onQuestionDeleted={onQuestionDeleted} onQuestionEdited={onQuestionEdited}
+              onQuestionDeleted={onPageQuestionDeleted} onQuestionEdited={onQuestionEditedOrCreated}
               onEditCancel={() => startEditPage(null)} />
             :
             <>
               {surveyPages ?
                 <>
-                  <SurveyPagesList pages={surveyPages} onStartEdit={startEditPage} onDelete={deletePage} />
+                  <SurveyPagesViewList pages={surveyPages} onStartEdit={startEditPage} onDelete={onPageDeleted} />
                 </>
                 :
                 <Spinner />

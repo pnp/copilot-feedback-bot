@@ -3,7 +3,7 @@ import React from 'react';
 import { SurveyPageEditViewModel } from '../../apimodels/Models'; 
 import { SurveyPageView } from './SurveyPageView';
 
-export const SurveyPagesList: React.FC<{ pages: SurveyPageEditViewModel[], onStartEdit: Function, onDelete: Function }> = (props) => {
+export const SurveyPagesViewList: React.FC<{ pages: SurveyPageEditViewModel[], onStartEdit: Function, onDelete: Function }> = (props) => {
 
   const [pages, setPages] = React.useState<SurveyPageEditViewModel[]>(props.pages);
   React.useEffect(() => {

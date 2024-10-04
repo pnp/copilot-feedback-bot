@@ -3,7 +3,6 @@ import { SurveyQuestionDB } from "../../apimodels/Models";
 import { Checkbox, Field, Input, Link, Select, SelectOnChangeData } from "@fluentui/react-components";
 import { LogicalOperator, QuestionDatatype } from "../../apimodels/Enums";
 import isEqual from 'lodash.isequal';
-import { set } from "lodash";
 
 export interface SurveyQuestionProps {
   q: SurveyQuestionDB;
