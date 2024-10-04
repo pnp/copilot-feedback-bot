@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { BaseApiLoader } from '../../api/ApiLoader';
-import { getSurveyPages } from '../../api/ApiCalls';
+import { getSurveyPages, saveSurveyPages } from '../../api/ApiCalls';
 import { SurveyPageDB, SurveyQuestionDB } from '../../apimodels/Models'; // Ensure SurveyPageDB is a class or constructor function
 import { SurveyPageAndQuestionsEdit } from './SurveyPageAndQuestionsEdit';
 import { Link, Spinner } from '@fluentui/react-components';
@@ -143,7 +143,12 @@ export const SurveyManagerPage: React.FC<{ loader?: BaseApiLoader }> = (props) =
   // Save to server
   const onPageSave = React.useCallback(() => {
     console.debug("Saving page: ", editingSurveyPage);
-    if (!editingSurveyPage) return;
+    if (!editingSurveyPage || !props.loader) return;
+
+    setSurveyPages(null);
+    saveSurveyPages(props.loader, editingSurveyPage).then((r) => {
+      setSurveyPages(r);
+    });
 
     startEditPage(null);
     setHaveNewPage(false);

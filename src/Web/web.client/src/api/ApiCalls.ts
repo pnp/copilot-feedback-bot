@@ -1,4 +1,4 @@
-import { ServiceConfiguration, SurveyPageEditViewModel } from "../apimodels/Models";
+import { ServiceConfiguration, SurveyPageDB } from "../apimodels/Models";
 import { BaseApiLoader } from "./ApiLoader";
 
 
@@ -10,10 +10,19 @@ export const getClientConfig = async (loader: BaseApiLoader): Promise<ServiceCon
     })
 }
 
-export const getSurveyPages = async (loader: BaseApiLoader): Promise<SurveyPageEditViewModel[]> => {
+export const getSurveyPages = async (loader: BaseApiLoader): Promise<SurveyPageDB[]> => {
   return loader.loadFromApi('api/SurveyQuestions', 'GET')
     .then(async response => {
-      const d: SurveyPageEditViewModel[] = JSON.parse(response);
+      const d: SurveyPageDB[] = JSON.parse(response);
+
+      return d;
+    })
+}
+
+export const saveSurveyPages = async (loader: BaseApiLoader, updatedPage: SurveyPageDB): Promise<SurveyPageDB[]> => {
+  return loader.loadFromApi('api/SurveyQuestions', 'POST', updatedPage)
+    .then(async response => {
+      const d: SurveyPageDB[] = JSON.parse(response);
 
       return d;
     })

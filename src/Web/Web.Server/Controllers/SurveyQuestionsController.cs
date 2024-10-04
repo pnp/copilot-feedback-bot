@@ -1,5 +1,4 @@
-﻿using Common.Engine.Surveys;
-using Entities.DB;
+﻿using Entities.DB;
 using Entities.DB.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -14,37 +13,23 @@ public class SurveyQuestionsController(ILogger<SurveyQuestionsController> logger
 {
     // GET: api/SurveyQuestions
     [HttpGet]
-    public async Task<List<SurveyPageEditViewModel>> SurveyQuestions()
+    public async Task<List<SurveyPageDB>> SurveyQuestions()
     {
         logger.LogInformation("Called GetSurveyQuestions");
         var allPages = await context.SurveyPages
             .Include(d=> d.Questions)
             .ToListAsync();
-        return allPages.Select(p=> new SurveyPageEditViewModel(p)).ToList();
+        return allPages;
     }
 
-}
-
-/// <summary>
-/// Same as DB record but with merged adaptive card with questions
-/// </summary>
-public class SurveyPageEditViewModel : SurveyPageDB
-{
-    public SurveyPageEditViewModel()
+    // POST: api/SurveyQuestions
+    [HttpPost]
+    public async Task<List<SurveyPageDB>> SavePage([FromBody]SurveyPageDB page)
     {
-    }
+        logger.LogInformation("Called SavePage");
+        context.SurveyPages.Update(page);
+        await context.SaveChangesAsync();
 
-    public SurveyPageEditViewModel(SurveyPageDB surveyPageDB)
-    {
-        this.ID = surveyPageDB.ID;
-        this.AdaptiveCardTemplateJson = surveyPageDB.AdaptiveCardTemplateJson;
-        this.Questions = surveyPageDB.Questions;
-        this.IsPublished = surveyPageDB.IsPublished;
-        this.PageIndex = surveyPageDB.PageIndex;
-        this.Name = surveyPageDB.Name;
-        var model = new SurveyPage(surveyPageDB);
-        this.AdaptiveCardTemplateJsonWithQuestions = model.BuildAdaptiveCard().ToString();
+        return await SurveyQuestions();
     }
-
-    public string AdaptiveCardTemplateJsonWithQuestions { get; set; } = null!;
 }
