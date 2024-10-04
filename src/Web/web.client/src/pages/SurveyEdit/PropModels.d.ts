@@ -3,7 +3,6 @@ abstract interface PageProps {
     page: SurveyPageDB,
 }
 
-
 interface EditSurveyQuestionsProps extends PageProps {
     onQuestionEdited: Function,
     onQuestionDeleted: Function

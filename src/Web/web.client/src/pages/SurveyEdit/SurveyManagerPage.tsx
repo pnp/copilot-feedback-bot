@@ -157,7 +157,7 @@ export const SurveyManagerPage: React.FC<{ loader?: BaseApiLoader }> = (props) =
 
           <p>Edit the questions the bot sends to users about copilot.</p>
           {editingSurveyPage ?
-            <SurveyPageAndQuestionsEdit page={editingSurveyPage} onPageEdited={onPageEdited} onPageDeleted={onPageDeleted}
+            <SurveyPageAndQuestionsEdit page={editingSurveyPage} onPageFieldUpdated={onPageEdited} 
               onQuestionDeleted={onPageQuestionDeleted} onQuestionEdited={onQuestionEditedOrCreated}
               onEditCancel={() => startEditPage(null)} onPageSave={onPageSave} />
             :
