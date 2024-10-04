@@ -2,7 +2,7 @@
 import React from 'react';
 import { BaseApiLoader } from '../../api/ApiLoader';
 import { getSurveyPages, saveSurveyPages } from '../../api/ApiCalls';
-import { SurveyPageDB, SurveyQuestionDB } from '../../apimodels/Models'; // Ensure SurveyPageDB is a class or constructor function
+import { SurveyPageDTO, SurveyQuestionDTO } from '../../apimodels/Models'; // Ensure SurveyPageDTO is a class or constructor function
 import { SurveyPageAndQuestionsEdit } from './SurveyPageAndQuestionsEdit';
 import { Link, Spinner } from '@fluentui/react-components';
 
@@ -13,8 +13,8 @@ import { SurveyPageView } from './SurveyPageView';
 export const SurveyManagerPage: React.FC<{ loader?: BaseApiLoader }> = (props) => {
 
   const [haveNewPage, setHaveNewPage] = React.useState<boolean>(false);
-  const [surveyPages, setSurveyPages] = React.useState<SurveyPageDB[] | null>(null);
-  const [editingSurveyPage, setEditingSurveyPage] = React.useState<SurveyPageDB | null>(null);
+  const [surveyPages, setSurveyPages] = React.useState<SurveyPageDTO[] | null>(null);
+  const [editingSurveyPage, setEditingSurveyPage] = React.useState<SurveyPageDTO | null>(null);
 
   // Load survey pages from the server
   React.useEffect(() => {
@@ -24,12 +24,12 @@ export const SurveyManagerPage: React.FC<{ loader?: BaseApiLoader }> = (props) =
       });
   }, [props.loader]);
 
-  const updateSurveyPages = React.useCallback((pages: SurveyPageDB[]) => {
+  const updateSurveyPages = React.useCallback((pages: SurveyPageDTO[]) => {
     setSurveyPages(pages);
     console.debug("Updated pages data: ", pages);
   }, []);
 
-  const startEditPage = React.useCallback((page: SurveyPageDB | null) => {
+  const startEditPage = React.useCallback((page: SurveyPageDTO | null) => {
     if (!page)
       console.debug("Cancel editing page");
     else
@@ -40,7 +40,7 @@ export const SurveyManagerPage: React.FC<{ loader?: BaseApiLoader }> = (props) =
   const onNewPage = React.useCallback(() => {
     console.debug("Creating new page");
     if (surveyPages) {
-      const newPage: SurveyPageDB = {
+      const newPage: SurveyPageDTO = {
         name: 'New Page',
         adaptiveCardTemplateJson: '{}',
         pageIndex: surveyPages.length,
@@ -53,7 +53,7 @@ export const SurveyManagerPage: React.FC<{ loader?: BaseApiLoader }> = (props) =
     }
   }, [surveyPages]);
 
-  const onPageEdited = React.useCallback((page: SurveyPageDB) => {
+  const onPageEdited = React.useCallback((page: SurveyPageDTO) => {
     if (!surveyPages || !editingSurveyPage) return;
 
 
@@ -80,7 +80,7 @@ export const SurveyManagerPage: React.FC<{ loader?: BaseApiLoader }> = (props) =
 
   }, [surveyPages, editingSurveyPage]);
 
-  const onPageDeleted = React.useCallback((page: SurveyPageDB) => {
+  const onPageDeleted = React.useCallback((page: SurveyPageDTO) => {
     console.debug("Deleting page: ", page);
 
     if (!surveyPages) return;
@@ -89,11 +89,11 @@ export const SurveyManagerPage: React.FC<{ loader?: BaseApiLoader }> = (props) =
     updateSurveyPages(updatedPages);
   }, [surveyPages]);
 
-  const onQuestionEditedOrCreated = React.useCallback((q: SurveyQuestionDB) => {
+  const onQuestionEditedOrCreated = React.useCallback((q: SurveyQuestionDTO) => {
     if (!surveyPages) return;
 
     var pageIndex = surveyPages.findIndex((p) => p.id === q.forSurveyPageId);
-    let updatedPages: SurveyPageDB[] = [];
+    let updatedPages: SurveyPageDTO[] = [];
     if (!q.id) {
       console.debug("New question: ", q);
       if (pageIndex === -1) return;
@@ -119,7 +119,7 @@ export const SurveyManagerPage: React.FC<{ loader?: BaseApiLoader }> = (props) =
     setEditingSurveyPage(updatedPage);
   }, [surveyPages]);
 
-  const onPageQuestionDeleted = React.useCallback((q: SurveyQuestionDB) => {
+  const onPageQuestionDeleted = React.useCallback((q: SurveyQuestionDTO) => {
     console.debug("Deleted question: ", q);
     if (!surveyPages) return;
 

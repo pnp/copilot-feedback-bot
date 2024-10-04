@@ -1,19 +1,19 @@
 import React, { ChangeEvent } from "react";
-import { SurveyQuestionDB } from "../../apimodels/Models";
+import { SurveyQuestionDTO } from "../../apimodels/Models";
 import { Checkbox, Field, Input, Link, Select, SelectOnChangeData } from "@fluentui/react-components";
 import { LogicalOperator, QuestionDatatype } from "../../apimodels/Enums";
 import isEqual from 'lodash.isequal';
-import { GetSurveyQuestionDB } from "./CommonFunctions";
+import { GetSurveyQuestionDTO } from "./CommonFunctions";
 
 export const SurveyQuestionForm: React.FC<SurveyQuestionProps> = (props) => {
 
   const [question, setQuestion] = React.useState<string>(props.q.question);
-  const [logicalOp, setLogicalOp] = React.useState<LogicalOperator>(GetSurveyQuestionDB(props.q).optimalAnswerLogicalOp);
-  const [dataType, setDataType] = React.useState<QuestionDatatype>(GetSurveyQuestionDB(props.q).dataType);
+  const [logicalOp, setLogicalOp] = React.useState<LogicalOperator>(GetSurveyQuestionDTO(props.q).optimalAnswerLogicalOp ?? LogicalOperator.Equals);
+  const [dataType, setDataType] = React.useState<QuestionDatatype>(GetSurveyQuestionDTO(props.q).dataType);
   const [hasOptimalAnswerValue, setHasOptimalAnswerValue] = React.useState<boolean>(props.q.optimalAnswerValue !== null);
   const [optimalAnswerValue, setOptimalAnswerValue] = React.useState<string | undefined>(props.q.optimalAnswerValue);
 
-  const [lastQuestionObject, setLastQuestionObject] = React.useState<SurveyQuestionDB>(props.q);
+  const [lastQuestionObject, setLastQuestionObject] = React.useState<SurveyQuestionDTO>(props.q);
 
   const hasOptimalAnswerValueClick = React.useCallback(() => {
     setHasOptimalAnswerValue(!hasOptimalAnswerValue);
@@ -21,7 +21,7 @@ export const SurveyQuestionForm: React.FC<SurveyQuestionProps> = (props) => {
 
   // Send updated question to parent
   React.useEffect(() => {
-    const q: SurveyQuestionDB = {
+    const q: SurveyQuestionDTO = {
       question: question,
       optimalAnswerLogicalOp: logicalOp,
       dataType: dataType,
@@ -29,6 +29,7 @@ export const SurveyQuestionForm: React.FC<SurveyQuestionProps> = (props) => {
       id: props.q.id,
       questionId: props.q.questionId,
       forSurveyPageId: props.q.forSurveyPageId,
+      index: props.q.index
     };
 
     if (isEqual(q, lastQuestionObject)) {

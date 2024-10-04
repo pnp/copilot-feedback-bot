@@ -28,6 +28,7 @@ export abstract class BaseApiLoader {
 
                 if (response.ok) {
                     const dataText: string = await response.text();
+                    console.debug(dataText);
                     return Promise.resolve(dataText);
                 }
                 else {

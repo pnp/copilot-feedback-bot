@@ -1,9 +1,9 @@
 import React from "react";
-import { SurveyQuestionDB } from "../../apimodels/Models";
+import { SurveyQuestionDTO } from "../../apimodels/Models";
 import { Link } from "@fluentui/react-components";
 import { SurveyQuestionForm } from "./SurveyQuestionForm";
 import { QuestionDatatype } from "../../apimodels/Enums";
-import { GetSurveyQuestionDB } from "./CommonFunctions";
+import { GetSurveyQuestionDTO } from "./CommonFunctions";
 
 export const EditSurveyQuestions: React.FC<EditSurveyQuestionsProps> = (props) => {
 
@@ -12,7 +12,7 @@ export const EditSurveyQuestions: React.FC<EditSurveyQuestionsProps> = (props) =
       <div>
         {props.page.questions.length > 0 ?
           <>
-            {props.page.questions.map((q: SurveyQuestionDB, i: number) => {
+            {props.page.questions.map((q: SurveyQuestionDTO, i: number) => {
               return <SurveyQuestionForm key={i} q={q} {...props} />
             })}
           </>
@@ -27,13 +27,13 @@ export const EditSurveyQuestions: React.FC<EditSurveyQuestionsProps> = (props) =
           <Link onClick={() => {
             if (!props.page.id) return;
 
-            const newQuestion: SurveyQuestionDB =
+            const newQuestion: SurveyQuestionDTO =
             {
               question: "New Question", questionId: "0",
               dataType: QuestionDatatype.String,
               forSurveyPageId: props.page.id,
             };
-            props.onQuestionEdited(GetSurveyQuestionDB(newQuestion));
+            props.onQuestionEdited(GetSurveyQuestionDTO(newQuestion));
           }}>
             Add new question
           </Link>

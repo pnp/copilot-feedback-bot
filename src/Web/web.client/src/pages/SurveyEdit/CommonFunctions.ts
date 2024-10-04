@@ -1,22 +1,25 @@
 import { LogicalOperator, QuestionDatatype } from "../../apimodels/Enums";
-import { SurveyQuestionDB } from "../../apimodels/Models";
+import { SurveyQuestionDTO } from "../../apimodels/Models";
 
 // Common logic for assuming optional values
 // That way we can do object comparisons without having to worry about undefined values
-export function GetSurveyQuestionFromParams(question: string, questionId: string, forSurveyPageId: string, optimalAnswerValue?: string, op?: LogicalOperator, dataType?: QuestionDatatype)
-    : SurveyQuestionDB {
+export function GetSurveyQuestionFromParams(question: string, index: number, questionId: string, forSurveyPageId: string, 
+    id?: string, optimalAnswerValue?: string, op?: LogicalOperator, dataType?: QuestionDatatype)
+    : SurveyQuestionDTO {
     return {
+        id: id,
+        index: index,
         question: question,
         optimalAnswerLogicalOp: op ?? LogicalOperator.Equals,
         dataType: dataType ?? QuestionDatatype.String,
         optimalAnswerValue: optimalAnswerValue,
-        id: undefined,
         forSurveyPageId: forSurveyPageId,
         questionId: questionId
     };
 }
 
-export function GetSurveyQuestionDB(partial: SurveyQuestionDB): SurveyQuestionDB {
-    return GetSurveyQuestionFromParams(partial.question, partial.optimalAnswerLogicalOp, partial.forSurveyPageId, partial.optimalAnswerValue, partial.optimalAnswerLogicalOp, partial.dataType);
+export function GetSurveyQuestionDTO(partial: SurveyQuestionDTO): SurveyQuestionDTO {
+    return GetSurveyQuestionFromParams(partial.question, partial.index, partial.questionId, partial.forSurveyPageId, 
+        partial.id, partial.optimalAnswerValue, partial.optimalAnswerLogicalOp, partial.dataType);
 }
 

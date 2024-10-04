@@ -1,28 +1,30 @@
+import { LogicalOperator, QuestionDatatype } from "./Enums";
 
-abstract interface AbstractEFEntityWithName extends AbstractEFEntity { name: string }
-abstract interface AbstractEFEntity { id?: string }
+interface BaseDTOWithName extends BaseDTO { name: string }
+interface BaseDTO { id?: string }
 
-interface IdTokenClaims {
+export interface IdTokenClaims {
   at_hash: string,
   country: string
   family_name: string,
   given_name: string
 }
 
-interface SurveyPageDB extends AbstractEFEntityWithName {
-  questions: SurveyQuestionDB[];
+export interface SurveyPageDTO extends BaseDTOWithName {
+  questions: SurveyQuestionDTO[];
   pageIndex: number;
   adaptiveCardTemplateJson: string;
   isPublished: boolean;
 }
 
-interface SurveyQuestionDB extends AbstractEFEntity {
+export interface SurveyQuestionDTO extends BaseDTO {
   questionId: string;
   forSurveyPageId: string;
   question: string;
   optimalAnswerValue?: string;
   dataType: QuestionDatatype;
   optimalAnswerLogicalOp? : LogicalOperator;
+  index: number;
 }
 
 
@@ -30,7 +32,7 @@ export interface ServiceConfiguration {
   storageInfo: StorageInfo;
 }
 
-interface StorageInfo {
+export interface StorageInfo {
   accountURI: string;
   sharedAccessToken: string;
 }

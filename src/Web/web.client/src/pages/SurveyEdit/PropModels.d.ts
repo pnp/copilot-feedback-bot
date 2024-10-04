@@ -1,6 +1,6 @@
 
 abstract interface PageProps {
-    page: SurveyPageDB,
+    page: SurveyPageDTO,
 }
 
 interface EditSurveyQuestionsProps extends PageProps {
@@ -22,7 +22,7 @@ interface SurveyPageAndQuestionsEditProps extends PageProps {
 }
 
 interface SurveyQuestionProps {
-    q: SurveyQuestionDB;
+    q: SurveyQuestionDTO;
     onQuestionEdited: Function;
     onQuestionDeleted: Function;
 }

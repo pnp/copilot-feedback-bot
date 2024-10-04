@@ -1,5 +1,5 @@
 import React from "react";
-import { SurveyPageDB } from "../../apimodels/Models";
+import { SurveyPageDTO } from "../../apimodels/Models";
 import { Checkbox, Field, Input, Textarea } from "@fluentui/react-components";
 
 
@@ -12,7 +12,7 @@ export const EditSurveyPage: React.FC<EditSurveyPageProps> = (props) => {
 
   // Send updated question to parent
   React.useEffect(() => {
-    const p: SurveyPageDB = {
+    const p: SurveyPageDTO = {
       id: props.page.id,
       name: pageName,
       pageIndex: pageIndex,

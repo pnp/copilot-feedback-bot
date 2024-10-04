@@ -1,7 +1,7 @@
 import React from "react";
 import { AdaptiveCard } from "../../components/common/controls/AdaptiveCard";
 import { Button } from "@fluentui/react-components";
-import { SurveyQuestionDB } from "../../apimodels/Models";
+import { SurveyQuestionDTO } from "../../apimodels/Models";
 
 export const SurveyPageView: React.FC<SurveyPageViewProps> = (props) => {
 
@@ -31,7 +31,7 @@ export const SurveyPageView: React.FC<SurveyPageViewProps> = (props) => {
           <>
             <p>Questions:</p>
             <ul>
-              {props.page.questions.map((q: SurveyQuestionDB, i: number) => (
+              {props.page.questions.map((q: SurveyQuestionDTO, i: number) => (
                 <li key={i}>{q.question}</li>
               ))}
             </ul>

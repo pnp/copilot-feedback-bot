@@ -1,6 +1,6 @@
 ﻿using Entities.DB.Entities;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Text.Json.Serialization;
 
 namespace Common.Engine.Surveys.Model;
 
@@ -63,28 +63,26 @@ public class BooleanSurveyQuestion : SurveyQuestion<bool>
 }
 
 
-public abstract class BaseSurveyQuestion
+public abstract class BaseSurveyQuestion : BaseDTO
 {
     public BaseSurveyQuestion()
     {
         Question = string.Empty;
     }
-    protected BaseSurveyQuestion(SurveyQuestionDB q, int index)
+    protected BaseSurveyQuestion(SurveyQuestionDB q, int index) : base(q)
     {
         Question = q.Question;
         OptimalAnswerLogicalOp = q.OptimalAnswerLogicalOp ?? LogicalOperator.Unknown;
-        Id = q.ID;
         Index = index;
     }
 
     public string Question { get; set; }
     public int Index { get; set; }
-    public int Id { get; set; } = 0;
     public LogicalOperator OptimalAnswerLogicalOp { get; set; } = LogicalOperator.Unknown;
 
     internal virtual JObject GetAdaptiveCardJson()
     {
-        if (Id == 0)
+        if (string.IsNullOrEmpty(Id))
         {
             throw new SurveyEngineDataException("Question ID is not set");
         }
@@ -97,6 +95,41 @@ public abstract class BaseSurveyQuestion
         };
     }
 }
+
+public class SurveyQuestionDTO : BaseDTO
+{
+    public SurveyQuestionDTO()
+    {
+    }
+    public SurveyQuestionDTO(SurveyQuestionDB q) : base(q)
+    {
+        this.Question = q.Question;
+        this.Index = q.Index;
+        this.OptimalAnswerLogicalOp = q.OptimalAnswerLogicalOp;
+        this.OptimalAnswerValue = q.OptimalAnswerValue;
+        this.DataType = q.DataType;
+        this.ForSurveyPageId = q.ForSurveyPage.ID.ToString();
+    }
+
+    [JsonPropertyName("question")]
+    public string Question { get; set; } = string.Empty;
+
+    [JsonPropertyName("index")]
+    public int Index { get; set; } = 0;
+
+    [JsonPropertyName("optimalAnswerLogicalOp")]
+    public LogicalOperator? OptimalAnswerLogicalOp { get; set; }
+
+    [JsonPropertyName("optimalAnswerValue")]
+    public string? OptimalAnswerValue { get; set; }
+
+    [JsonPropertyName("dataType")]
+    public QuestionDatatype DataType { get; set; }
+
+    [JsonPropertyName("forSurveyPageId")]
+    public string ForSurveyPageId { get; set; } = null!;
+}
+
 public abstract class SurveyQuestion<T> : BaseSurveyQuestion
 {
     public SurveyQuestion() : base()
