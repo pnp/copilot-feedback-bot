@@ -30,15 +30,15 @@ const useStyles = makeStyles({
   },
 });
 
-export const SurveyPageAndQuestionsEdit: React.FC<SurveyPageEditProps> = (props) => {
+export const SurveyPageAndQuestionsEdit: React.FC<SurveyPageAndQuestionsEditProps> = (props) => {
 
   const onSave = React.useCallback(() => {
     props.onPageSave();
-  }, [props.onPageEdited, props.page]);
+  }, [props.onPageSave, props.page]);
 
   const onEditCancel = React.useCallback(() => {
     props.onEditCancel();
-  }, [props.onPageEdited, props.page]);
+  }, [props.onEditCancel, props.page]);
 
   const [selectedTabValue, setSelectedTabValue] = React.useState<TabValue>("SurveyPageEditPage");
 

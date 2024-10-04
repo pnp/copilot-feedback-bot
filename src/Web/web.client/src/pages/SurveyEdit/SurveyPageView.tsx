@@ -1,10 +1,9 @@
 import React from "react";
-import { SurveyPageEditViewModel } from "../../apimodels/Models";
-import { AdaptiveCard } from "./AdaptiveCard";
+import { AdaptiveCard } from "../../components/common/controls/AdaptiveCard";
 import { Button } from "@fluentui/react-components";
+import { SurveyQuestionDB } from "../../apimodels/Models";
 
-
-export const SurveyPageView: React.FC<{ page: SurveyPageEditViewModel, onStartEdit: Function, onDelete: Function }> = (props) => {
+export const SurveyPageView: React.FC<SurveyPageViewProps> = (props) => {
 
   const [editMode, setEditMode] = React.useState<boolean>(false);
 
@@ -17,14 +16,31 @@ export const SurveyPageView: React.FC<{ page: SurveyPageEditViewModel, onStartEd
     props.onDelete(props.page);
   }, [props.onDelete]);
 
-
   return (
     <div>
-      <h2>{props.page.name}</h2>
+      <h2>{props.page.name} (
+        {props.page.isPublished ? <span>Published</span> : <span>Draft</span>}
+        )</h2>
 
       <div>
-        <AdaptiveCard json={props.page.adaptiveCardTemplateJsonWithQuestions} />
+        <p>Adaptive card template:</p>
+        <AdaptiveCard json={props.page.adaptiveCardTemplateJson} />
       </div>
+      <div>
+        {props.page.questions.length > 0 ?
+          <>
+            <p>Questions:</p>
+            <ul>
+              {props.page.questions.map((q: SurveyQuestionDB, i: number) => (
+                <li key={i}>{q.question}</li>
+              ))}
+            </ul>
+          </>
+          :
+          <p>No questions defined for this page yet</p>
+        }
+      </div>
+      
       <div className='nav'>
         <ul>
           <li>
@@ -35,7 +51,6 @@ export const SurveyPageView: React.FC<{ page: SurveyPageEditViewModel, onStartEd
           </li>
         </ul>
       </div>
-
     </div>
   );
 };

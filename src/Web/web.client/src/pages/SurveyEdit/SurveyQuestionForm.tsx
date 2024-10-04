@@ -3,17 +3,17 @@ import { SurveyQuestionDB } from "../../apimodels/Models";
 import { Checkbox, Field, Input, Link, Select, SelectOnChangeData } from "@fluentui/react-components";
 import { LogicalOperator, QuestionDatatype } from "../../apimodels/Enums";
 import isEqual from 'lodash.isequal';
+import { GetSurveyQuestionDB } from "./CommonFunctions";
 
 export const SurveyQuestionForm: React.FC<SurveyQuestionProps> = (props) => {
 
   const [question, setQuestion] = React.useState<string>(props.q.question);
-  const [logicalOp, setLogicalOp] = React.useState<LogicalOperator>(props.q.optimalAnswerLogicalOp ?? LogicalOperator.Equals);
-  const [dataType, setDataType] = React.useState<QuestionDatatype>(props.q.dataType ?? QuestionDatatype.String);
+  const [logicalOp, setLogicalOp] = React.useState<LogicalOperator>(GetSurveyQuestionDB(props.q).optimalAnswerLogicalOp);
+  const [dataType, setDataType] = React.useState<QuestionDatatype>(GetSurveyQuestionDB(props.q).dataType);
   const [hasOptimalAnswerValue, setHasOptimalAnswerValue] = React.useState<boolean>(props.q.optimalAnswerValue !== null);
   const [optimalAnswerValue, setOptimalAnswerValue] = React.useState<string | undefined>(props.q.optimalAnswerValue);
 
   const [lastQuestionObject, setLastQuestionObject] = React.useState<SurveyQuestionDB>(props.q);
-
 
   const hasOptimalAnswerValueClick = React.useCallback(() => {
     setHasOptimalAnswerValue(!hasOptimalAnswerValue);
@@ -32,7 +32,7 @@ export const SurveyQuestionForm: React.FC<SurveyQuestionProps> = (props) => {
     };
 
     if (isEqual(q, lastQuestionObject)) {
-      console.log("No changes detected");
+      console.debug("SurveyQuestionForm field update: No changes detected from last update. Not raising onQuestionEdited");
       return;
     }
     setLastQuestionObject(q);
@@ -82,6 +82,9 @@ export const SurveyQuestionForm: React.FC<SurveyQuestionProps> = (props) => {
       <Field label="Question text">
         <Input onChange={(e) => setQuestion(e.target.value)} value={question} />
       </Field>
+      <div>
+        <Link onClick={() => props.onQuestionDeleted(props.q)}>Remove question</Link>
+      </div>
       <Field label="Optimal value">
         <Input onChange={(e) => setOptimalAnswerValue(e.target.value)} value={optimalAnswerValue ?? ""} disabled={!hasOptimalAnswerValue} />
         <Checkbox
@@ -109,9 +112,6 @@ export const SurveyQuestionForm: React.FC<SurveyQuestionProps> = (props) => {
           <option value={LogicalOperator.GreaterThan}>Greater Than</option>
           <option value={LogicalOperator.LessThan}>Less Than</option>
         </Select>
-      </div>
-      <div>
-        <Link onClick={() => props.onQuestionDeleted(props.q)}>Remove question</Link>
       </div>
     </div>
   );

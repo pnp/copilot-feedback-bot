@@ -1,18 +1,19 @@
 import React from "react";
-import { SurveyPageDB, SurveyQuestionDB } from "../../apimodels/Models";
+import { SurveyQuestionDB } from "../../apimodels/Models";
 import { Link } from "@fluentui/react-components";
 import { SurveyQuestionForm } from "./SurveyQuestionForm";
 import { QuestionDatatype } from "../../apimodels/Enums";
+import { GetSurveyQuestionDB } from "./CommonFunctions";
 
-export const EditSurveyQuestions: React.FC<{ page: SurveyPageDB, onQuestionEdited: Function, onQuestionDeleted: Function }> = (props) => {
+export const EditSurveyQuestions: React.FC<EditSurveyQuestionsProps> = (props) => {
 
   return (
     <div className="pageEditTab">
       <div>
         {props.page.questions.length > 0 ?
           <>
-            {props.page.questions.map((q) => {
-              return <SurveyQuestionForm key={q.id ?? 0} q={q} {...props} />
+            {props.page.questions.map((q: SurveyQuestionDB, i: number) => {
+              return <SurveyQuestionForm key={i} q={q} {...props} />
             })}
           </>
           :
@@ -25,13 +26,14 @@ export const EditSurveyQuestions: React.FC<{ page: SurveyPageDB, onQuestionEdite
           <div>Save the page to add questions</div> :
           <Link onClick={() => {
             if (!props.page.id) return;
+
             const newQuestion: SurveyQuestionDB =
             {
               question: "New Question", questionId: "0",
               dataType: QuestionDatatype.String,
-              forSurveyPageId: props.page.id
+              forSurveyPageId: props.page.id,
             };
-            props.onQuestionEdited(newQuestion);
+            props.onQuestionEdited(GetSurveyQuestionDB(newQuestion));
           }}>
             Add new question
           </Link>

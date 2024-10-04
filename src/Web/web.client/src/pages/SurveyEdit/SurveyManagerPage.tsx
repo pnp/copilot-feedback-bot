@@ -2,7 +2,7 @@
 import React from 'react';
 import { BaseApiLoader } from '../../api/ApiLoader';
 import { getSurveyPages } from '../../api/ApiCalls';
-import { SurveyPageDB, SurveyPageEditViewModel, SurveyQuestionDB } from '../../apimodels/Models'; // Ensure SurveyPageDB is a class or constructor function
+import { SurveyPageDB, SurveyQuestionDB } from '../../apimodels/Models'; // Ensure SurveyPageDB is a class or constructor function
 import { SurveyPageAndQuestionsEdit } from './SurveyPageAndQuestionsEdit';
 import { Link, Spinner } from '@fluentui/react-components';
 
@@ -13,8 +13,8 @@ import { SurveyPageView } from './SurveyPageView';
 export const SurveyManagerPage: React.FC<{ loader?: BaseApiLoader }> = (props) => {
 
   const [haveNewPage, setHaveNewPage] = React.useState<boolean>(false);
-  const [surveyPages, setSurveyPages] = React.useState<SurveyPageEditViewModel[] | null>(null);
-  const [editingSurveyPage, setEditingSurveyPage] = React.useState<SurveyPageEditViewModel | null>(null);
+  const [surveyPages, setSurveyPages] = React.useState<SurveyPageDB[] | null>(null);
+  const [editingSurveyPage, setEditingSurveyPage] = React.useState<SurveyPageDB | null>(null);
 
   // Load survey pages from the server
   React.useEffect(() => {
@@ -24,12 +24,12 @@ export const SurveyManagerPage: React.FC<{ loader?: BaseApiLoader }> = (props) =
       });
   }, [props.loader]);
 
-  const updateSurveyPages = React.useCallback((pages: SurveyPageEditViewModel[]) => {
+  const updateSurveyPages = React.useCallback((pages: SurveyPageDB[]) => {
     setSurveyPages(pages);
     console.debug("Updated pages data: ", pages);
   }, []);
 
-  const startEditPage = React.useCallback((page: SurveyPageEditViewModel | null) => {
+  const startEditPage = React.useCallback((page: SurveyPageDB | null) => {
     if (!page)
       console.debug("Cancel editing page");
     else
@@ -40,10 +40,9 @@ export const SurveyManagerPage: React.FC<{ loader?: BaseApiLoader }> = (props) =
   const onNewPage = React.useCallback(() => {
     console.debug("Creating new page");
     if (surveyPages) {
-      const newPage: SurveyPageEditViewModel = {
+      const newPage: SurveyPageDB = {
         name: 'New Page',
         adaptiveCardTemplateJson: '{}',
-        adaptiveCardTemplateJsonWithQuestions: '{}',
         pageIndex: surveyPages.length,
         questions: [],
         isPublished: false
@@ -54,7 +53,7 @@ export const SurveyManagerPage: React.FC<{ loader?: BaseApiLoader }> = (props) =
     }
   }, [surveyPages]);
 
-  const onPageEdited = React.useCallback((page: SurveyPageEditViewModel) => {
+  const onPageEdited = React.useCallback((page: SurveyPageDB) => {
     if (!surveyPages || !editingSurveyPage) return;
 
 
@@ -94,7 +93,7 @@ export const SurveyManagerPage: React.FC<{ loader?: BaseApiLoader }> = (props) =
     if (!surveyPages) return;
 
     var pageIndex = surveyPages.findIndex((p) => p.id === q.forSurveyPageId);
-    let updatedPages: SurveyPageEditViewModel[] = [];
+    let updatedPages: SurveyPageDB[] = [];
     if (!q.id) {
       console.debug("New question: ", q);
       if (pageIndex === -1) return;

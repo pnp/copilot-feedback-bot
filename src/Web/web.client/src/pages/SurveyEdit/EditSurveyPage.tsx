@@ -3,7 +3,7 @@ import { SurveyPageDB } from "../../apimodels/Models";
 import { Checkbox, Field, Input, Textarea } from "@fluentui/react-components";
 
 
-export const EditSurveyPage: React.FC<{ page: SurveyPageDB, onPageEdited: Function }> = (props) => {
+export const EditSurveyPage: React.FC<EditSurveyPageProps> = (props) => {
 
   const [pageIsPublished, setPageIsPublished] = React.useState<boolean>(props.page.isPublished);
   const [pageName, setPageName] = React.useState<string>(props.page.name);
@@ -28,7 +28,7 @@ export const EditSurveyPage: React.FC<{ page: SurveyPageDB, onPageEdited: Functi
     setPageName(props.page.name);
     setPageIndex(props.page.pageIndex);
     setPageJson(props.page.adaptiveCardTemplateJson);
-    console.log("EditSurveyPage: Updated page data: ", props.page);
+    console.debug("EditSurveyPage: Updated page data: ", props.page);
   }, [props.page]);
 
   return (
