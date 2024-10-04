@@ -60,7 +60,7 @@ export const SurveyPageAndQuestionsEdit: React.FC<SurveyPageAndQuestionsEditProp
       </TabList>
       <div className={styles.panels}>
         {selectedTabValue === "SurveyPageEditPage" &&
-          <EditSurveyPage onPageEdited={props.onPageEdited} page={props.page} />}
+          <EditSurveyPage onPageFieldUpdated={props.onPageFieldUpdated} page={props.page} />}
         {selectedTabValue === "SurveyPageEditQuestions" &&
           <EditSurveyQuestions {...props} page={props.page} />}
       </div>

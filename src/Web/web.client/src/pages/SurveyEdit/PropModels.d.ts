@@ -15,10 +15,9 @@ interface SurveyPageViewProps extends PageProps {
 }
 
 interface SurveyPageAndQuestionsEditProps extends PageProps {
-    onPageEdited: Function,
+    onPageFieldUpdated: Function,
     onPageSave: Function,
     onQuestionEdited: Function,
-    onPageDeleted: Function,
     onQuestionDeleted: Function,
     onEditCancel: Function,
 }
@@ -29,4 +28,4 @@ interface SurveyQuestionProps {
     onQuestionDeleted: Function;
 }
 
-interface EditSurveyPageProps extends PageProps { onPageEdited: Function }
+interface EditSurveyPageProps extends PageProps { onPageFieldUpdated: Function }

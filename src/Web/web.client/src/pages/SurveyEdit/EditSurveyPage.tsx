@@ -20,7 +20,7 @@ export const EditSurveyPage: React.FC<EditSurveyPageProps> = (props) => {
       isPublished: pageIsPublished,
       questions: props.page.questions
     };
-    props.onPageEdited(p);
+    props.onPageFieldUpdated(p);
   }, [pageIsPublished, pageName, pageIndex, pageJson]);
 
   React.useEffect(() => {
