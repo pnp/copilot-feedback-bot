@@ -12,7 +12,7 @@ export const EditSurveyQuestions: React.FC<{ page: SurveyPageDB, onQuestionEdite
         {props.page.questions.length > 0 ?
           <>
             {props.page.questions.map((q) => {
-              return <SurveyQuestionForm key={q.id} q={q} {...props} />
+              return <SurveyQuestionForm key={q.id ?? 0} q={q} {...props} />
             })}
           </>
           :

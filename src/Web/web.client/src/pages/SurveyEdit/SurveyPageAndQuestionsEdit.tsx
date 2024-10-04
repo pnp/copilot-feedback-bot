@@ -1,5 +1,4 @@
 import React from "react";
-import { SurveyPageEditViewModel } from "../../apimodels/Models";
 import { Button, makeStyles, SelectTabData, SelectTabEvent, Tab, TabList, TabValue, tokens } from "@fluentui/react-components";
 import { EditSurveyQuestions } from "./EditSurveyQuestions";
 import { EditSurveyPage } from "./EditSurveyPage";
@@ -30,16 +29,6 @@ const useStyles = makeStyles({
     },
   },
 });
-
-interface SurveyPageEditProps {
-  page: SurveyPageEditViewModel,
-  onPageEdited: Function, 
-  onPageSave: Function,
-  onQuestionEdited: Function,
-  onPageDeleted: Function, 
-  onQuestionDeleted: Function,
-  onEditCancel: Function,
-}
 
 export const SurveyPageAndQuestionsEdit: React.FC<SurveyPageEditProps> = (props) => {
 

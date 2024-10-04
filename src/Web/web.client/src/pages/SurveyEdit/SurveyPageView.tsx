@@ -14,6 +14,7 @@ export const SurveyPageView: React.FC<{ page: SurveyPageEditViewModel, onStartEd
   }, [editMode]);
 
   const onDelete = React.useCallback(() => {
+    props.onDelete(props.page);
   }, [props.onDelete]);
 
 

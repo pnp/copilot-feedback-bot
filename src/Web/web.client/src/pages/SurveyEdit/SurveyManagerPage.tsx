@@ -7,11 +7,12 @@ import { SurveyPageAndQuestionsEdit } from './SurveyPageAndQuestionsEdit';
 import { Link, Spinner } from '@fluentui/react-components';
 
 import update from 'immutability-helper';
-import { SurveyPagesViewList } from './SurveyPagesViewList';
 import isEqual from 'lodash.isequal';
+import { SurveyPageView } from './SurveyPageView';
 
 export const SurveyManagerPage: React.FC<{ loader?: BaseApiLoader }> = (props) => {
 
+  const [haveNewPage, setHaveNewPage] = React.useState<boolean>(false);
   const [surveyPages, setSurveyPages] = React.useState<SurveyPageEditViewModel[] | null>(null);
   const [editingSurveyPage, setEditingSurveyPage] = React.useState<SurveyPageEditViewModel | null>(null);
 
@@ -29,7 +30,7 @@ export const SurveyManagerPage: React.FC<{ loader?: BaseApiLoader }> = (props) =
   }, []);
 
   const startEditPage = React.useCallback((page: SurveyPageEditViewModel | null) => {
-    if (!page) 
+    if (!page)
       console.debug("Cancel editing page");
     else
       console.debug("Start editing page: ", page);
@@ -37,8 +38,8 @@ export const SurveyManagerPage: React.FC<{ loader?: BaseApiLoader }> = (props) =
   }, [editingSurveyPage]);
 
   const onNewPage = React.useCallback(() => {
+    console.debug("Creating new page");
     if (surveyPages) {
-      console.debug("Creating new page");
       const newPage: SurveyPageEditViewModel = {
         name: 'New Page',
         adaptiveCardTemplateJson: '{}',
@@ -49,13 +50,14 @@ export const SurveyManagerPage: React.FC<{ loader?: BaseApiLoader }> = (props) =
       };
       updateSurveyPages([...surveyPages, newPage]);
       startEditPage(newPage);
+      setHaveNewPage(true);
     }
   }, [surveyPages]);
 
   const onPageEdited = React.useCallback((page: SurveyPageEditViewModel) => {
     if (!surveyPages || !editingSurveyPage) return;
 
-    
+
     if (isEqual(page, editingSurveyPage)) {
       console.debug("No page changes detected");
     }
@@ -65,7 +67,7 @@ export const SurveyManagerPage: React.FC<{ loader?: BaseApiLoader }> = (props) =
     }
     else {
       console.debug("Updated page: ", page);
-}
+    }
     var pageIndex = surveyPages.findIndex((p) => p.id === page.id);
     const updatedPages = update(surveyPages, { [pageIndex]: { $set: page } });
     updateSurveyPages(updatedPages);
@@ -73,7 +75,7 @@ export const SurveyManagerPage: React.FC<{ loader?: BaseApiLoader }> = (props) =
     // Find the updated page
     const updatedPageIndex = updatedPages.findIndex((p) => p.id === page.id);
     const updatedPage = updatedPages[updatedPageIndex];
-    
+
     // Update page being edited
     setEditingSurveyPage(updatedPage);
 
@@ -139,12 +141,14 @@ export const SurveyManagerPage: React.FC<{ loader?: BaseApiLoader }> = (props) =
     setEditingSurveyPage(updatedPage);
   }, [surveyPages]);
 
+  // Save to server
   const onPageSave = React.useCallback(() => {
+    console.debug("Saving page: ", editingSurveyPage);
     if (!editingSurveyPage) return;
 
-    console.debug("Saving page: ", editingSurveyPage);
     startEditPage(null);
-  }, []);
+    setHaveNewPage(false);
+  }, [editingSurveyPage]);
 
   return (
     <div className='surveyPage'>
@@ -161,9 +165,14 @@ export const SurveyManagerPage: React.FC<{ loader?: BaseApiLoader }> = (props) =
             <>
               {surveyPages ?
                 <>
-                  <SurveyPagesViewList pages={surveyPages} onStartEdit={startEditPage} onDelete={onPageDeleted} />
+                  {surveyPages.map((page) => {
+                    return <SurveyPageView key={page.id ?? 0} page={page} 
+                      onDelete={onPageDeleted} onStartEdit={startEditPage} />;
+                  })}
 
-                  <Link onClick={onNewPage}>Add new survey page</Link>
+                  {!haveNewPage &&
+                    <Link onClick={onNewPage}>Add new survey page</Link>
+                  }
                 </>
                 :
                 <Spinner />
