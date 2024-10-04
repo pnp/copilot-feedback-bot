@@ -34,16 +34,17 @@ const useStyles = makeStyles({
 interface SurveyPageEditProps {
   page: SurveyPageEditViewModel,
   onPageEdited: Function, 
+  onPageSave: Function,
   onQuestionEdited: Function,
   onPageDeleted: Function, 
   onQuestionDeleted: Function,
   onEditCancel: Function,
 }
 
-export const SurveyPageEdit: React.FC<SurveyPageEditProps> = (props) => {
+export const SurveyPageAndQuestionsEdit: React.FC<SurveyPageEditProps> = (props) => {
 
   const onSave = React.useCallback(() => {
-    props.onPageEdited(props.page);
+    props.onPageSave();
   }, [props.onPageEdited, props.page]);
 
   const onEditCancel = React.useCallback(() => {
@@ -78,7 +79,7 @@ export const SurveyPageEdit: React.FC<SurveyPageEditProps> = (props) => {
       <div className='nav'>
         <ul>
           <li>
-            <Button appearance="primary" onClick={onSave}>Save</Button>
+            <Button appearance="primary" onClick={onSave}>Save Page Changes</Button>
           </li>
           <li>
             <Button appearance="secondary" onClick={onEditCancel}>Cancel</Button>

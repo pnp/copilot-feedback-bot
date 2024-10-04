@@ -33,7 +33,6 @@ export const EditSurveyPage: React.FC<{ page: SurveyPageDB, onPageEdited: Functi
 
   return (
     <div className="pageEditTab">
-      <div>{JSON.stringify(props.page)}</div>
       <Field label="Page Name">
         <Input onChange={(e) => setPageName(e.target.value)} value={pageName} />
       </Field>
