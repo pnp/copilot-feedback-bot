@@ -7,7 +7,7 @@ namespace Entities.DB.Entities;
 public class UserSurveyResponseDB : UserRelatedEntity
 {
     [Column("responded")]
-    public DateTime Responded { get; set; }
+    public DateTime? Responded { get; set; }
 
     [Column("requested")]
     public DateTime Requested { get; set; }

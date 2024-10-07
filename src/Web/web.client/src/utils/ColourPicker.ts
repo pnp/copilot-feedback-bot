@@ -2,7 +2,7 @@ import tinycolor from "tinycolor2";
 
 export class ColourPicker {
   lastColourIndex = 0;
-  allColours : string[] = [];
+  allColours: string[] = [];
 
   constructor(startIdx: number | undefined) {
     if (startIdx) {
@@ -12,12 +12,11 @@ export class ColourPicker {
   }
   static chartColours: string[] =
     [
-      "#C8AC72",   // gold
-      "#C88172",  // red
-      "#B9C872", // Green
-          "#728EC8", // Blue,
-          "#777684" // Dark grey
-          ,"#323232" // Darker grey
+      "#0078D4",
+      "#00BCF2",
+      "#002050",
+      "#F4F4F4", // Light Grey
+      "#333333" // Dark Grey
     ];
 
   charColour() {
@@ -33,17 +32,17 @@ export class ColourPicker {
   generateColors(baseColors: string[], numColors: number): string[] {
     let colors: string[] = [];
     for (let i = 0; i < numColors; i++) {
-        // Get base color
-        let baseColor = tinycolor(baseColors[i % baseColors.length]);
+      // Get base color
+      let baseColor = tinycolor(baseColors[i % baseColors.length]);
 
-        // Generate new color by changing the hue
-        let newColor = baseColor.spin(i * 360 / numColors);
+      // Generate new color by changing the hue
+      let newColor = baseColor.spin(i * 360 / numColors);
 
-        // Add new color to list
-        colors.push(newColor.toHexString());
+      // Add new color to list
+      colors.push(newColor.toHexString());
     }
     return colors;
-}
+  }
 
   static hexToRGB(hex: string, alpha?: number) {
     var r = parseInt(hex.slice(1, 3), 16),

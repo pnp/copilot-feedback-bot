@@ -7,11 +7,17 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Web.Controllers;
 
+/// <summary>
+/// Handles updates to survey questions
+/// </summary>
 [Authorize]
 [Route("api/[controller]")]
 [ApiController]
 public class SurveyQuestionsController(ILogger<SurveyQuestionsController> logger, DataContext context) : ControllerBase
 {
+    /// <summary>
+    /// Load survey pages
+    /// </summary>
     // GET: api/SurveyQuestions
     [HttpGet]
     public async Task<List<SurveyPageDTO>> SurveyQuestions()
@@ -23,6 +29,9 @@ public class SurveyQuestionsController(ILogger<SurveyQuestionsController> logger
         return allPages.Select(p => new SurveyPageDTO(p)).ToList();
     }
 
+    /// <summary>
+    /// Save a survey page + questions
+    /// </summary>
     // POST: api/SurveyQuestions
     [HttpPost]
     public async Task<List<SurveyPageDTO>> SavePage([FromBody] SurveyPageDTO pageUpdate)

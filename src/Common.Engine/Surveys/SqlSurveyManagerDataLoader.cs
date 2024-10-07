@@ -62,7 +62,13 @@ public class SqlSurveyManagerDataLoader(DataContext db, ILogger<SqlSurveyManager
 
     public async Task<int> LogSurveyRequested(CommonAuditEvent @event)
     {
-        var survey = new UserSurveyResponseDB { RelatedEventId = @event.Id, Requested = DateTime.UtcNow, UserID = @event.UserId };
+        var survey = new UserSurveyResponseDB 
+        { 
+            RelatedEventId = @event.Id, 
+            Requested = DateTime.UtcNow, 
+            Responded = null, 
+            UserID = @event.UserId 
+        };
         db.SurveyResponses.Add(survey);
         await db.SaveChangesAsync();
         return survey.ID;

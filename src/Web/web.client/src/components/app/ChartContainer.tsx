@@ -28,7 +28,7 @@ import { PropsWithChildren } from 'react';
     Filler
   );
 
-export const SkillsChartContainer: React.FC<PropsWithChildren<{}>> = (props) => {
+export const ChartContainer: React.FC<PropsWithChildren<{}>> = (props) => {
 
     return <>{props.children}</>;
 }

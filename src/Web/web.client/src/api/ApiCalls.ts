@@ -1,4 +1,4 @@
-import { ServiceConfiguration, SurveyPageDTO } from "../apimodels/Models";
+import { BasicStats, ServiceConfiguration, SurveyPageDTO } from "../apimodels/Models";
 import { BaseApiLoader } from "./ApiLoader";
 
 
@@ -6,6 +6,14 @@ export const getClientConfig = async (loader: BaseApiLoader): Promise<ServiceCon
   return loader.loadFromApi('api/AppInfo/GetClientConfig', 'POST')
     .then(async response => {
       const d: ServiceConfiguration = JSON.parse(response);
+      return d;
+    })
+}
+
+export const getBasicStats = async (loader: BaseApiLoader): Promise<BasicStats> => {
+  return loader.loadFromApi('api/Stats/GetBasicStats', 'GET')
+    .then(async response => {
+      const d: BasicStats = JSON.parse(response);
       return d;
     })
 }
@@ -27,3 +35,4 @@ export const saveSurveyPages = async (loader: BaseApiLoader, updatedPage: Survey
       return d;
     })
 }
+

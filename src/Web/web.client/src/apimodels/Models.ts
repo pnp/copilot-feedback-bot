@@ -26,6 +26,12 @@ export interface SurveyQuestionDTO extends BaseDTO {
   optimalAnswerLogicalOp? : LogicalOperator;
   index: number;
 }
+export interface BasicStats {
+  usersSurveyed: number;
+  usersResponded: number;
+  usersNotResponded: number;
+  usersFound: number;
+}
 
 
 export interface ServiceConfiguration {

@@ -65,6 +65,7 @@ export const SurveyPageAndQuestionsEdit: React.FC<SurveyPageAndQuestionsEditProp
           <EditSurveyQuestions {...props} page={props.page} />}
       </div>
 
+      <p>When you're happy with this survey page:</p>
       <div className='nav'>
         <ul>
           <li>

@@ -32,6 +32,7 @@ export const EditSurveyQuestions: React.FC<EditSurveyQuestionsProps> = (props) =
               question: "New Question", questionId: "0",
               dataType: QuestionDatatype.String,
               forSurveyPageId: props.page.id,
+              index: props.page.questions.length
             };
             props.onQuestionEdited(GetSurveyQuestionDTO(newQuestion));
           }}>
