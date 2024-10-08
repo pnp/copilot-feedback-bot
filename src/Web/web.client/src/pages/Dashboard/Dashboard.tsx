@@ -60,7 +60,8 @@ export const Dashboard: React.FC<{ loader?: BaseApiLoader }> = (props) => {
       getBasicStats(props.loader).then((d) => {
         setBasicStats(d);
       }).catch((e) => {
-        setError(e.toString());
+        console.error("Error: ", e);
+        setError(e);
       });
   }, [props.loader]);
 
@@ -72,65 +73,70 @@ export const Dashboard: React.FC<{ loader?: BaseApiLoader }> = (props) => {
 
           <p>Welcome to the copilot feedback bot control panel app.</p>
 
-          {error && <p>Error: {error}</p>}
+          {error ? <p className='error'>{error}</p>
+            :
+            <>
+              {basicStats ?
+                <div>
+                  <ChartContainer>
 
-          {basicStats ?
-            <div>
-              <ChartContainer>
-
-                <div className='nav'>
-                  <ul>
-                    <li>
-                      <Card className={styles.card}>
-                        <CardHeader
-                          header={<Text weight="semibold">Survey Stats</Text>}
-                          description={
-                            <Caption1 className={styles.caption}>Responded vs surveyed</Caption1>
-                          }
-                          action={
-                            <Button
-                              appearance="transparent"
-                              icon={<MoreHorizontal20Regular />}
-                              aria-label="More options"
+                    <div className='nav'>
+                      <ul>
+                        <li>
+                          <Card className={styles.card}>
+                            <CardHeader
+                              header={<Text weight="semibold">Survey Stats</Text>}
+                              description={
+                                <Caption1 className={styles.caption}>Responded vs surveyed</Caption1>
+                              }
+                              action={
+                                <Button
+                                  appearance="transparent"
+                                  icon={<MoreHorizontal20Regular />}
+                                  aria-label="More options"
+                                />
+                              }
                             />
-                          }
-                        />
 
-                        <p className={styles.text}>
-                          Users are surveyed for copilot interactions. They don't necesarily reply.
-                        </p>
+                            <p className={styles.text}>
+                              Users are surveyed for copilot interactions. They don't necesarily reply.
+                            </p>
 
-                        <SurveyStatsChart stats={basicStats} />
-                      </Card>
-                    </li>
-                    <li>
-                      <Card className={styles.card}>
-                        <CardHeader
-                          header={<Text weight="semibold">Copilot Engagement</Text>}
-                          description={
-                            <Caption1 className={styles.caption}>Active Users vs Inactive</Caption1>
-                          }
-                          action={
-                            <Button
-                              appearance="transparent"
-                              icon={<MoreHorizontal20Regular />}
-                              aria-label="More options"
+                            <SurveyStatsChart stats={basicStats} />
+                          </Card>
+                        </li>
+                        <li>
+                          <Card className={styles.card}>
+                            <CardHeader
+                              header={<Text weight="semibold">Copilot Engagement</Text>}
+                              description={
+                                <Caption1 className={styles.caption}>Active Users vs Inactive</Caption1>
+                              }
+                              action={
+                                <Button
+                                  appearance="transparent"
+                                  icon={<MoreHorizontal20Regular />}
+                                  aria-label="More options"
+                                />
+                              }
                             />
-                          }
-                        />
 
-                        <p className={styles.text}>
-                          Some users are more active than others. This chart shows the distribution.
-                        </p>
+                            <p className={styles.text}>
+                              Some users are more active than others. This chart shows the distribution.
+                            </p>
 
-                        <UserStatsChart stats={basicStats} />
-                      </Card>
-                    </li>
-                  </ul>
-                </div>
-              </ChartContainer>
-            </div> : <Spinner />
+                            <UserStatsChart stats={basicStats} />
+                          </Card>
+                        </li>
+                      </ul>
+                    </div>
+                  </ChartContainer>
+                </div> : <Spinner />
+              }
+            </>
           }
+
+
 
         </div >
       </section >

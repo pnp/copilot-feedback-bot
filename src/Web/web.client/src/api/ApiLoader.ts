@@ -32,19 +32,14 @@ export abstract class BaseApiLoader {
                     return Promise.resolve(dataText);
                 }
                 else {
+                    const errorTitle = `Error ${response.status} ${method}ing to/from API '${url}'`;
                     const dataText: string = await response.text();
-                    if (!onError) {
-                        const errorTitle = `Error ${response.status} ${method}ing to/from API '${url}'`;
-
-                        if (dataText !== "")
-                            alert(`${errorTitle}: ${dataText}`)
-                        else
-                            alert(errorTitle);
-                        
-                    }
-                    else
-                        onError(dataText);
-                    return Promise.reject(dataText);
+                    let errorText = errorTitle;
+                    if (dataText !== "")
+                        errorText = `${errorTitle}: ${dataText}`;
+                    if (onError) 
+                        onError(errorText);
+                    return Promise.reject(errorText);
                 }
             });
     };
@@ -69,7 +64,7 @@ export class MsalApiLoader extends BaseApiLoader {
         const request = {
             ...loginRequest,
             account: this.accounts[0]
-        };            
+        };
         console.debug("Requesting MSAL access token");
 
         return this.instance.acquireTokenSilent(request).then((response) => {
