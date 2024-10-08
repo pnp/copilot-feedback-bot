@@ -20,6 +20,12 @@ export class NavMenu extends Component<{ apiLoader?: BaseApiLoader }> {
               <div className="menu-item"><span>Survey Editor</span></div>
             </li>
           </NavLink>
+          
+          <NavLink to="/triggers">
+            <li>
+              <div className="menu-item"><span>Triggers</span></div>
+            </li>
+          </NavLink>
 
           {this.props.apiLoader &&
             <button onClick={this.props.apiLoader.logOut} style={{ backgroundColor: 'transparent', borderColor: 'transparent', width: '100%' }}>

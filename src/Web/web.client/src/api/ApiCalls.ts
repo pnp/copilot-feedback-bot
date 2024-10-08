@@ -44,3 +44,22 @@ export const deleteSurveyPage = async (loader: BaseApiLoader, pageId: string): P
     })
 }
 
+
+export const triggerSendSurveys = async (loader: BaseApiLoader): Promise<null> => {
+  return loader.loadFromApi('/api/Triggers/SendSurveys', 'POST')
+    .then(() => {
+      return null;
+    })
+}
+export const triggerInstallBotForUser = async (loader: BaseApiLoader, upn: string): Promise<null> => {
+  return loader.loadFromApi('/api/Triggers/InstallBotForUser?upn=' + upn, 'POST')
+    .then(() => {
+      return null;
+    })
+}
+export const triggerGenerateFakeActivityForUser = async (loader: BaseApiLoader, upn: string): Promise<null> => {
+  return loader.loadFromApi('/api/Triggers/GenerateFakeActivity?upn=' + upn, 'POST')
+    .then(() => {
+      return null;
+    })
+}

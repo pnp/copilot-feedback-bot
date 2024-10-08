@@ -8,6 +8,7 @@ import { Redirect, Route } from "react-router-dom";
 import { BaseApiLoader } from './api/ApiLoader';
 import { SurveyManagerPage } from './pages/SurveyEdit/SurveyManagerPage';
 import { FluentProvider, teamsLightTheme } from '@fluentui/react-components';
+import { TriggersPage } from './pages/Triggers/TriggersPage';
 
 export const AppMain : React.FC<PropsWithChildren<{apiLoader?: BaseApiLoader}>> = (props) => {
 
@@ -24,6 +25,7 @@ export const AppMain : React.FC<PropsWithChildren<{apiLoader?: BaseApiLoader}>> 
                             </Route>
                             <Route exact path='/tabhome' render={() => <Dashboard loader={props.apiLoader} />} />
                             <Route exact path='/surveyedit' render={() => <SurveyManagerPage loader={props.apiLoader} />} />
+                            <Route exact path='/triggers' render={() => <TriggersPage loader={props.apiLoader} />} />
                         </AuthenticatedTemplate>
                     </Layout>
                 )
