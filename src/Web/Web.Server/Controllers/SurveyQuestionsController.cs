@@ -39,6 +39,7 @@ public class SurveyQuestionsController(ILogger<SurveyQuestionsController> logger
         return await SurveyQuestions();
     }
 
+    // POST: api/SurveyQuestions/DeletePage
     [HttpPost(nameof(DeletePage))]
     public async Task<IActionResult> DeletePage([FromBody] BaseDTO pageToDelete)
     {

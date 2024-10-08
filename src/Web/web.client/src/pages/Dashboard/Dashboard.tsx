@@ -52,12 +52,15 @@ const useStyles = makeStyles({
 export const Dashboard: React.FC<{ loader?: BaseApiLoader }> = (props) => {
 
   const [basicStats, setBasicStats] = React.useState<BasicStats | null>(null);
+  const [error, setError] = React.useState<string | null>(null);
   const styles = useStyles();
 
   React.useEffect(() => {
     if (props.loader)
       getBasicStats(props.loader).then((d) => {
         setBasicStats(d);
+      }).catch((e) => {
+        setError(e.toString());
       });
   }, [props.loader]);
 
@@ -68,6 +71,9 @@ export const Dashboard: React.FC<{ loader?: BaseApiLoader }> = (props) => {
           <h1>Copilot Feedback Bot - Admin Home</h1>
 
           <p>Welcome to the copilot feedback bot control panel app.</p>
+
+          {error && <p>Error: {error}</p>}
+
           {basicStats ?
             <div>
               <ChartContainer>

@@ -5,7 +5,7 @@ import { msalConfig } from "./authConfig";
 import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import ReactDOM from 'react-dom/client'
-import AppRoot from './AppRoot';
+import App from './App';
 
 const msalInstance = new PublicClientApplication(msalConfig);
 
@@ -13,7 +13,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     <MsalProvider instance={msalInstance}>
       <BrowserRouter basename={import.meta.env.BASE_URL}>
         <LocalizationProvider dateAdapter={AdapterMoment}>
-          <AppRoot />
+          <App />
         </LocalizationProvider>
       </BrowserRouter>
     </MsalProvider>

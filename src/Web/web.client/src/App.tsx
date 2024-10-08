@@ -4,7 +4,7 @@ import { AppMain } from './AppMain';
 import { useState } from 'react';
 import { BaseApiLoader } from './api/ApiLoader';
 
-export default function AppRoot() {
+export default function App() {
 
     const [apiLoader, setApiLoader] = useState<BaseApiLoader | undefined>();
 
