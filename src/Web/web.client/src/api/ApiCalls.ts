@@ -1,4 +1,4 @@
-import { BasicStats, ServiceConfiguration, SurveyPageDTO } from "../apimodels/Models";
+import { BaseDTO, BasicStats, ServiceConfiguration, SurveyPageDTO } from "../apimodels/Models";
 import { BaseApiLoader } from "./ApiLoader";
 
 
@@ -27,12 +27,20 @@ export const getSurveyPages = async (loader: BaseApiLoader): Promise<SurveyPageD
     })
 }
 
-export const saveSurveyPages = async (loader: BaseApiLoader, updatedPage: SurveyPageDTO): Promise<SurveyPageDTO[]> => {
+export const saveSurveyPage = async (loader: BaseApiLoader, updatedPage: SurveyPageDTO): Promise<SurveyPageDTO[]> => {
   return loader.loadFromApi('api/SurveyQuestions', 'POST', updatedPage)
     .then(async response => {
       const d: SurveyPageDTO[] = JSON.parse(response);
 
       return d;
+    })
+}
+
+export const deleteSurveyPage = async (loader: BaseApiLoader, pageId: string): Promise<null> => {
+  const body: BaseDTO = { id: pageId };
+  return loader.loadFromApi('api/SurveyQuestions/DeletePage', 'POST', body)
+    .then(() => {
+      return null;
     })
 }
 

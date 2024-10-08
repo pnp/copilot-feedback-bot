@@ -7,7 +7,7 @@ import { BasicStats } from '../../apimodels/Models';
 export const UserStatsChart: React.FC<{stats: BasicStats}> = (props) => {
 
   const data = {
-    labels: ['usersSurveyed', 'usersFound'],
+    labels: ['Users surveyed', 'Users discovered'],
     datasets: [
       {
         data: [props.stats.usersSurveyed, props.stats.usersFound],

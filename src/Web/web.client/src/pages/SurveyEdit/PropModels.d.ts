@@ -1,3 +1,4 @@
+import { SurveyPageDTO } from "../../apimodels/Models";
 
 abstract interface PageProps {
     page: SurveyPageDTO,

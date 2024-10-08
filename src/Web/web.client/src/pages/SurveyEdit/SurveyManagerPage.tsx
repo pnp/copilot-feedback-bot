@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { BaseApiLoader } from '../../api/ApiLoader';
-import { getSurveyPages, saveSurveyPages } from '../../api/ApiCalls';
+import { deleteSurveyPage, getSurveyPages, saveSurveyPage } from '../../api/ApiCalls';
 import { SurveyPageDTO, SurveyQuestionDTO } from '../../apimodels/Models'; // Ensure SurveyPageDTO is a class or constructor function
 import { SurveyPageAndQuestionsEdit } from './SurveyPageAndQuestionsEdit';
 import { Link, Spinner } from '@fluentui/react-components';
@@ -83,10 +83,20 @@ export const SurveyManagerPage: React.FC<{ loader?: BaseApiLoader }> = (props) =
   const onPageDeleted = React.useCallback((page: SurveyPageDTO) => {
     console.debug("Deleting page: ", page);
 
-    if (!surveyPages) return;
-    var pageIndex = surveyPages.findIndex((p) => p.id === page.id);
-    var updatedPages = update(surveyPages, { $splice: [[pageIndex, 1]] });
-    updateSurveyPages(updatedPages);
+    if (!surveyPages || !props.loader) return;
+
+    // Set loading
+    setSurveyPages(null);
+
+    // Call API
+    deleteSurveyPage(props.loader, page.id ?? '').then(() => {
+      console.debug("Page deleted");
+
+      // Remove the page from the view index
+      var pageIndex = surveyPages.findIndex((p) => p.id === page.id);
+      var updatedPages = update(surveyPages, { $splice: [[pageIndex, 1]] });
+      updateSurveyPages(updatedPages);
+    });
   }, [surveyPages]);
 
   const onQuestionEditedOrCreated = React.useCallback((q: SurveyQuestionDTO) => {
@@ -146,7 +156,7 @@ export const SurveyManagerPage: React.FC<{ loader?: BaseApiLoader }> = (props) =
     if (!editingSurveyPage || !props.loader) return;
 
     setSurveyPages(null);
-    saveSurveyPages(props.loader, editingSurveyPage).then((r) => {
+    saveSurveyPage(props.loader, editingSurveyPage).then((r) => {
       setSurveyPages(r);
     });
 
@@ -162,7 +172,7 @@ export const SurveyManagerPage: React.FC<{ loader?: BaseApiLoader }> = (props) =
 
           <p>Edit the questions the bot sends to users about copilot.</p>
           {editingSurveyPage ?
-            <SurveyPageAndQuestionsEdit page={editingSurveyPage} onPageFieldUpdated={onPageEdited} 
+            <SurveyPageAndQuestionsEdit page={editingSurveyPage} onPageFieldUpdated={onPageEdited}
               onQuestionDeleted={onPageQuestionDeleted} onQuestionEdited={onQuestionEditedOrCreated}
               onEditCancel={() => startEditPage(null)} onPageSave={onPageSave} />
             :
@@ -170,7 +180,7 @@ export const SurveyManagerPage: React.FC<{ loader?: BaseApiLoader }> = (props) =
               {surveyPages ?
                 <>
                   {surveyPages.map((page) => {
-                    return <SurveyPageView key={page.id ?? 0} page={page} 
+                    return <SurveyPageView key={page.id ?? 0} page={page}
                       onDelete={onPageDeleted} onStartEdit={startEditPage} />;
                   })}
 

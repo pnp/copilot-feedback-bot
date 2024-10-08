@@ -1,7 +1,7 @@
 import { LogicalOperator, QuestionDatatype } from "./Enums";
 
 interface BaseDTOWithName extends BaseDTO { name: string }
-interface BaseDTO { id?: string }
+export interface BaseDTO { id?: string }
 
 export interface IdTokenClaims {
   at_hash: string,

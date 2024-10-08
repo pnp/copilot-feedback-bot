@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace Common.Engine.Surveys.Model;
 
-public abstract class BaseDTO
+public class BaseDTO
 {
     public BaseDTO()
     {

@@ -55,6 +55,8 @@ public class SurveyPageDB : AbstractEFEntityWithName
     [Column("template_json")]
     public string AdaptiveCardTemplateJson { get; set; } = null!;
 
+    [Column("deleted_utc")]
+    public DateTime? DeletedUtc { get; set; }
 }
 
 [Table("survey_questions")]

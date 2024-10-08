@@ -115,7 +115,7 @@ internal class FakeSurveyManagerDataLoader : ISurveyManagerDataLoader
         return Task.FromResult(new List<SurveyAnswerDB>());
     }
 
-    public Task<List<SurveyPageDB>> GetPublishedPages()
+    public Task<List<SurveyPageDB>> GetSurveyPages(bool publishedOnly)
     {
         return Task.FromResult(new List<SurveyPageDB>()
         { 
@@ -135,7 +135,18 @@ internal class FakeSurveyManagerDataLoader : ISurveyManagerDataLoader
                         Question = "Question 2",
                         DataType = QuestionDatatype.String
                     }
-                }
+                },
+                IsPublished = publishedOnly
             } });
+    }
+
+    public Task<bool> DeleteSurveyPage(int id)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task SaveSurveyPage(SurveyPageDTO pageUpdate)
+    {
+        throw new NotImplementedException();
     }
 }
