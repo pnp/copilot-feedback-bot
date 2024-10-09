@@ -8,8 +8,9 @@ import { BaseApiLoader } from './api/ApiLoader';
 import { SurveyManagerPage } from './pages/SurveyEdit/SurveyManagerPage';
 import { FluentProvider, teamsLightTheme } from '@fluentui/react-components';
 import { TriggersPage } from './pages/Triggers/TriggersPage';
+import { LoginPopupTeams } from './pages/Login/LoginPopupTeams';
 
-export const AppMain: React.FC<PropsWithChildren<{ apiLoader?: BaseApiLoader }>> = (props) => {
+export const AppRoutes: React.FC<PropsWithChildren<AppRoutesProps>> = (props) => {
 
     return (
         <FluentProvider theme={teamsLightTheme}>
@@ -30,9 +31,20 @@ export const AppMain: React.FC<PropsWithChildren<{ apiLoader?: BaseApiLoader }>>
                         <Route exact path="/">
                             <Redirect to="/tabhome" />
                         </Route>
-                        <Route exact path='/tabhome' component={LoginRedirect} />
+                        {props.loginMethod === LoginMethod.MSAL &&
+                            <Route exact path='/tabhome' component={LoginRedirect} />
+                        }
+                        {props.loginMethod === LoginMethod.TeamsPopup &&
+                            <Route exact path='/tabhome'><LoginPopupTeams onAuthReload={props.onAuthReload} /></Route>
+                        }
                     </Layout>
                 )}
         </FluentProvider>
     );
+}
+interface AppRoutesProps { apiLoader?: BaseApiLoader, loginMethod: LoginMethod, onAuthReload: Function }
+
+export enum LoginMethod {
+    MSAL,
+    TeamsPopup
 }
