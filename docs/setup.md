@@ -2,10 +2,10 @@
 # Setup Steps
 For this, we assume a decent knowledge of Teams apps deployment, .Net, and Azure PaaS. 
 
-## Create Bot and Deploy Teams App
-Note, that for all these steps you can do them all in PowerShell if you wish. I’m not a sysadmin so this is what works best for me. 
+## Create Bot and Deploy Teams Bot App
+Note, that for all these steps you can do them all in PowerShell if you wish. 
 
-You need Teams admin rights and rights to assign sensitive privileges for this setup to work. It's a bot that proactively installs itself and asks users. 
+You need Teams admin rights and rights to assign sensitive privileges for this setup to work. The bot app is just a bot that interacts with all/any Teams users - there's another Teams app for administering the solution that should be more restrictively installed. 
 
 1. Go to: https://dev.teams.microsoft.com/bots and create a new bot (or alternatively in the Azure Portal, create a new Azure bot - the 1st link doesn't require an Azure subscription).
 2. Create a new client secret for the bot application registration. Note down the client ID & the secret of the bot.
@@ -19,7 +19,7 @@ Next, create a Teams app from the template:
 7. Deploy that zip file to your apps catalog in Teams admin.
 8. Once deployed, copy the "App ID" generated. We'll need that ID for bot configuration.
 
-## PowerShell Setup
+## PowerShell Setup for Cloud Components
 There is a script to deploy all the Azure components and configure them. Recommended you use PowerShell 7 or above. 
 
 1. Install Az PowerShell - https://learn.microsoft.com/en-us/powershell/azure/install-azure-powershell
@@ -32,6 +32,13 @@ There is a script to deploy all the Azure components and configure them. Recomme
 6. Installation will take upto 45 mins if not run before.
 7. You can run multiple times; if a resources is already created, it'll be skipped. 
 
+## Optional - Deploy Bot Admin Teams App
+There is a React web application deployed to the app service that handles administration of bot questions, and other areas. The app can be accessed via MSAL logins or with Teams SSO. Teams is the prefered method as it doesn't require any extra authentication. 
+
+* Create Single-page application App registration for MSAL 2.0 - https://learn.microsoft.com/en-us/entra/identity-platform/scenario-spa-app-registration
+* Configure SSO for admin app registration - https://learn.microsoft.com/en-us/microsoftteams/platform/tabs/how-to/authentication/tab-sso-register-aad
+
+__todo__
 
 ## Manual Setup - Create Azure Resources
 You can deploy the ARM template manually:

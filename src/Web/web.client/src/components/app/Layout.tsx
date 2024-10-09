@@ -9,7 +9,8 @@ export const Layout: React.FC<PropsWithChildren<{ apiLoader?: BaseApiLoader }>> 
 
     <div className="welcome page">
       <div className="narrow page-padding">
-        <NavMenu />
+        {props.apiLoader && <NavMenu />}
+        
         {props.children}
 
       </div>

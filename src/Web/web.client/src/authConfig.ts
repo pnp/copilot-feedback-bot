@@ -9,8 +9,10 @@ export const msalConfig = {
   }
 };
 
-// Add scopes here for ID token to be used at Microsoft identity platform endpoints.
 export const loginRequest = {
   scopes: [String(import.meta.env.VITE_MSAL_SCOPES)]
 };
 
+export const teamsAppConfig = {
+  startLoginPageUrl: String(import.meta.env.VITE_TEAMSFX_START_LOGIN_PAGE_URL),
+}
