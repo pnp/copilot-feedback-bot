@@ -4,7 +4,7 @@ import { Button } from '@fluentui/react-components';
 import { TeamsFxContext } from '../../TeamsFxContext';
 import { ErrorWithCode } from '@microsoft/teamsfx';
 
-export const LoginPopupTeams : React.FC<{onAuthReload: Function}> = (props) => {
+export const LoginPopupTeams: React.FC<{ onAuthReload: Function }> = (props) => {
 
   const teamsUserCredential = useContext(TeamsFxContext).teamsUserCredential;
 
@@ -14,12 +14,12 @@ export const LoginPopupTeams : React.FC<{onAuthReload: Function}> = (props) => {
       return;
     }
     teamsUserCredential.login(loginRequest.scopes)
-    .then(() => {
-      props.onAuthReload();
-    })
-    .catch((error : ErrorWithCode) => {
+      .then(() => {
+        props.onAuthReload();
+      })
+      .catch((error: ErrorWithCode) => {
         console.error("Failed to login for Teams SSO: " + error);
-    });
+      });
 
   }, []);
 
