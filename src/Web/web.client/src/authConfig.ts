@@ -15,4 +15,5 @@ export const loginRequest = {
 
 export const teamsAppConfig = {
   startLoginPageUrl: String(import.meta.env.VITE_TEAMSFX_START_LOGIN_PAGE_URL),
+  apiEndpoint: String(import.meta.env.VITE_API_ENDPOINT),
 }

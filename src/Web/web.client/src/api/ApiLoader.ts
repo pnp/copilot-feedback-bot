@@ -1,7 +1,9 @@
-import { loginRequest } from "../authConfig";
+import { loginRequest, teamsAppConfig } from "../authConfig";
 import { AccountInfo } from "@azure/msal-common";
 import { IPublicClientApplication } from "@azure/msal-browser";
-import { TeamsUserCredential } from "@microsoft/teamsfx";
+import { BearerTokenAuthProvider, createApiClient, TeamsUserCredential } from "@microsoft/teamsfx";
+
+import { AxiosInstance } from 'axios';
 
 export abstract class BaseApiLoader {
     abstract getToken: () => Promise<string>;
@@ -48,12 +50,14 @@ export abstract class BaseApiLoader {
 
 export class TeamsSsoApiLoader extends BaseApiLoader {
     _teamsUserCredential: TeamsUserCredential;
+    _client?: AxiosInstance;
     constructor(teamsUserCredential: TeamsUserCredential) {
         super();
         this._teamsUserCredential = teamsUserCredential;
     }
 
     getToken: () => Promise<string> = async () => {
+
         var token = await this._teamsUserCredential.getToken(loginRequest.scopes);
         console.debug("Got token via Teams SSO: " + token);
         return token?.token ?? Promise.reject("Failed to get token from Teams SSO");
