@@ -1,56 +1,17 @@
 import React, { PropsWithChildren, useContext, useState } from 'react';
 
 import { useIsAuthenticated, useMsal } from "@azure/msal-react";
-import { BaseApiLoader, MsalApiLoader, TeamsSsoApiLoader } from './api/ApiLoader';
 import { AppRoutes, LoginMethod } from './AppRoutes';
 import { msalConfig, loginRequest, teamsAppConfig } from "./authConfig";
 import { TeamsFxContext } from './TeamsFxContext';
-import { BearerTokenAuthProvider, createApiClient, ErrorWithCode, TeamsUserCredential } from '@microsoft/teamsfx';
+import { BearerTokenAuthProvider, createApiClient, ErrorWithCode } from '@microsoft/teamsfx';
 
-import * as axios from "axios";
-
-
-async function callFunction(teamsUserCredential: TeamsUserCredential) {
-    try {
-        const apiBaseUrl = "https://localhost:7053" + "/api/";
-        // createApiClient(...) creates an Axios instance which uses BearerTokenAuthProvider to inject token to request header
-        const apiClient = createApiClient(
-            apiBaseUrl,
-            new BearerTokenAuthProvider(async () => (await teamsUserCredential.getToken(""))!.token)
-        );
-        const response = await apiClient.get("ass");
-        return response.data;
-    } catch (err: unknown) {
-        if (axios.default.isAxiosError(err)) {
-            let funcErrorMsg = "";
-
-            if (err?.response?.status === 404) {
-                funcErrorMsg = `There may be a problem with the deployment of Azure Functions App, please deploy Azure Functions (Run command palette "Teams: Deploy") first before running this App`;
-            } else if (err.message === "Network Error") {
-                funcErrorMsg =
-                    "Cannot call Azure Functions due to network error, please check your network connection status and ";
-                if (err.config?.url && err.config.url.indexOf("localhost") >= 0) {
-                    funcErrorMsg += `make sure to start Azure Functions locally (Run "npm run start" command inside api folder from terminal) first before running this App`;
-                } else {
-                    funcErrorMsg += `make sure to provision and deploy Azure Functions (Run command palette "Teams: Provision" and "Teams: Deploy") first before running this App`;
-                }
-            } else {
-                funcErrorMsg = err.message;
-                if (err.response?.data?.error) {
-                    funcErrorMsg += ": " + err.response.data.error;
-                }
-            }
-
-            throw new Error(funcErrorMsg);
-        }
-        throw err;
-    }
-}
+import { BaseAxiosApiLoader, MsalAxiosApiLoader, TeamsSsoAxiosApiLoader } from './api/AxiosApiLoader';
 
 
 export const AuthContainer: React.FC<PropsWithChildren<AuthContainerProps>> = (props) => {
 
-    const [apiLoader, setApiLoader] = useState<BaseApiLoader | undefined>();
+    const [apiLoader, setApiLoader] = useState<BaseAxiosApiLoader | undefined>();
     const [msalInitialised, setMsalInitialised] = useState<boolean>(false);
     const isAuthenticated = useIsAuthenticated();
     const { instance, accounts } = useMsal();
@@ -59,13 +20,20 @@ export const AuthContainer: React.FC<PropsWithChildren<AuthContainerProps>> = (p
 
     const teamsUserCredential = useContext(TeamsFxContext).teamsUserCredential;
 
-
-
     // Figure out if we can use Teams SSO or MSAL
     const initAuth = React.useCallback(() => {
 
         if (teamsUserCredential) {
-            console.debug("We have Teams credentials. Trying SSO...");
+            console.debug("We have Teams credentials. Trying to get Teams user info...");
+
+            teamsUserCredential.getUserInfo()
+                .then((info) => { console.log("Teams SSO test succesfull. User info: ", info) })
+                .catch((_err: ErrorWithCode) => 
+                    {
+                        console.warn("Teams SSO test failed.  Falling back to MSAL");
+                        setLoginMethod(LoginMethod.MSAL);
+                        initMsal();
+                    });
 
             // Hack?
             createApiClient(
@@ -73,8 +41,8 @@ export const AuthContainer: React.FC<PropsWithChildren<AuthContainerProps>> = (p
                 new BearerTokenAuthProvider(async () => (await teamsUserCredential.getToken(loginRequest.scopes))!.token)
             );
             console.debug("Created API client with Teams SSO token");
-            setApiLoader(new TeamsSsoApiLoader(teamsUserCredential));
-            //callFunction(teamsUserCredential);
+            setApiLoader(new TeamsSsoAxiosApiLoader(teamsUserCredential, teamsAppConfig.apiEndpoint));
+            setLoginMethod(LoginMethod.TeamsPopup)        
         }
         else {
             console.debug("No Teams credentials. Using MSAL");
@@ -110,7 +78,7 @@ export const AuthContainer: React.FC<PropsWithChildren<AuthContainerProps>> = (p
         if (msalInitialised && isAuthenticated && !apiLoader) {
             console.debug("Creating MSAL API loader");
 
-            const loader = new MsalApiLoader(instance, accounts);
+            const loader = new MsalAxiosApiLoader(instance, accounts[0], teamsAppConfig.apiEndpoint);
             setApiLoader(loader);
             props.onApiLoaderReady(loader);
         }

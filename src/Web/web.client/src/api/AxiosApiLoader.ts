@@ -1,4 +1,4 @@
-import { loginRequest, teamsAppConfig } from "../authConfig";
+import { loginRequest } from "../authConfig";
 import { AccountInfo } from "@azure/msal-common";
 import { IPublicClientApplication } from "@azure/msal-browser";
 import { BearerTokenAuthProvider, createApiClient, TeamsUserCredential } from "@microsoft/teamsfx";
@@ -12,12 +12,7 @@ export abstract class BaseAxiosApiLoader {
     }
     abstract logOut: () => void;
 
-    createApiClient(baseUrl: string): AxiosInstance {
-        // Create new instance of axios
-        const axios = require('axios');
-
-        return axios;
-    }
+    abstract createApiClient(baseUrl: string): AxiosInstance;
 
     loadFromApi = async (url: string, method: string, body?: any, onError?: Function): Promise<string> => {
         const client = this.createApiClient(this.baseUrl);
@@ -57,4 +52,37 @@ export class TeamsSsoAxiosApiLoader extends BaseAxiosApiLoader {
         );
     }
 
+}
+
+export class MsalAxiosApiLoader extends BaseAxiosApiLoader {    
+    _publicClientApplication: IPublicClientApplication;
+    _account: AccountInfo | null;
+    _client?: AxiosInstance;
+    constructor(publicClientApplication: IPublicClientApplication, account: AccountInfo | null, baseUrl: string) {
+        super(baseUrl);
+        this._publicClientApplication = publicClientApplication;
+        this._account = account;
+    }
+
+    logOut = () => {
+        this._publicClientApplication.logout({
+            account: this._account
+        });
+    }
+
+    override createApiClient(baseUrl: string): AxiosInstance {
+        if (!this._client) {
+            this._client = createApiClient(
+                baseUrl,
+                new BearerTokenAuthProvider(async () => {
+                    const response = await this._publicClientApplication.acquireTokenSilent({
+                        account: this._account!,
+                        scopes: loginRequest.scopes
+                    });
+                    return response.accessToken;
+                })
+            );
+        }
+        return this._client;
+    }
 }
