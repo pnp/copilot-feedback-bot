@@ -1,7 +1,6 @@
 
 import React from 'react';
 import 'chartjs-adapter-date-fns'
-import { BaseApiLoader } from '../../api/ApiLoader';
 import { getBasicStats } from '../../api/ApiCalls';
 import { BasicStats } from '../../apimodels/Models';
 import { Button, Caption1, Card, CardHeader, makeStyles, Spinner, Text, tokens } from '@fluentui/react-components';
@@ -9,6 +8,7 @@ import { SurveyStatsChart } from './SurveyStatsChart';
 import { ChartContainer } from '../../components/app/ChartContainer';
 import { UserStatsChart } from './UserStatsChart';
 import { MoreHorizontal20Regular } from "@fluentui/react-icons";
+import { BaseAxiosApiLoader } from '../../api/AxiosApiLoader';
 
 
 const useStyles = makeStyles({
@@ -49,7 +49,7 @@ const useStyles = makeStyles({
   text: { margin: "0" },
 });
 
-export const Dashboard: React.FC<{ loader?: BaseApiLoader }> = (props) => {
+export const Dashboard: React.FC<{ loader?: BaseAxiosApiLoader }> = (props) => {
 
   const [basicStats, setBasicStats] = React.useState<BasicStats | null>(null);
   const [error, setError] = React.useState<string | null>(null);
@@ -59,9 +59,9 @@ export const Dashboard: React.FC<{ loader?: BaseApiLoader }> = (props) => {
     if (props.loader)
       getBasicStats(props.loader).then((d) => {
         setBasicStats(d);
-      }).catch((e) => {
+      }).catch((e: Error) => {
         console.error("Error: ", e);
-        setError(e);
+        setError(e.toString());
       });
   }, [props.loader]);
 

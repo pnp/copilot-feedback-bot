@@ -27,7 +27,10 @@ public class Program
         var config = DependencyInjection.AddBotServices(builder.Services, builder.Configuration);
 
         builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-            .AddMicrosoftIdentityWebApi(ops => { }, o => 
+            .AddMicrosoftIdentityWebApi(ops => 
+            {
+                ops.Audience = "api://localhost:5173/5023a8dc-8448-4f41-b34c-131ee03def2f";
+            }, o => 
             { 
                 o.ClientId = config.AuthConfig.ClientId; 
                 o.TenantId = config.AuthConfig.TenantId;

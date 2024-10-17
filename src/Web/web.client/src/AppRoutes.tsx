@@ -4,11 +4,11 @@ import { Layout } from './components/app/Layout';
 import { Dashboard } from './pages/Dashboard/Dashboard';
 import { LoginRedirect } from './pages/Login/LoginRedirect';
 import { Redirect, Route } from "react-router-dom";
-import { BaseApiLoader } from './api/ApiLoader';
 import { SurveyManagerPage } from './pages/SurveyEdit/SurveyManagerPage';
 import { FluentProvider, teamsLightTheme } from '@fluentui/react-components';
 import { TriggersPage } from './pages/Triggers/TriggersPage';
 import { LoginPopupTeams } from './pages/Login/LoginPopupTeams';
+import { BaseAxiosApiLoader } from './api/AxiosApiLoader';
 
 export const AppRoutes: React.FC<PropsWithChildren<AppRoutesProps>> = (props) => {
 
@@ -42,7 +42,7 @@ export const AppRoutes: React.FC<PropsWithChildren<AppRoutesProps>> = (props) =>
         </FluentProvider>
     );
 }
-interface AppRoutesProps { apiLoader?: BaseApiLoader, loginMethod: LoginMethod, onAuthReload: Function }
+interface AppRoutesProps { apiLoader?: BaseAxiosApiLoader, loginMethod?: LoginMethod, onAuthReload: Function }
 
 export enum LoginMethod {
     MSAL,
