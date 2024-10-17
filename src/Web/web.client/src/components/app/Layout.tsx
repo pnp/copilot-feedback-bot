@@ -1,9 +1,9 @@
 import { PropsWithChildren } from 'react';
-import { BaseApiLoader } from '../../api/ApiLoader';
 import "./Layout.css";
 import { NavMenu } from './NavMenu';
+import { BaseAxiosApiLoader } from '../../api/AxiosApiLoader';
 
-export const Layout: React.FC<PropsWithChildren<{ apiLoader?: BaseApiLoader }>> = (props) => {
+export const Layout: React.FC<PropsWithChildren<{ apiLoader?: BaseAxiosApiLoader }>> = (props) => {
 
   return (
 

@@ -1,8 +1,8 @@
 import { Component } from 'react';
 import { NavLink } from 'react-router-dom';
-import { BaseApiLoader } from '../../api/ApiLoader';
+import { BaseAxiosApiLoader } from '../../api/AxiosApiLoader';
 
-export class NavMenu extends Component<{ apiLoader?: BaseApiLoader }> {
+export class NavMenu extends Component<{ apiLoader?: BaseAxiosApiLoader }> {
   static displayName = NavMenu.name;
 
   render() {
