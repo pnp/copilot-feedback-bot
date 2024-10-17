@@ -58,7 +58,7 @@ export class TeamsSsoAxiosApiLoader extends BaseAxiosApiLoader {
             baseUrl,
             new BearerTokenAuthProvider(async () => {
                 console.log("Getting token from TeamsUserCredential");
-                return (await this._teamsUserCredential.getToken(loginRequest.scopes))!.token;
+                return (await this._teamsUserCredential.getToken(""))!.token;
             })
         );
 

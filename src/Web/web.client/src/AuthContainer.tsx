@@ -31,27 +31,33 @@ export const AuthContainer: React.FC<PropsWithChildren<AuthContainerProps>> = (p
             await teamsUserCredential!.login(["User.Read"]);
             setNeedConsent(false);
         }
-        try {
-            console.log("Getting basic stats...");
+
+        console.info("Getting basic stats...");
+
+        if (apiLoader) {
             getBasicStats(apiLoader!).then((res) => {
-                console.log("Got basic stats (promise): ", res);
+                console.log("Got basic stats (LOADER promise): ", res);
                 return res;
             });
-        } catch (error: any) {
-            if (error.message.includes("The application may not be authorized.")) {
-                setNeedConsent(true);
-            }
+
+        }
+        else {
+            console.warn("No API loader available");
         }
     });
 
-    React.useEffect(() => {
-        if (apiLoader) {
-            console.debug("API loader ready...");
-            reload();
-            props.onApiLoaderReady(apiLoader);
-            
-        }
-    }, [apiLoader]);
+    React.useEffect(() => 
+        { 
+            if (apiLoader)
+                reload(); 
+        }, [apiLoader]);
+
+    const getConsent = React.useCallback(() => {
+        teamsUserCredential?.login(["User.Read"]).then(() => {
+            setNeedConsent(false);
+        });
+    }
+        , [teamsUserCredential]);
 
     // Figure out if we can use Teams SSO or MSAL
     const initAuth = React.useCallback(() => {
@@ -63,7 +69,6 @@ export const AuthContainer: React.FC<PropsWithChildren<AuthContainerProps>> = (p
                 .then((info) => {
                     console.log("Teams SSO test succesfull. User info: ", info);
                     setApiLoader(new TeamsSsoAxiosApiLoader(teamsUserCredential, teamsAppConfig.apiEndpoint));
-                    reload();
                 })
                 .catch((_err: ErrorWithCode) => {
                     console.warn("Teams SSO test failed.  Falling back to MSAL");
@@ -141,6 +146,8 @@ export const AuthContainer: React.FC<PropsWithChildren<AuthContainerProps>> = (p
         <>
             <h1>AuthContainer</h1>
             <button onClick={reload}>Reload</button>
+            {needConsent && <button onClick={getConsent}>Consent</button>}
+
             <AppRoutes apiLoader={apiLoader} loginMethod={props.loginMethod} onAuthReload={authReload}>{props.children}</AppRoutes>
 
         </>
