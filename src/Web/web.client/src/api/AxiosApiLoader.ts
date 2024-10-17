@@ -11,15 +11,17 @@ export abstract class BaseAxiosApiLoader {
     }
     abstract logOut: () => void;
 
+    abstract loaderName: string;
+
     abstract createApiClient(baseUrl: string): AxiosInstance;
 
     loadFromApi = async (url: string, method: string, body?: any, onError?: Function): Promise<any> => {
 
         if (!this.client) {
             this.client = this.createApiClient(this.baseUrl);
-            console.debug("Client created");
+            console.debug(this.loaderName + ": Axios client created");
         }
-        console.debug(`Calling ${url} with method ${method} and body: `, body);
+        console.debug(`${this.loaderName}: Calling ${url} with method ${method} and body: `, body);
         try {
             const response = await this.client.request({
                 url,
@@ -27,7 +29,7 @@ export abstract class BaseAxiosApiLoader {
                 data: body
             });
 
-            console.log(`Response from ${url}: `, response.data);
+            console.debug(`${this.loaderName}: Response from ${url}: `, response.data);
             return response.data;
         } catch (err: unknown) {
             if (onError) {
@@ -47,24 +49,21 @@ export class TeamsSsoAxiosApiLoader extends BaseAxiosApiLoader {
         this._teamsUserCredential = teamsUserCredential;
     }
 
+    loaderName = "Teams SSO API Loader";
+
     logOut = () => {
+        console.warn("Teams SSO does not support logout");
     }
 
     override createApiClient(baseUrl: string): AxiosInstance {
-
-        // Hack?
-        console.log("Creating SSO API client with base URL: ", baseUrl);
         const c = createApiClient(
             baseUrl,
             new BearerTokenAuthProvider(async () => {
-                console.log("Getting token from TeamsUserCredential");
                 return (await this._teamsUserCredential.getToken(""))!.token;
             })
         );
-
         return c;
     }
-
 }
 
 export class MsalAxiosApiLoader extends BaseAxiosApiLoader {
@@ -73,11 +72,11 @@ export class MsalAxiosApiLoader extends BaseAxiosApiLoader {
     _client?: AxiosInstance;
     constructor(publicClientApplication: IPublicClientApplication, account: AccountInfo | null, baseUrl: string) {
         super(baseUrl);
-
-        console.log(`MsalAxiosApiLoader created with base URL '${baseUrl}' account: `, account);
         this._publicClientApplication = publicClientApplication;
         this._account = account;
     }
+
+    loaderName = "MSAL API Loader";
 
     logOut = () => {
         this._publicClientApplication.logout({
