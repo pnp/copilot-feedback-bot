@@ -6,7 +6,7 @@ import { msalConfig, teamsAppConfig } from "./authConfig";
 import { TeamsFxContext } from './TeamsFxContext';
 import { ErrorWithCode } from '@microsoft/teamsfx';
 
-import { BaseAxiosApiLoader, MsalAxiosApiLoader } from './api/AxiosApiLoader';
+import { BaseAxiosApiLoader, MsalAxiosApiLoader, TeamsSsoAxiosApiLoader } from './api/AxiosApiLoader';
 import { useData } from '@microsoft/teamsfx-react';
 import { getBasicStats } from './api/ApiCalls';
 
@@ -44,6 +44,15 @@ export const AuthContainer: React.FC<PropsWithChildren<AuthContainerProps>> = (p
         }
     });
 
+    React.useEffect(() => {
+        if (apiLoader) {
+            console.debug("API loader ready...");
+            reload();
+            props.onApiLoaderReady(apiLoader);
+            
+        }
+    }, [apiLoader]);
+
     // Figure out if we can use Teams SSO or MSAL
     const initAuth = React.useCallback(() => {
 
@@ -53,6 +62,7 @@ export const AuthContainer: React.FC<PropsWithChildren<AuthContainerProps>> = (p
             teamsUserCredential.getUserInfo()
                 .then((info) => {
                     console.log("Teams SSO test succesfull. User info: ", info);
+                    setApiLoader(new TeamsSsoAxiosApiLoader(teamsUserCredential, teamsAppConfig.apiEndpoint));
                     reload();
                 })
                 .catch((_err: ErrorWithCode) => {
@@ -128,7 +138,12 @@ export const AuthContainer: React.FC<PropsWithChildren<AuthContainerProps>> = (p
     }, []);
 
     return (
-        <AppRoutes apiLoader={apiLoader} loginMethod={props.loginMethod} onAuthReload={authReload}>{props.children}</AppRoutes>
+        <>
+            <h1>AuthContainer</h1>
+            <button onClick={reload}>Reload</button>
+            <AppRoutes apiLoader={apiLoader} loginMethod={props.loginMethod} onAuthReload={authReload}>{props.children}</AppRoutes>
+
+        </>
     );
 }
 

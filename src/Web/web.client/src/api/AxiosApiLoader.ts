@@ -1,12 +1,11 @@
 import { loginRequest } from "../authConfig";
 import { AccountInfo } from "@azure/msal-common";
 import { IPublicClientApplication } from "@azure/msal-browser";
-import { BearerTokenAuthProvider, createApiClient, TeamsUserCredential } from "@microsoft/teamsfx";
-
-import { AxiosInstance } from 'axios';
+import { AxiosInstance, BearerTokenAuthProvider, createApiClient, TeamsUserCredential } from "@microsoft/teamsfx";
 
 export abstract class BaseAxiosApiLoader {
     baseUrl: string;
+    client?: AxiosInstance;
     constructor(baseUrl: string) {
         this.baseUrl = baseUrl;
     }
@@ -15,11 +14,14 @@ export abstract class BaseAxiosApiLoader {
     abstract createApiClient(baseUrl: string): AxiosInstance;
 
     loadFromApi = async (url: string, method: string, body?: any, onError?: Function): Promise<any> => {
+
+        if (!this.client) {
+            this.client = this.createApiClient(this.baseUrl);
+            console.debug("Client created");
+        }
         console.debug(`Calling ${url} with method ${method} and body: `, body);
-        const client = this.createApiClient(this.baseUrl);
-        console.debug("Client created: ", client);
         try {
-            const response = await client.request({
+            const response = await this.client.request({
                 url,
                 method,
                 data: body
@@ -51,13 +53,15 @@ export class TeamsSsoAxiosApiLoader extends BaseAxiosApiLoader {
 
         // Hack?
         console.log("Creating SSO API client with base URL: ", baseUrl);
-        return createApiClient(
+        const c = createApiClient(
             baseUrl,
             new BearerTokenAuthProvider(async () => {
                 console.log("Getting token from TeamsUserCredential");
                 return (await this._teamsUserCredential.getToken(loginRequest.scopes))!.token;
             })
         );
+
+        return c;
     }
 
 }
