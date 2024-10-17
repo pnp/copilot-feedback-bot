@@ -38,6 +38,7 @@ export abstract class BaseAxiosApiLoader {
     };
 }
 
+// https://github.com/OfficeDev/teams-toolkit/issues/11746
 export class TeamsSsoAxiosApiLoader extends BaseAxiosApiLoader {
     _teamsUserCredential: TeamsUserCredential;
     _client?: AxiosInstance;
