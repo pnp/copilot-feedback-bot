@@ -1,7 +1,7 @@
 import React, { PropsWithChildren, useContext, useState } from 'react';
 
 import { useIsAuthenticated, useMsal } from "@azure/msal-react";
-import { AppRoutes, LoginMethod } from './AppRoutes';
+import { LoginMethod } from './AppRoutes';
 import { msalConfig, teamsAppConfig } from "./authConfig";
 import { TeamsFxContext } from './TeamsFxContext';
 import { ErrorWithCode } from '@microsoft/teamsfx';
@@ -47,15 +47,7 @@ export const AuthContainer: React.FC<PropsWithChildren<AuthContainerProps>> = (p
             initMsal();
         }
     }, [teamsUserCredential]);
-
-    const [authCount, setAuthCount] = React.useState(0);
-
-    const forceRerender = React.useCallback(() => {
-        setAuthCount(authCount + 1);
-        console.log("forceRerender: ", authCount);
-    }, [authCount]);
-
-
+    
     React.useEffect(() => {
         initAuth();
     }, [teamsUserCredential, initAuth]);
@@ -98,13 +90,8 @@ export const AuthContainer: React.FC<PropsWithChildren<AuthContainerProps>> = (p
         }
     }, [msalInitialised, isAuthenticated]);
 
-    const authReload = React.useCallback(() => {
-        console.debug("Auth reload requested");
-        forceRerender();
-    }, []);
-
     return (
-        <AppRoutes apiLoader={apiLoader} loginMethod={props.loginMethod} onAuthReload={authReload}>{props.children}</AppRoutes>
+        <>{props.children}</>
     );
 }
 
