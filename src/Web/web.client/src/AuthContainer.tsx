@@ -33,9 +33,10 @@ export const AuthContainer: React.FC<PropsWithChildren<AuthContainerProps>> = (p
         }
         try {
             console.log("Getting basic stats...");
-            const functionRes = await getBasicStats(apiLoader!);
-            console.log("Got basic stats: ", functionRes);
-            return functionRes;
+            getBasicStats(apiLoader!).then((res) => {
+                console.log("Got basic stats (promise): ", res);
+                return res;
+            });
         } catch (error: any) {
             if (error.message.includes("The application may not be authorized.")) {
                 setNeedConsent(true);
