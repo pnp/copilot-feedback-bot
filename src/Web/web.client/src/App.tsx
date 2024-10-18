@@ -5,13 +5,11 @@ import React, { useState } from 'react';
 import { TeamsFxContext } from './TeamsFxContext';
 import { msalConfig, teamsAppConfig } from './authConfig';
 import { useTeamsUserCredential } from '@microsoft/teamsfx-react';
-import { PublicClientApplication } from "@azure/msal-browser";
 import { MsalProvider } from '@azure/msal-react';
 import { BaseAxiosApiLoader } from './api/AxiosApiLoader';
 
 export default function App() {
 
-    const msalInstance = new PublicClientApplication(msalConfig);
 
     const [apiLoader, setApiLoader] = useState<BaseAxiosApiLoader | undefined>();
     const [loginMethod, setLoginMethod] = useState<LoginMethod | undefined>();
@@ -50,28 +48,10 @@ export default function App() {
     return (
         <>
             {loginMethod === undefined ? <div>Loading...</div> :
-                <>
-                    {loginMethod === LoginMethod.MSAL ?
-                        <>
-                            {msalInstance ?
-
-                                <MsalProvider instance={msalInstance}>
-                                    <AuthContainer onApiLoaderReady={(l: BaseAxiosApiLoader) => setApiLoader(l)} loginMethod={loginMethod} loginMethodChange={loginMethodChange}>
-                                        <AppRoutes apiLoader={apiLoader} onAuthReload={forceRerender} loginMethod={loginMethod} />
-                                    </AuthContainer>
-                                </MsalProvider>
-                                : <div>MSAL instance not ready</div>}
-                        </>
-                        :
-                        <TeamsFxContext.Provider value={{ theme, themeString, teamsUserCredential }}>
-                            <AuthContainer onApiLoaderReady={(l: BaseAxiosApiLoader) => setApiLoader(l)} loginMethod={loginMethod} loginMethodChange={loginMethodChange}>
-                                <AppRoutes apiLoader={apiLoader} onAuthReload={forceRerender} loginMethod={loginMethod} />
-                            </AuthContainer>
-                        </TeamsFxContext.Provider>
-                    }
-                </>
+                <AuthContainer onApiLoaderReady={(l: BaseAxiosApiLoader) => setApiLoader(l)} loginMethod={loginMethod} loginMethodChange={loginMethodChange}>
+                    <AppRoutes apiLoader={apiLoader} onAuthReload={forceRerender} loginMethod={loginMethod} />
+                </AuthContainer>
             }
-
         </>
     );
 }

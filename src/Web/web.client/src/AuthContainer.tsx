@@ -1,14 +1,17 @@
 import React, { PropsWithChildren, useContext, useState } from 'react';
 
-import { useIsAuthenticated, useMsal } from "@azure/msal-react";
+import { MsalProvider, useIsAuthenticated, useMsal } from "@azure/msal-react";
 import { LoginMethod } from './AppRoutes';
 import { msalConfig, teamsAppConfig } from "./authConfig";
 import { TeamsFxContext } from './TeamsFxContext';
 import { ErrorWithCode } from '@microsoft/teamsfx';
+import { PublicClientApplication } from "@azure/msal-browser";
 
 import { BaseAxiosApiLoader, MsalAxiosApiLoader, TeamsSsoAxiosApiLoader } from './api/AxiosApiLoader';
 
 export const AuthContainer: React.FC<PropsWithChildren<AuthContainerProps>> = (props) => {
+
+    const msalInstance = new PublicClientApplication(msalConfig);
 
     const [apiLoader, setApiLoader] = useState<BaseAxiosApiLoader | undefined>();
     const [msalInitialised, setMsalInitialised] = useState<boolean>(false);
@@ -42,9 +45,9 @@ export const AuthContainer: React.FC<PropsWithChildren<AuthContainerProps>> = (p
         }
     }, [teamsUserCredential]);
 
-    
+
     const initMsal = React.useCallback(() => {
-        
+
         if (!msalInitialised) {
             instance.initialize().then(() => {
                 console.debug("MSAL initialised with client ID: " + msalConfig.auth.clientId);
@@ -54,10 +57,10 @@ export const AuthContainer: React.FC<PropsWithChildren<AuthContainerProps>> = (p
         else {
             console.warn("MSAL already initialised. Skipping...");
         }
-        
+
     }, [apiLoader, msalInitialised]);
 
-    
+
     React.useEffect(() => {
         initAuth();
     }, [teamsUserCredential, initAuth]);
@@ -87,7 +90,16 @@ export const AuthContainer: React.FC<PropsWithChildren<AuthContainerProps>> = (p
     }, [msalInitialised, isAuthenticated]);
 
     return (
-        <>{props.children}</>
+        <>
+        {props.loginMethod
+
+        }
+            {msalInitialised &&
+                <MsalProvider instance={msalInstance}>
+                    {props.children}
+                </MsalProvider>
+            }
+            {props.children}</>
     );
 }
 
