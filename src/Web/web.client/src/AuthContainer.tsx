@@ -31,27 +31,18 @@ export const AuthContainer: React.FC<PropsWithChildren<AuthContainerProps>> = (p
 
                     const loader = new TeamsSsoAxiosApiLoader(teamsUserCredential, teamsAppConfig.apiEndpoint);
                     setApiLoader(loader);
-                    setLoginMethod(LoginMethod.TeamsPopup);
+                    setLoginMethod(LoginMethod.TeamsSSO);
                     props.onApiLoaderReady(loader);
                 })
                 .catch((_err: ErrorWithCode) => {
-                    console.warn("Teams SSO test failed.  Falling back to MSAL");
+                    console.warn("Teams SSO test failed. Falling back to MSAL");
                     setLoginMethod(LoginMethod.MSAL);
                     initMsal();
                 });
-
-            setLoginMethod(LoginMethod.TeamsPopup)
-        }
-        else {
-            console.debug("No Teams credentials found. Using MSAL");
-            initMsal();
         }
     }, [teamsUserCredential]);
-    
-    React.useEffect(() => {
-        initAuth();
-    }, [teamsUserCredential, initAuth]);
 
+    
     const initMsal = React.useCallback(() => {
         
         if (!msalInitialised) {
@@ -65,6 +56,11 @@ export const AuthContainer: React.FC<PropsWithChildren<AuthContainerProps>> = (p
         }
         
     }, [apiLoader, msalInitialised]);
+
+    
+    React.useEffect(() => {
+        initAuth();
+    }, [teamsUserCredential, initAuth]);
 
     // Init MSAL API loader if we have an account
     React.useEffect(() => {
@@ -86,7 +82,7 @@ export const AuthContainer: React.FC<PropsWithChildren<AuthContainerProps>> = (p
                     console.info("MSAL initialised, but not authenticated yet. Will need to login to Entra ID via login page");
             }
             else
-                console.warn("MSAL not initialised yet...check configuration");
+                console.warn("MSAL authentication set but not initialised yet...");
         }
     }, [msalInitialised, isAuthenticated]);
 

@@ -34,7 +34,7 @@ export const AppRoutes: React.FC<PropsWithChildren<AppRoutesProps>> = (props) =>
                         {props.loginMethod === LoginMethod.MSAL &&
                             <Route exact path='/tabhome' component={LoginRedirect} />
                         }
-                        {props.loginMethod === LoginMethod.TeamsPopup &&
+                        {props.loginMethod === LoginMethod.TeamsSSO &&
                             <Route exact path='/tabhome'><LoginPopupTeams onAuthReload={props.onAuthReload} /></Route>
                         }
                     </Layout>
@@ -46,5 +46,5 @@ interface AppRoutesProps { apiLoader?: BaseAxiosApiLoader, loginMethod?: LoginMe
 
 export enum LoginMethod {
     MSAL,
-    TeamsPopup
+    TeamsSSO
 }

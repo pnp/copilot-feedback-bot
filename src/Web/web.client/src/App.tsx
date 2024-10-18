@@ -14,7 +14,7 @@ export default function App() {
     const msalInstance = new PublicClientApplication(msalConfig);
 
     const [apiLoader, setApiLoader] = useState<BaseAxiosApiLoader | undefined>();
-    const [loginMethod, setLoginMethod] = useState<LoginMethod>(LoginMethod.MSAL);
+    const [loginMethod, setLoginMethod] = useState<LoginMethod | undefined>();
 
     const [key, setKey] = React.useState(0);
     const { theme, themeString, teamsUserCredential } = useTeamsUserCredential({
@@ -32,7 +32,7 @@ export default function App() {
     }, []);
     React.useEffect(() => {
         if (teamsUserCredential) {
-            setLoginMethod(LoginMethod.TeamsPopup);
+            setLoginMethod(LoginMethod.TeamsSSO);
         }
         else {
             setLoginMethod(LoginMethod.MSAL);
@@ -40,25 +40,38 @@ export default function App() {
     }, [teamsUserCredential]);
 
     React.useEffect(() => {
-        console.log("Login method is: ", loginMethod);
-        console.log("TeamsFxContext: ", teamsUserCredential);
-    }, [loginMethod]);
+
+        let loginMethodString = "Not set";
+        if (loginMethod !== undefined)
+            loginMethodString = (loginMethod === LoginMethod.MSAL ? "MSAL" : "TeamsSSO");
+        console.debug(`App: Login method is: ${loginMethodString}, TeamsFxContext: ${JSON.stringify(teamsUserCredential)}`);
+    }, [loginMethod, teamsUserCredential]);
 
     return (
         <>
-            {loginMethod === LoginMethod.MSAL ?
-                <MsalProvider instance={msalInstance}>
-                    <AuthContainer onApiLoaderReady={(l: BaseAxiosApiLoader) => setApiLoader(l)} loginMethod={loginMethod} loginMethodChange={loginMethodChange}>
-                        <AppRoutes apiLoader={apiLoader} onAuthReload={forceRerender} loginMethod={loginMethod} />
-                    </AuthContainer>
-                </MsalProvider>
-                :
-                <TeamsFxContext.Provider value={{ theme, themeString, teamsUserCredential }}>
-                    <AuthContainer onApiLoaderReady={(l: BaseAxiosApiLoader) => setApiLoader(l)} loginMethod={loginMethod} loginMethodChange={loginMethodChange}>
-                        <AppRoutes apiLoader={apiLoader} onAuthReload={forceRerender} loginMethod={loginMethod} />
-                    </AuthContainer>
-                </TeamsFxContext.Provider>
+            {loginMethod === undefined ? <div>Loading...</div> :
+                <>
+                    {loginMethod === LoginMethod.MSAL ?
+                        <>
+                            {msalInstance ?
+
+                                <MsalProvider instance={msalInstance}>
+                                    <AuthContainer onApiLoaderReady={(l: BaseAxiosApiLoader) => setApiLoader(l)} loginMethod={loginMethod} loginMethodChange={loginMethodChange}>
+                                        <AppRoutes apiLoader={apiLoader} onAuthReload={forceRerender} loginMethod={loginMethod} />
+                                    </AuthContainer>
+                                </MsalProvider>
+                                : <div>MSAL instance not ready</div>}
+                        </>
+                        :
+                        <TeamsFxContext.Provider value={{ theme, themeString, teamsUserCredential }}>
+                            <AuthContainer onApiLoaderReady={(l: BaseAxiosApiLoader) => setApiLoader(l)} loginMethod={loginMethod} loginMethodChange={loginMethodChange}>
+                                <AppRoutes apiLoader={apiLoader} onAuthReload={forceRerender} loginMethod={loginMethod} />
+                            </AuthContainer>
+                        </TeamsFxContext.Provider>
+                    }
+                </>
             }
+
         </>
     );
 }
