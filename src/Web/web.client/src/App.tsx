@@ -28,7 +28,6 @@ export default function App() {
             <AuthContainer onApiLoaderReady={(l: BaseAxiosApiLoader) => setApiLoader(l)} loginMethodChange={loginMethodChange}>
                 <AppRoutes apiLoader={apiLoader} onAuthReload={forceRerender} loginMethod={loginMethod} />
             </AuthContainer>
-
         </>
     );
 }

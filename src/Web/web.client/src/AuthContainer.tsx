@@ -12,7 +12,7 @@ import { BaseAxiosApiLoader, MsalAxiosApiLoader, TeamsSsoAxiosApiLoader } from '
 
 export const AuthContainer: React.FC<PropsWithChildren<AuthContainerProps>> = (props) => {
 
-    let msalInstance : PublicClientApplication | null = null;
+    const [msalInstance, setMsalInstance] = useState<PublicClientApplication | null>(null);
 
     const [apiLoader, setApiLoader] = useState<BaseAxiosApiLoader | undefined>();
     const [msalInitialised, setMsalInitialised] = useState<boolean>(false);
@@ -28,31 +28,37 @@ export const AuthContainer: React.FC<PropsWithChildren<AuthContainerProps>> = (p
     // Figure out if we can use Teams SSO or MSAL
     const initAuth = React.useCallback(() => {
 
+        if (loginMethod) {
+            console.debug("initAuth: Teams SSO test already done. Skipping...");
+            return;
+        }
+
         if (teamsUserCredential) {
-            console.debug("We have Teams credentials. Trying to get Teams user info...");
+            console.debug("initAuth: We have Teams credentials. Trying to get Teams user info...");
 
             teamsUserCredential.getUserInfo()
                 .then((info) => {
-                    console.log("Teams SSO test succesfull. User info: ", info);
+                    console.log("initAuth: Teams SSO test succesfull. User info: ", info);
 
                     const loader = new TeamsSsoAxiosApiLoader(teamsUserCredential, teamsAppConfig.apiEndpoint);
                     setApiLoader(loader);
                     setLoginMethod(LoginMethod.TeamsSSO);
+
+                    props.loginMethodChange(LoginMethod.TeamsSSO);
                     props.onApiLoaderReady(loader);
                 })
                 .catch((_err: ErrorWithCode) => {
-                    console.warn("Teams SSO test failed. Falling back to MSAL");
+                    console.warn("initAuth: Teams SSO test failed. Falling back to MSAL");
                     initMsal();
                 });
         }
-        else    
-        {
-            console.debug("No Teams credentials. Using MSAL");
+        else {
+            console.debug("initAuth: No Teams credentials. Using MSAL");
             initMsal();
         }
     }, [teamsUserCredential]);
 
-    
+
     React.useEffect(() => {
         if (teamsUserCredential) {
             setLoginMethod(LoginMethod.TeamsSSO);
@@ -75,19 +81,24 @@ export const AuthContainer: React.FC<PropsWithChildren<AuthContainerProps>> = (p
 
     const initMsal = React.useCallback(() => {
         setLoginMethod(LoginMethod.MSAL);
-        if (!msalInstance) msalInstance = new PublicClientApplication(msalConfig);
-         
+        props.loginMethodChange(LoginMethod.MSAL);
+        if (!msalInstance) {
+            setMsalInstance(new PublicClientApplication(msalConfig));
+            return;
+        }
+
         if (!msalInitialised) {
+            console.debug("initMsal: Initialising MSAL with client ID: " + msalConfig.auth.clientId);
             msalInstance.initialize().then(() => {
-                console.debug("MSAL initialised with client ID: " + msalConfig.auth.clientId);
+                console.debug("initMsal: MSAL initialised with client ID: " + msalConfig.auth.clientId);
                 setMsalInitialised(true);
             });
         }
         else {
-            console.warn("MSAL already initialised. Skipping...");
+            console.warn("initMsal: MSAL already initialised. Skipping...");
         }
 
-    }, [apiLoader, msalInitialised]);
+    }, [apiLoader, msalInitialised, msalInstance]);
 
 
     React.useEffect(() => {
@@ -128,11 +139,14 @@ export const AuthContainer: React.FC<PropsWithChildren<AuthContainerProps>> = (p
                         <>
                             {msalInitialised && msalInstance ?
                                 <MsalProvider instance={msalInstance}>
-                                    <p>MSAL initialised</p>
                                     {props.children}
                                 </MsalProvider>
                                 :
-                                <div>Waiting for MSAL to initialise...</div>
+                                <>
+                                    {msalInstance === null ? <div>MSAL instance is null</div> :
+                                        <div>Waiting for MSAL to initialise...</div>
+                                    }
+                                </>
                             }
                         </>
                         :
