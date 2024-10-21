@@ -4,6 +4,7 @@ import { Link } from "@fluentui/react-components";
 import { SurveyQuestionForm } from "./SurveyQuestionForm";
 import { QuestionDatatype } from "../../apimodels/Enums";
 import { GetSurveyQuestionDTO } from "./CommonFunctions";
+import { EditSurveyQuestionsProps } from "./PropModels";
 
 export const EditSurveyQuestions: React.FC<EditSurveyQuestionsProps> = (props) => {
 

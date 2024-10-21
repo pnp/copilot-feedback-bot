@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { BaseApiLoader } from '../../api/ApiLoader';
 import { deleteSurveyPage, getSurveyPages, saveSurveyPage } from '../../api/ApiCalls';
 import { SurveyPageDTO, SurveyQuestionDTO } from '../../apimodels/Models'; // Ensure SurveyPageDTO is a class or constructor function
 import { SurveyPageAndQuestionsEdit } from './SurveyPageAndQuestionsEdit';
@@ -9,8 +8,9 @@ import { Link, Spinner } from '@fluentui/react-components';
 import update from 'immutability-helper';
 import isEqual from 'lodash.isequal';
 import { SurveyPageView } from './SurveyPageView';
+import { BaseAxiosApiLoader } from '../../api/AxiosApiLoader';
 
-export const SurveyManagerPage: React.FC<{ loader?: BaseApiLoader }> = (props) => {
+export const SurveyManagerPage: React.FC<{ loader?: BaseAxiosApiLoader }> = (props) => {
 
   const [haveNewPage, setHaveNewPage] = React.useState<boolean>(false);
   const [surveyPages, setSurveyPages] = React.useState<SurveyPageDTO[] | null>(null);

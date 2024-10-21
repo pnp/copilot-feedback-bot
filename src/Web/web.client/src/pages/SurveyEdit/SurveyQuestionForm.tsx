@@ -4,6 +4,7 @@ import { Checkbox, Field, Input, Link, Select, SelectOnChangeData } from "@fluen
 import { LogicalOperator, QuestionDatatype } from "../../apimodels/Enums";
 import isEqual from 'lodash.isequal';
 import { GetSurveyQuestionDTO } from "./CommonFunctions";
+import { SurveyQuestionProps } from "./PropModels";
 
 export const SurveyQuestionForm: React.FC<SurveyQuestionProps> = (props) => {
 

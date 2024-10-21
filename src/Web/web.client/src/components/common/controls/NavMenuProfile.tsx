@@ -1,4 +1,5 @@
 import { IMsalContext, useMsal } from "@azure/msal-react";
+import { IdTokenClaims } from "../../../apimodels/Models";
 
 export const NavMenuProfile: React.FC<{ }> = () => {
   const userCtx: IMsalContext = useMsal();

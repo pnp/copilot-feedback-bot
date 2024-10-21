@@ -1,7 +1,6 @@
 
 import React from 'react';
 import 'chartjs-adapter-date-fns'
-import { BaseApiLoader } from '../../api/ApiLoader';
 import { Button, Input, Spinner } from '@fluentui/react-components';
 import { triggerGenerateFakeActivityForUser, triggerInstallBotForUser, triggerSendSurveys } from '../../api/ApiCalls';
 
@@ -17,8 +16,9 @@ import {
   TableHeaderCell,
   TableCellLayout
 } from "@fluentui/react-components";
+import { BaseAxiosApiLoader } from '../../api/AxiosApiLoader';
 
-export const TriggersPage: React.FC<{ loader?: BaseApiLoader }> = (props) => {
+export const TriggersPage: React.FC<{ loader?: BaseAxiosApiLoader }> = (props) => {
 
   const sendSurveys = React.useCallback(() => {
     console.debug("Sending Surveys");

@@ -2,6 +2,7 @@ import React from "react";
 import { Button, makeStyles, SelectTabData, SelectTabEvent, Tab, TabList, TabValue, tokens } from "@fluentui/react-components";
 import { EditSurveyQuestions } from "./EditSurveyQuestions";
 import { EditSurveyPage } from "./EditSurveyPage";
+import { SurveyPageAndQuestionsEditProps } from "./PropModels";
 
 
 const useStyles = makeStyles({

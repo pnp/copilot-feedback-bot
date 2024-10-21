@@ -1,11 +1,10 @@
 import React, { PropsWithChildren, useState } from 'react';
 
-import { MsalProvider, useMsal } from "@azure/msal-react";
+import { useMsal } from "@azure/msal-react";
 import { LoginMethod } from './AppRoutes';
 import { msalConfig, teamsAppConfig } from "./authConfig";
 import { TeamsFxContext } from './TeamsFxContext';
 import { ErrorWithCode } from '@microsoft/teamsfx';
-import { PublicClientApplication } from "@azure/msal-browser";
 import { useTeamsUserCredential } from '@microsoft/teamsfx-react';
 
 import { BaseAxiosApiLoader, MsalAxiosApiLoader, TeamsSsoAxiosApiLoader } from './api/AxiosApiLoader';
@@ -25,11 +24,6 @@ export const AuthContainer: React.FC<PropsWithChildren<AuthContainerProps>> = (p
 
     // Figure out if we can use Teams SSO or MSAL
     const initAuth = React.useCallback(() => {
-
-        if (loginMethod) {
-            console.debug("initAuth: Teams SSO test already done. Skipping...");
-            return;
-        }
 
         if (teamsUserCredential) {
             console.debug("initAuth: We have Teams credentials. Trying to get Teams user info...");
@@ -54,6 +48,10 @@ export const AuthContainer: React.FC<PropsWithChildren<AuthContainerProps>> = (p
             console.debug("initAuth: No Teams credentials. Using MSAL");
             initMsal();
         }
+    }, [teamsUserCredential, loginMethod]);
+
+    React.useEffect(() => {
+        initAuth();
     }, [teamsUserCredential]);
 
     const initMsal = React.useCallback(() => {
@@ -68,15 +66,11 @@ export const AuthContainer: React.FC<PropsWithChildren<AuthContainerProps>> = (p
             });
         }
         else {
-            console.warn("initMsal: MSAL already initialised. Skipping...");
+            console.debug("initMsal: MSAL already initialised. Skipping...");
         }
 
-    }, [apiLoader, msalInitialised]);
+    }, [msalInitialised]);
 
-
-    React.useEffect(() => {
-        initAuth();
-    }, [teamsUserCredential, initAuth]);
 
     // Init MSAL API loader if we have an account
     React.useEffect(() => {
@@ -86,14 +80,9 @@ export const AuthContainer: React.FC<PropsWithChildren<AuthContainerProps>> = (p
             return;
         }
 
-        let isAuthenticated = false;
-        if (instance)
-            isAuthenticated = instance.getAllAccounts() !== null && instance.getAllAccounts().length > 0;
-        if (isAuthenticated) {
+        if (accounts.length > 0) {
             if (msalInitialised && instance && !apiLoader) {
-                instance.setActiveAccount(instance.getAllAccounts()[0]);
                 console.debug("Creating MSAL API loader");
-                const accounts = instance?.getAllAccounts();
                 const loader = new MsalAxiosApiLoader(instance, accounts[0], teamsAppConfig.apiEndpoint);
                 setApiLoader(loader);
                 props.onApiLoaderReady(loader);
@@ -106,9 +95,7 @@ export const AuthContainer: React.FC<PropsWithChildren<AuthContainerProps>> = (p
             else
                 console.warn("MSAL authentication set but not initialised yet...");
         }
-
-
-    }, [msalInitialised]);
+    }, [msalInitialised, accounts, instance, apiLoader, loginMethod]);
 
     return (
         <>
