@@ -1,6 +1,6 @@
 import React, { PropsWithChildren, useState } from 'react';
 
-import { MsalProvider } from "@azure/msal-react";
+import { MsalProvider, useMsal } from "@azure/msal-react";
 import { LoginMethod } from './AppRoutes';
 import { msalConfig, teamsAppConfig } from "./authConfig";
 import { TeamsFxContext } from './TeamsFxContext';
@@ -12,10 +12,9 @@ import { BaseAxiosApiLoader, MsalAxiosApiLoader, TeamsSsoAxiosApiLoader } from '
 
 export const AuthContainer: React.FC<PropsWithChildren<AuthContainerProps>> = (props) => {
 
-    const msalInstance = new PublicClientApplication(msalConfig);
-
     const [apiLoader, setApiLoader] = useState<BaseAxiosApiLoader | undefined>();
     const [msalInitialised, setMsalInitialised] = useState<boolean>(false);
+    const { instance, accounts } = useMsal();
 
     const [loginMethod, setLoginMethod] = useState<LoginMethod | undefined>();
 
@@ -63,7 +62,7 @@ export const AuthContainer: React.FC<PropsWithChildren<AuthContainerProps>> = (p
 
         if (!msalInitialised) {
             console.debug("initMsal: Initialising MSAL with client ID: " + msalConfig.auth.clientId);
-            msalInstance.initialize().then(() => {
+            instance.initialize().then(() => {
                 console.debug("initMsal: MSAL initialised with client ID: " + msalConfig.auth.clientId);
                 setMsalInitialised(true);
             });
@@ -88,14 +87,14 @@ export const AuthContainer: React.FC<PropsWithChildren<AuthContainerProps>> = (p
         }
 
         let isAuthenticated = false;
-        if (msalInstance)
-            isAuthenticated = msalInstance.getAllAccounts() !== null && msalInstance.getAllAccounts().length > 0;
+        if (instance)
+            isAuthenticated = instance.getAllAccounts() !== null && instance.getAllAccounts().length > 0;
         if (isAuthenticated) {
-            if (msalInitialised && msalInstance && !apiLoader) {
-                msalInstance.setActiveAccount(msalInstance.getAllAccounts()[0]);
+            if (msalInitialised && instance && !apiLoader) {
+                instance.setActiveAccount(instance.getAllAccounts()[0]);
                 console.debug("Creating MSAL API loader");
-                const accounts = msalInstance?.getAllAccounts();
-                const loader = new MsalAxiosApiLoader(msalInstance, accounts[0], teamsAppConfig.apiEndpoint);
+                const accounts = instance?.getAllAccounts();
+                const loader = new MsalAxiosApiLoader(instance, accounts[0], teamsAppConfig.apiEndpoint);
                 setApiLoader(loader);
                 props.onApiLoaderReady(loader);
             }
@@ -119,13 +118,13 @@ export const AuthContainer: React.FC<PropsWithChildren<AuthContainerProps>> = (p
                 <>
                     {loginMethod === LoginMethod.MSAL ?
                         <>
-                            {msalInitialised && msalInstance ?
-                                <MsalProvider instance={msalInstance}>
+                            {msalInitialised && instance ?
+                                <>
                                     {props.children}
-                                </MsalProvider>
+                                </>
                                 :
                                 <>
-                                    {msalInstance === null ? <div>MSAL instance is null</div> :
+                                    {instance === null ? <div>MSAL instance is null</div> :
                                         <div>Waiting for MSAL to initialise...</div>
                                     }
                                 </>

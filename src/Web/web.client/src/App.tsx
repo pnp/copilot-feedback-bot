@@ -5,7 +5,7 @@ import React, { useState } from 'react';
 
 import { BaseAxiosApiLoader } from './api/AxiosApiLoader';
 
-export default function App() {
+export const App: React.FC <{}> = () => {
 
 
     const [apiLoader, setApiLoader] = useState<BaseAxiosApiLoader | undefined>();
