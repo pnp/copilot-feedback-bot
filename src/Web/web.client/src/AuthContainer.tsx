@@ -1,6 +1,6 @@
 import React, { PropsWithChildren, useState } from 'react';
 
-import { MsalProvider, useIsAuthenticated } from "@azure/msal-react";
+import { MsalProvider } from "@azure/msal-react";
 import { LoginMethod } from './AppRoutes';
 import { msalConfig, teamsAppConfig } from "./authConfig";
 import { TeamsFxContext } from './TeamsFxContext';
@@ -12,11 +12,10 @@ import { BaseAxiosApiLoader, MsalAxiosApiLoader, TeamsSsoAxiosApiLoader } from '
 
 export const AuthContainer: React.FC<PropsWithChildren<AuthContainerProps>> = (props) => {
 
-    const [msalInstance, setMsalInstance] = useState<PublicClientApplication | null>(null);
+    const msalInstance = new PublicClientApplication(msalConfig);
 
     const [apiLoader, setApiLoader] = useState<BaseAxiosApiLoader | undefined>();
     const [msalInitialised, setMsalInitialised] = useState<boolean>(false);
-    const isAuthenticated = useIsAuthenticated();
 
     const [loginMethod, setLoginMethod] = useState<LoginMethod | undefined>();
 
@@ -58,34 +57,9 @@ export const AuthContainer: React.FC<PropsWithChildren<AuthContainerProps>> = (p
         }
     }, [teamsUserCredential]);
 
-
-    React.useEffect(() => {
-        if (teamsUserCredential) {
-            setLoginMethod(LoginMethod.TeamsSSO);
-        }
-        else {
-            setLoginMethod(LoginMethod.MSAL);
-        }
-    }, [teamsUserCredential]);
-
-    // Debug out login method
-    React.useEffect(() => {
-
-        let loginMethodString = "Not set";
-        if (loginMethod !== undefined)
-            loginMethodString = (loginMethod === LoginMethod.MSAL ? "MSAL" : "TeamsSSO");
-        console.debug(`App: Login method is: ${loginMethodString}, TeamsFxContext: ${JSON.stringify(teamsUserCredential)}`);
-    }, [loginMethod, teamsUserCredential]);
-
-
-
     const initMsal = React.useCallback(() => {
         setLoginMethod(LoginMethod.MSAL);
         props.loginMethodChange(LoginMethod.MSAL);
-        if (!msalInstance) {
-            setMsalInstance(new PublicClientApplication(msalConfig));
-            return;
-        }
 
         if (!msalInitialised) {
             console.debug("initMsal: Initialising MSAL with client ID: " + msalConfig.auth.clientId);
@@ -98,7 +72,7 @@ export const AuthContainer: React.FC<PropsWithChildren<AuthContainerProps>> = (p
             console.warn("initMsal: MSAL already initialised. Skipping...");
         }
 
-    }, [apiLoader, msalInitialised, msalInstance]);
+    }, [apiLoader, msalInitialised]);
 
 
     React.useEffect(() => {
@@ -112,22 +86,30 @@ export const AuthContainer: React.FC<PropsWithChildren<AuthContainerProps>> = (p
             console.debug("Not using MSAL. Skipping MSAL API loader creation");
             return;
         }
-        if (msalInitialised && isAuthenticated && msalInstance && !apiLoader) {
-            console.debug("Creating MSAL API loader");
-            const accounts = msalInstance?.getAllAccounts();
-            const loader = new MsalAxiosApiLoader(msalInstance, accounts[0], teamsAppConfig.apiEndpoint);
-            setApiLoader(loader);
-            props.onApiLoaderReady(loader);
+
+        let isAuthenticated = false;
+        if (msalInstance)
+            isAuthenticated = msalInstance.getAllAccounts() !== null && msalInstance.getAllAccounts().length > 0;
+        if (isAuthenticated) {
+            if (msalInitialised && msalInstance && !apiLoader) {
+                msalInstance.setActiveAccount(msalInstance.getAllAccounts()[0]);
+                console.debug("Creating MSAL API loader");
+                const accounts = msalInstance?.getAllAccounts();
+                const loader = new MsalAxiosApiLoader(msalInstance, accounts[0], teamsAppConfig.apiEndpoint);
+                setApiLoader(loader);
+                props.onApiLoaderReady(loader);
+            }
         }
         else {
             if (msalInitialised) {
-                if (!isAuthenticated)
-                    console.info("MSAL initialised, but not authenticated yet. Will need to login to Entra ID via login page");
+                console.info("MSAL initialised, but not authenticated yet. Will need to login to Entra ID via login page");
             }
             else
                 console.warn("MSAL authentication set but not initialised yet...");
         }
-    }, [msalInitialised, isAuthenticated]);
+
+
+    }, [msalInitialised]);
 
     return (
         <>
