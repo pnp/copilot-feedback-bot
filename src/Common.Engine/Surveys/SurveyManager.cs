@@ -62,7 +62,7 @@ public class SurveyManager
     public async Task<SurveyPage?> GetSurveyPage(int pageIndex)
     {
         // Load survey questions from the database
-        var publishedPages = await _dataLoader.GetPublishedPages();
+        var publishedPages = await _dataLoader.GetSurveyPages(true);
 
         _logger.LogInformation($"Loaded {publishedPages.Count} published survey pages");
 

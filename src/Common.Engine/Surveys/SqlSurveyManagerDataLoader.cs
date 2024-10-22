@@ -62,7 +62,13 @@ public class SqlSurveyManagerDataLoader(DataContext db, ILogger<SqlSurveyManager
 
     public async Task<int> LogSurveyRequested(CommonAuditEvent @event)
     {
-        var survey = new UserSurveyResponseDB { RelatedEventId = @event.Id, Requested = DateTime.UtcNow, UserID = @event.UserId };
+        var survey = new UserSurveyResponseDB 
+        { 
+            RelatedEventId = @event.Id, 
+            Requested = DateTime.UtcNow, 
+            Responded = null, 
+            UserID = @event.UserId 
+        };
         db.SurveyResponses.Add(survey);
         await db.SaveChangesAsync();
         return survey.ID;
@@ -149,13 +155,64 @@ public class SqlSurveyManagerDataLoader(DataContext db, ILogger<SqlSurveyManager
         return savedAnswers;
     }
 
-    public async Task<List<SurveyPageDB>> GetPublishedPages()
+    public async Task<List<SurveyPageDB>> GetSurveyPages(bool publishedOnly)
     {
         // Load survey questions from the database
         return await db.SurveyPages
-            .Where(p => p.IsPublished)
+            .Where(p => (!publishedOnly || p.IsPublished) && p.DeletedUtc == null)
             .Include(p => p.Questions)
             .OrderBy(p => p.PageIndex)
             .ToListAsync();
+    }
+
+    public async Task<bool> DeleteSurveyPage(int id)
+    {
+        var dbPage = await db.SurveyPages
+            .Include(d => d.Questions)
+            .FirstOrDefaultAsync(d => d.ID == id);
+        if (dbPage != null)
+        {
+            dbPage.DeletedUtc = DateTime.UtcNow;
+            await db.SaveChangesAsync();
+            return true;
+        }
+        return false;
+    }
+
+    public async Task SaveSurveyPage(SurveyPageDTO pageUpdate)
+    {
+        SurveyPageDB? dbPage = null;
+        if (!string.IsNullOrEmpty(pageUpdate.Id))
+        {
+            dbPage = await db.SurveyPages
+                .Include(d => d.Questions)
+                .FirstOrDefaultAsync(d => d.ID == int.Parse(pageUpdate.Id!));
+        }
+        if (dbPage == null)
+        {
+            dbPage = new SurveyPageDB();
+            db.SurveyPages.Add(dbPage);
+        }
+
+        dbPage.Name = pageUpdate.Name;
+        dbPage.PageIndex = pageUpdate.PageIndex;
+        dbPage.AdaptiveCardTemplateJson = pageUpdate.AdaptiveCardTemplateJson;
+        dbPage.IsPublished = pageUpdate.IsPublished;
+        dbPage.Questions.Clear();
+        foreach (var q in pageUpdate.Questions)
+        {
+            var dbQ = new SurveyQuestionDB
+            {
+                Question = q.Question,
+                DataType = q.DataType,
+                Index = q.Index,
+                OptimalAnswerValue = q.OptimalAnswerValue,
+                OptimalAnswerLogicalOp = q.OptimalAnswerLogicalOp,
+                ForSurveyPage = dbPage,
+            };
+            dbPage.Questions.Add(dbQ);
+        }
+
+        await db.SaveChangesAsync();
     }
 }

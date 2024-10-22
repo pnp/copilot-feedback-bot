@@ -11,7 +11,9 @@ public interface ISurveyManagerDataLoader
     Task<User> GetUser(string upn);
     Task<List<User>> GetUsersWithActivity();
 
-
+    Task<List<SurveyPageDB>> GetSurveyPages(bool publishedOnly);
+    Task<bool> DeleteSurveyPage(int id);
+    Task SaveSurveyPage(SurveyPageDTO pageUpdate);
 
     /// <summary>
     /// Log survey result for a user, but for no specific copilot event. Returns the ID of the survey response created
@@ -26,7 +28,6 @@ public interface ISurveyManagerDataLoader
     /// </summary>
     Task<int> UpdateSurveyResultWithInitialScore(CommonAuditEvent @event, int score);
     Task<List<SurveyAnswerDB>> SaveAnswers(User user, List<SurveyPageUserResponse.RawResponse> answers, int existingSurveyId);
-    Task<List<SurveyPageDB>> GetPublishedPages();
 }
 
 public interface ISurveyEventsProcessor

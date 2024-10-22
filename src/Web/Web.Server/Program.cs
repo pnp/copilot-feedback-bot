@@ -1,11 +1,13 @@
 using Common.Engine;
 using Common.Engine.Notifications;
 using Entities.DB;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Bot.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Graph;
 using Web.Bots;
 using Web.Bots.Dialogues;
+using Microsoft.Identity.Web;
 
 namespace Web;
 
@@ -14,12 +16,28 @@ public class Program
     public async static Task Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
-        builder.Services.AddControllers();
+        builder.Services.AddControllers().AddJsonOptions(options =>
+        {
+            options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+        });
 
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
 
         var config = DependencyInjection.AddBotServices(builder.Services, builder.Configuration);
+
+        builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddMicrosoftIdentityWebApi(ops => 
+            {
+                ops.Audience = "api://localhost:5173/5023a8dc-8448-4f41-b34c-131ee03def2f";
+            }, o => 
+            { 
+                o.ClientId = config.AuthConfig.ClientId; 
+                o.TenantId = config.AuthConfig.TenantId;
+                o.ClientSecret = config.AuthConfig.ClientSecret;
+                o.Authority = $"https://login.microsoftonline.com/{config.AuthConfig.TenantId}";
+                o.Instance = "https://login.microsoftonline.com/";
+            });
 
         // Bot services --->
         // Create the Bot Framework Adapter with error handling enabled.

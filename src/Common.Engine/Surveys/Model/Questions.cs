@@ -1,10 +1,8 @@
 ﻿using Entities.DB.Entities;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Text.Json.Serialization;
 
 namespace Common.Engine.Surveys.Model;
-
-
 
 public class StringSurveyQuestion : SurveyQuestion<string>
 {
@@ -65,28 +63,26 @@ public class BooleanSurveyQuestion : SurveyQuestion<bool>
 }
 
 
-public abstract class BaseSurveyQuestion
+public abstract class BaseSurveyQuestion : BaseDTO
 {
     public BaseSurveyQuestion()
     {
         Question = string.Empty;
     }
-    protected BaseSurveyQuestion(SurveyQuestionDB q, int index)
+    protected BaseSurveyQuestion(SurveyQuestionDB q, int index) : base(q)
     {
         Question = q.Question;
         OptimalAnswerLogicalOp = q.OptimalAnswerLogicalOp ?? LogicalOperator.Unknown;
-        Id = q.ID;
         Index = index;
     }
 
     public string Question { get; set; }
     public int Index { get; set; }
-    public int Id { get; set; } = 0;
     public LogicalOperator OptimalAnswerLogicalOp { get; set; } = LogicalOperator.Unknown;
 
     internal virtual JObject GetAdaptiveCardJson()
     {
-        if (Id == 0)
+        if (string.IsNullOrEmpty(Id))
         {
             throw new SurveyEngineDataException("Question ID is not set");
         }
@@ -99,6 +95,41 @@ public abstract class BaseSurveyQuestion
         };
     }
 }
+
+public class SurveyQuestionDTO : BaseDTO
+{
+    public SurveyQuestionDTO()
+    {
+    }
+    public SurveyQuestionDTO(SurveyQuestionDB q) : base(q)
+    {
+        this.Question = q.Question;
+        this.Index = q.Index;
+        this.OptimalAnswerLogicalOp = q.OptimalAnswerLogicalOp;
+        this.OptimalAnswerValue = q.OptimalAnswerValue;
+        this.DataType = q.DataType;
+        this.ForSurveyPageId = q.ForSurveyPage.ID.ToString();
+    }
+
+    [JsonPropertyName("question")]
+    public string Question { get; set; } = string.Empty;
+
+    [JsonPropertyName("index")]
+    public int Index { get; set; } = 0;
+
+    [JsonPropertyName("optimalAnswerLogicalOp")]
+    public LogicalOperator? OptimalAnswerLogicalOp { get; set; }
+
+    [JsonPropertyName("optimalAnswerValue")]
+    public string? OptimalAnswerValue { get; set; }
+
+    [JsonPropertyName("dataType")]
+    public QuestionDatatype DataType { get; set; }
+
+    [JsonPropertyName("forSurveyPageId")]
+    public string ForSurveyPageId { get; set; } = null!;
+}
+
 public abstract class SurveyQuestion<T> : BaseSurveyQuestion
 {
     public SurveyQuestion() : base()
@@ -111,57 +142,3 @@ public abstract class SurveyQuestion<T> : BaseSurveyQuestion
     public T? OptimalAnswer { get; set; } = default!;
 }
 
-
-public class SurveyPageUserResponse
-{
-    public SurveyPageUserResponse(string? jsonFromAdaptiveCard, string? userPrincipalName)
-    {
-        if (string.IsNullOrEmpty(userPrincipalName) || string.IsNullOrEmpty(jsonFromAdaptiveCard))
-        {
-            IsValid = false;
-            return;
-        }
-        try
-        {
-            var values = JsonConvert.DeserializeObject<Dictionary<string, string>>(jsonFromAdaptiveCard);
-            IsValid = true;
-
-            if (values == null)
-            {
-                throw new SurveyEngineDataException("Failed to deserialize survey response");
-            }
-            foreach (var kvp in values)
-            {
-                if (!string.IsNullOrWhiteSpace(kvp.Key))
-                {
-                    var id = kvp.Key.Replace("autoQuestionId-", "");
-                    if (int.TryParse(id, out var questionId))
-                    {
-                        var a = new RawResponse { QuestionId = questionId, Response = kvp.Value };
-                        Answers.Add(a);
-                    }
-                }
-            }
-        }
-        catch (JsonReaderException)
-        {
-            IsValid = false;
-            return;
-        }
-
-        IsValid = !string.IsNullOrEmpty(userPrincipalName);
-        UserPrincipalName = userPrincipalName;
-    }
-
-    public bool IsValid { get; }
-
-    public string UserPrincipalName { get; set; } = string.Empty;
-    public List<RawResponse> Answers { get; set; } = new();
-    public List<int> QuestionIds => Answers.Select(a => a.QuestionId).ToList();
-
-    public record RawResponse
-    {
-        public required int QuestionId { get; set; }
-        public required string Response { get; set; }
-    }
-}

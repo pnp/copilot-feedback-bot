@@ -7,7 +7,7 @@ namespace Entities.DB.Entities;
 public class UserSurveyResponseDB : UserRelatedEntity
 {
     [Column("responded")]
-    public DateTime Responded { get; set; }
+    public DateTime? Responded { get; set; }
 
     [Column("requested")]
     public DateTime Requested { get; set; }
@@ -55,6 +55,8 @@ public class SurveyPageDB : AbstractEFEntityWithName
     [Column("template_json")]
     public string AdaptiveCardTemplateJson { get; set; } = null!;
 
+    [Column("deleted_utc")]
+    public DateTime? DeletedUtc { get; set; }
 }
 
 [Table("survey_questions")]
@@ -118,9 +120,9 @@ public enum QuestionDatatype
 
 public enum LogicalOperator
 {
-    Unknown,
-    Equals,
-    NotEquals,
-    GreaterThan,
-    LessThan,
+    Unknown = 0,
+    Equals = 1,
+    NotEquals = 2,
+    GreaterThan = 3,
+    LessThan = 4,
 }
