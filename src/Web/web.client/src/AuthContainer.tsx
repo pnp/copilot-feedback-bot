@@ -8,10 +8,13 @@ import { ErrorWithCode } from '@microsoft/teamsfx';
 import { useTeamsUserCredential } from '@microsoft/teamsfx-react';
 
 import { BaseAxiosApiLoader, MsalAxiosApiLoader, TeamsSsoAxiosApiLoader } from './api/AxiosApiLoader';
+import { getBasicStats } from './api/ApiCalls';
 
 export const AuthContainer: React.FC<PropsWithChildren<AuthContainerProps>> = (props) => {
 
     const [apiLoader, setApiLoader] = useState<BaseAxiosApiLoader | undefined>();
+    const [error, setError] = useState<string | undefined>()
+    const [loading, setLoading] = useState<boolean>(false);
     const [msalInitialised, setMsalInitialised] = useState<boolean>(false);
     const { instance, accounts } = useMsal();
 
@@ -33,11 +36,11 @@ export const AuthContainer: React.FC<PropsWithChildren<AuthContainerProps>> = (p
                     console.log("initAuth: Teams SSO test succesfull. User info: ", info);
 
                     const loader = new TeamsSsoAxiosApiLoader(teamsUserCredential, teamsAppConfig.apiEndpoint);
-                    setApiLoader(loader);
+                    setApiLoader(loader);       // Will tr
                     setLoginMethod(LoginMethod.TeamsSSO);
 
                     props.loginMethodChange(LoginMethod.TeamsSSO);
-                    props.onApiLoaderReady(loader);
+
                 })
                 .catch((_err: ErrorWithCode) => {
                     console.warn("initAuth: Teams SSO test failed. Falling back to MSAL");
@@ -85,7 +88,6 @@ export const AuthContainer: React.FC<PropsWithChildren<AuthContainerProps>> = (p
                 console.debug("Creating MSAL API loader");
                 const loader = new MsalAxiosApiLoader(instance, accounts[0], teamsAppConfig.apiEndpoint);
                 setApiLoader(loader);
-                props.onApiLoaderReady(loader);
             }
         }
         else {
@@ -97,39 +99,68 @@ export const AuthContainer: React.FC<PropsWithChildren<AuthContainerProps>> = (p
         }
     }, [msalInitialised, accounts, instance, apiLoader, loginMethod]);
 
+    // Test API connection and raise event if succesfull
+    React.useEffect(() => {
+        if (apiLoader) {
+            setLoading(true);
+            console.debug("Testing API connection...");
+            getBasicStats(apiLoader)
+                .then((response) => {
+                    console.log("API test response: ", response);
+                    setError(undefined);
+                    props.onApiLoaderReady(apiLoader);
+                    setLoading(false);
+                })
+                .catch((err) => {
+                    console.error("API test failed: ", err);
+                    setError(err.toString());
+                    setLoading(false);
+                });
+        }
+    }, [apiLoader]);
+
     return (
         <>
-            {loginMethod === undefined ?
-                <div>Checking authentication method...</div>
-                :
+            {error ? <div>API test error: {error}</div> : null}
+
+            {loading ? <div>Checking back-end API connectivity...</div> :
                 <>
-                    {loginMethod === LoginMethod.MSAL ?
-                        <>
-                            {msalInitialised && instance ?
-                                <>
-                                    {props.children}
-                                </>
-                                :
-                                <>
-                                    {instance === null ? <div>MSAL instance is null</div> :
-                                        <div>Waiting for MSAL to initialise...</div>
-                                    }
-                                </>
-                            }
-                        </>
+
+                    {loginMethod === undefined ?
+                        <div>Checking authentication method...</div>
                         :
                         <>
-                            {loginMethod === LoginMethod.TeamsSSO ?
-                                <TeamsFxContext.Provider value={{ theme, themeString, teamsUserCredential }}>
-                                    {props.children}
-                                </TeamsFxContext.Provider>
+                            {loginMethod === LoginMethod.MSAL ?
+                                <>
+                                    {msalInitialised && instance ?
+                                        <>
+                                            {props.children}
+                                        </>
+                                        :
+                                        <>
+                                            {instance === null ? <div>MSAL instance is null</div> :
+                                                <div>Waiting for MSAL to initialise...</div>
+                                            }
+                                        </>
+                                    }
+                                </>
                                 :
-                                <div>Error: Unknown authentication type</div>
+                                <>
+                                    {loginMethod === LoginMethod.TeamsSSO ?
+                                        <TeamsFxContext.Provider value={{ theme, themeString, teamsUserCredential }}>
+                                            {props.children}
+                                        </TeamsFxContext.Provider>
+                                        :
+                                        <div>Error: Unknown authentication type</div>
+                                    }
+                                </>
                             }
                         </>
                     }
                 </>
             }
+
+
         </>
     );
 }
