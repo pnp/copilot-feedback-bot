@@ -11,9 +11,9 @@
     "developer": {
         "name": "Sam Betts",
         "mpnId": "",
-        "websiteUrl": "https://github.com/sambetts",
-        "privacyUrl": "https://github.com/sambetts",
-        "termsOfUseUrl": "https://github.com/sambetts"
+        "websiteUrl": "https://github.com/pnp/copilot-feedback-bot",
+        "privacyUrl": "https://github.com/pnp/copilot-feedback-bot",
+        "termsOfUseUrl": "https://github.com/pnp/copilot-feedback-bot"
     },
     "description": {
         "short": "Copilot Feedback bot - get real value feedback for copilot usage",

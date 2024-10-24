@@ -1,0 +1,51 @@
+{
+    "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.17/MicrosoftTeams.schema.json",
+    "version": "1.0.0",
+    "manifestVersion": "1.17",
+    "id": "4ed2f8f0-fad7-4c18-9ca2-1522fa8614d5",
+    "name": {
+      "short": "Copilot Feedback Bot Admin",
+      "full": "Administration site for Copilot Feedback Bot"
+    },
+    "developer": {
+      "name": "Sam Betts",
+      "mpnId": "",
+      "websiteUrl": "https://github.com/pnp/copilot-feedback-bot",
+      "privacyUrl": "https://github.com/pnp/copilot-feedback-bot",
+      "termsOfUseUrl": "https://github.com/pnp/copilot-feedback-bot"
+    },
+    "description": {
+      "short": "Copilot feedback bot admin",
+      "full": "Administration site for Copilot Feedback Bot"
+    },
+    "icons": {
+      "outline": "outline.png",
+      "color": "color.png"
+    },
+    "accentColor": "#FFFFFF",
+    "staticTabs": [
+      {
+        "entityId": "ead68565-43ac-47e9-9a99-1f8278bf26d0",
+        "name": "Tabby",
+        "contentUrl": "<<WEB_HTTPS_ROOT>>/tabhome",
+        "websiteUrl": "<<WEB_HTTPS_ROOT>>/tabhome",
+        "scopes": [
+          "personal"
+        ],
+        "context": [
+          "personalTab"
+        ]
+      },
+      {
+        "entityId": "about",
+        "scopes": [
+          "personal"
+        ]
+      }
+    ],
+    "validDomains": [],
+    "webApplicationInfo": {
+      "id": "<<BOT_APP_ID>>",
+      "resource": "api://<<WEB_DOMAIN>>/<<BOT_APP_ID>>"
+    }
+  }

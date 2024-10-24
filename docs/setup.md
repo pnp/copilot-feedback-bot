@@ -5,18 +5,20 @@ For this, we assume a decent knowledge of Teams apps deployment, .Net, and Azure
 ## Create Bot and Deploy Teams Bot App
 Note, that for all these steps you can do them all in PowerShell if you wish. 
 
-You need Teams admin rights and rights to assign sensitive privileges for this setup to work. The bot app is just a bot that interacts with all/any Teams users - there's another Teams app for administering the solution that should be more restrictively installed. 
+You need Teams admin rights and rights to assign sensitive privileges for this setup to work. The bot app is just a bot that interacts with all/any Teams users - there's another Teams app for administering the solution that should be more restrictively installed.
 
+### Create Bot
 1. Go to: https://dev.teams.microsoft.com/bots and create a new bot (or alternatively in the Azure Portal, create a new Azure bot - the 1st link doesn't require an Azure subscription).
 2. Create a new client secret for the bot application registration. Note down the client ID & the secret of the bot.
 3. Grant permissions (specified below) and have an admin grant consent.
 
+### Deploy User Teams App
 Next, create a Teams app from the template:
-4. In "Teams App" root dir, copy file "manifest-template.json" to "manifest.json".
-5. Edit "manifest.json" and update all instances of ```<<BOT_APP_ID>>``` with your app registration client ID. 
-6. Make a zip file from "color.png", "manifest.json", and "outline.png" files in that folder. Make sure all files are in the root of the zip. 
+4. In ``Teams Apps`` root dir, copy file "manifest-template.json" to "manifest.json".
+5. Edit ``manifest.json`` and update all instances of ```<<BOT_APP_ID>>``` with your app registration client ID. 
+6. Make zip-file of the folder with files: ``manifest.json``, ``color.png``, ``outline.png`` only. Make sure zip file has these files in the root.  
 7. Deploy that zip file to your apps catalog in Teams admin.
-8. Once deployed, copy the "App ID" generated. We'll need that ID for bot configuration.
+8. Once deployed, copy the "App ID" generated. We'll need that ID for bot configuration so the bot can self-install to users that don't have it yet, and then send proactive messages.
 
 ## PowerShell Setup for Cloud Components
 There is a script to deploy all the Azure components and configure them. Recommended you use PowerShell 7 or above. 
@@ -30,14 +32,6 @@ There is a script to deploy all the Azure components and configure them. Recomme
 5. In the project root folder, run: ```deploy/InstallToAzure.ps1```
 6. Installation will take upto 45 mins if not run before.
 7. You can run multiple times; if a resources is already created, it'll be skipped. 
-
-## Optional - Deploy Bot Admin Teams App
-There is a React web application deployed to the app service that handles administration of bot questions, and other areas. The app can be accessed via MSAL logins or with Teams SSO. Teams is the prefered method as it doesn't require any extra authentication. 
-
-* Create Single-page application App registration for MSAL 2.0 - https://learn.microsoft.com/en-us/entra/identity-platform/scenario-spa-app-registration
-* Configure SSO for admin app registration - https://learn.microsoft.com/en-us/microsoftteams/platform/tabs/how-to/authentication/tab-sso-register-aad
-
-__todo__
 
 ## Manual Setup - Create Azure Resources
 You can deploy the ARM template manually:
@@ -78,9 +72,24 @@ Office 365 Management APIs
 
 All these permissions need administrator consent to be effective. 
 
-## Deploy Solution via GitHub Actions
+## Optional - Deploy Bot Admin Teams App
+There is a React web application deployed to the app service that handles administration of bot questions, and other areas. The app can be accessed via MSAL logins or with Teams SSO. Teams is the preferred method as it doesn't require any extra authentication. 
+
+These steps require the Azure app service to exist. 
+
+* Modify bot app registration for for single-page application App registration for MSAL 2.0 - https://learn.microsoft.com/en-us/entra/identity-platform/scenario-spa-app-registration#redirect-uri-msaljs-20-with-auth-code-flow
+
+If you want to embed the admin app in Teams to leverage the single-sign-on:
+* Configure SSO for bot app registration - https://learn.microsoft.com/en-us/microsoftteams/platform/tabs/how-to/authentication/tab-sso-register-aad
+* Create Teams Admin app:
+  * In ``Teams Apps/Admin`` copy ``manifest-template.json`` to ``manifest.json``.
+  * In ``manifest.json``, replace values: ``<<BOT_APP_ID>>``, ``<<WEB_DOMAIN>>``, ``<<WEB_HTTPS_ROOT>>``
+    * Examples: ``5023a8dc-8448-4f41-b34c-131ee03def2f``, ``contosofeedbackbot.azurewebsites.net``, ``https://contosofeedbackbot.azurewebsites.net``
+    * Note: for localhost testing, the ``<<WEB_DOMAIN>>`` value must include the port if non-standard. Example: ``localhost:5173``
+  * Make zip-file of the folder with files: ``manifest.json``, ``color.png``, ``outline.png`` only. Make sure zip file has these files in the root. 
+  * Upload zip-file to Teams admin centre and publish application to admin users/groups. _Careful who you give access!_
+
+## Alternative: Deploy Solution via GitHub Actions
 There are GitHub actions in ".github\workflows\" that will build and deploy the app service & webjob in one WF and the functions app in another. 
 
 The workflows require secrets "feedbackbot_PUBLISH_PROFILE" and "feedbackbot_AZURE_FUNCTIONS_NAME" for deploy to work. 
-
-Quick hack: publish from Visual Studio is also a (temporary) solution. 
