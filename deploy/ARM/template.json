@@ -273,6 +273,8 @@
                         "MicrosoftAppPassword": "[parameters('service_account_client_secret')]",
                         "ApplicationInsightsAgent_EXTENSION_VERSION": "~2",
                         "XDT_MicrosoftApplicationInsights_Mode": "default",
+                        "WEBSITE_NODE_DEFAULT_VERSION": "18.18.0",
+                        "WEBSITE_NPM_DEFAULT_VERSION": "9.8.1",
                         "WebRoot": "[variables('webRoot')]",
                         "APPLICATIONINSIGHTS_CONNECTION_STRING": "[reference(resourceId('microsoft.insights/components', parameters('workspace_analytics_name')), '2015-05-01').ConnectionString]"
                     }
