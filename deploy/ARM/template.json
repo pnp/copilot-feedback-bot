@@ -72,6 +72,8 @@
         }
     },
     "variables": {
+        "webRoot": "[concat('https://', parameters('app_service_name'), '.azurewebsites.net')]",
+        "apiScope": "[concat('api://', parameters('service_account_client_id'), '/', parameters('service_account_client_id'), '/access')]",
         "sqlConnectionString": "[concat('Server=tcp:', parameters('sql_server_name'), '.database.windows.net,1433;Initial Catalog=', parameters('sql_database_name'), ';Persist Security Info=False;User ID=', parameters('sql_server_admin_login'), ';Password=', parameters('sql_server_admin_login_password'), ';MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;')]"
     },
     "resources": [
@@ -266,10 +268,12 @@
                         "AuthConfig:ClientId": "[parameters('service_account_client_id')]",
                         "AuthConfig:ClientSecret": "[parameters('service_account_client_secret')]",
                         "AuthConfig:TenantId": "[parameters('tenant_id')]",
+                        "AuthConfig:ApiScope": "[variables('apiScope')]",
                         "MicrosoftAppId": "[parameters('service_account_client_id')]",
                         "MicrosoftAppPassword": "[parameters('service_account_client_secret')]",
                         "ApplicationInsightsAgent_EXTENSION_VERSION": "~2",
                         "XDT_MicrosoftApplicationInsights_Mode": "default",
+                        "WebRoot": "[variables('webRoot')]",
                         "APPLICATIONINSIGHTS_CONNECTION_STRING": "[reference(resourceId('microsoft.insights/components', parameters('workspace_analytics_name')), '2015-05-01').ConnectionString]"
                     }
                 },
@@ -419,15 +423,17 @@
                         "FUNCTIONS_EXTENSION_VERSION": "~4",
                         "AppCatalogTeamAppId": "[parameters('app_catalog_team_app_id')]",
                         "AuthConfig:ClientId": "[parameters('service_account_client_id')]",
+                        "AuthConfig:ApiScope": "[variables('apiScope')]",
                         "AuthConfig:ClientSecret": "[parameters('service_account_client_secret')]",
                         "AuthConfig:TenantId": "[parameters('tenant_id')]",
                         "MicrosoftAppId": "[parameters('service_account_client_id')]",
                         "MicrosoftAppPassword": "[parameters('service_account_client_secret')]",
+                        "WebRoot": "[variables('webRoot')]",
                         "ApplicationInsightsAgent_EXTENSION_VERSION": "~2",
                         "XDT_MicrosoftApplicationInsights_Mode": "default",
                         "APPLICATIONINSIGHTS_CONNECTION_STRING": "[reference(resourceId('microsoft.insights/components', parameters('workspace_analytics_name')), '2015-05-01').ConnectionString]",
-                        "AzureWebJobsDashboard" : "[concat('DefaultEndpointsProtocol=https;AccountName=', parameters('storage_account_name'), ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storage_account_name')),'2015-05-01-preview').key1, ';EndpointSuffix=core.windows.net')]",
-                        "AzureWebJobsStorage" : "[concat('DefaultEndpointsProtocol=https;AccountName=', parameters('storage_account_name'), ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storage_account_name')),'2015-05-01-preview').key1, ';EndpointSuffix=core.windows.net')]"
+                        "AzureWebJobsDashboard": "[concat('DefaultEndpointsProtocol=https;AccountName=', parameters('storage_account_name'), ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storage_account_name')),'2015-05-01-preview').key1, ';EndpointSuffix=core.windows.net')]",
+                        "AzureWebJobsStorage": "[concat('DefaultEndpointsProtocol=https;AccountName=', parameters('storage_account_name'), ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storage_account_name')),'2015-05-01-preview').key1, ';EndpointSuffix=core.windows.net')]"
                     }
                 },
                 {

@@ -12,6 +12,14 @@ You need Teams admin rights and rights to assign sensitive privileges for this s
 2. Create a new client secret for the bot application registration. Note down the client ID & the secret of the bot.
 3. Grant permissions (specified below) and have an admin grant consent.
 
+### Configure App Registration API Access
+1. Configure API access for app registration so the JavaScript app can access the backend.
+2. The application URI needs to be in format: api://[DOMAIN]/5023a8dc-8448-4f41-b34c-131ee03def2f, with port if not standard. Examples
+   1. api://contosobot.azurewebsites.net/5023a8dc-8448-4f41-b34c-131ee03def2f
+   2. api://localhost:5173/c8c85903-7e4a-4314-898b-08d01382e025
+3. Add a scope for users/admins - "access".
+4. Copy the full scope name for the ARM template parameters 'api_scope' value - "api://contosobot.azurewebsites.net/5023a8dc-8448-4f41-b34c-131ee03def2f/access"
+
 ### Deploy User Teams App
 Next, create a Teams app from the template:
 4. In ``Teams Apps`` root dir, copy file "manifest-template.json" to "manifest.json".

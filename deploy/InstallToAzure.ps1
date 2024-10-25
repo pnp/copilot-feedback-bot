@@ -178,9 +178,10 @@ function ValidateAndInstall ($configFileName) {
 			WriteE -message "Error: Unable to add URL filters to the database. Please add manually to table 'import_url_filter'"
 		}
 
-		WriteS -message "Solution installed successfully. Next steps:"
-		WriteS -message "1. Verify import job is running in the web app and trace logs in Application Insights."
-		WriteS -message "2. Check SQL tables have data once an import has finished."
+		WriteS -message "Solution install script finished. Next steps:"
+		WriteS -message "1. Check for any errors above."
+		WriteS -message "2. Verify import job is running in the web app and trace logs in Application Insights."
+		WriteS -message "3. Check SQL tables have data once an import has finished."
 	}
 }
 
@@ -192,7 +193,7 @@ function AddClientPublicIpToSqlFirewall {
 	$server = Get-SqlServerNameArmTemplateValue $config
 
 	# Check if the rule already exists
-	$existingRule = Get-AzSqlServerFirewallRule -ServerName $server -ResourceGroupName 'PsTests' | Where-Object { $_.FirewallRuleName -eq $ruleName}
+	$existingRule = Get-AzSqlServerFirewallRule -ServerName $server -ResourceGroupName $config.ResourceGroupName | Where-Object { $_.FirewallRuleName -eq $ruleName}
 	if ($null -ne $existingRule) {
 		WriteW -message "Your public IP is already added to the SQL server firewall (rule name '$ruleName'), so we won't detect & add it again."
 		return $true
@@ -269,7 +270,7 @@ function TriggerAppServiceWebJob {
 	}
 	else {
 		if ($responseRaw.StatusCode -eq 404) {
-			WriteW -message "App service webjob not found." 
+			WriteE -message "App service webjob not found." 
 		}
 		else {
 			WriteE -message "Error: start App service webjob failed. Response: $($responseRaw.Content)" 

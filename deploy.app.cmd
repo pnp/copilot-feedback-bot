@@ -70,22 +70,32 @@ SET MSBUILD_PATH=%ProgramFiles(x86)%\MSBuild\14.0\Bin\MSBuild.exe
 
 echo Handling ASP.NET Core Web Application deployment.
 
-:: 1. Restore nuget packages
+:: Restore nuget packages
 echo Restoring NuGet packages
 call :ExecuteCmd dotnet restore "%DEPLOYMENT_SOURCE%\src\Copilot Feedback Bot.sln"
 IF !ERRORLEVEL! NEQ 0 goto error
 
-:: 2. Build and publish console project. Clean the runtime folder
+:: Build and publish console project. Clean the runtime folder
 echo Building the console application
 call :ExecuteCmd dotnet publish "%DEPLOYMENT_SOURCE%\src\ActivityImporter.ConsoleApp\ActivityImporter.ConsoleApp.csproj" --output "%DEPLOYMENT_TEMP%\app_data\Jobs\Triggered\ActivityImporter.ConsoleApp" --configuration Release -property:KuduDeployment=1
 
+:: Create environment settings file
+echo Creating environment settings file
+echo off 
+(
+    echo VITE_MSAL_AUTHORITY=https://login.microsoftonline.com/organizations
+    echo VITE_MSAL_CLIENT_ID=%AuthConfig:ClientId%
+    echo VITE_MSAL_SCOPES=%AuthConfig:ApiScope%
+    echo VITE_TEAMSFX_START_LOGIN_PAGE_URL=%WebRoot%/auth-start.html
+    echo VITE_API_ENDPOINT=%WebRoot%
+) > "%DEPLOYMENT_SOURCE%\src\Web\web.client\.env.production"
 
-:: 3. Build and publish Web project
+:: Build and publish Web project
 echo Building the web application
-call :ExecuteCmd dotnet publish "%DEPLOYMENT_SOURCE%\src\Web\Web.csproj" --output "%DEPLOYMENT_TEMP%" --configuration Release -property:KuduDeployment=1
+call :ExecuteCmd dotnet publish "%DEPLOYMENT_SOURCE%\src\Web\Web.Server\Web.csproj" --output "%DEPLOYMENT_TEMP%" --configuration Release -property:KuduDeployment=1
 IF !ERRORLEVEL! NEQ 0 goto error
 
-:: 4. KuduSync
+:: KuduSync
 echo Target dir: %DEPLOYMENT_TARGET%
 call :ExecuteCmd "%KUDU_SYNC_CMD%" -v 50 -f "%DEPLOYMENT_TEMP%" -t "%DEPLOYMENT_TARGET%" -n "%NEXT_MANIFEST_PATH%" -p "%PREVIOUS_MANIFEST_PATH%" -i ".git;.hg;.deployment;deploy.cmd"
 IF !ERRORLEVEL! NEQ 0 goto error
