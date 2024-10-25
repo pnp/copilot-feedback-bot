@@ -73,7 +73,7 @@
     },
     "variables": {
         "webRoot": "[concat('https://', parameters('app_service_name'), '.azurewebsites.net')]",
-        "apiScope": "[concat('api://', parameters('service_account_client_id'), '/', parameters('service_account_client_id'), '/access')]",
+        "apiScope": "[concat('api://', parameters('app_service_name'), '.azurewebsites.net', '/', parameters('service_account_client_id'), '/access')]",
         "sqlConnectionString": "[concat('Server=tcp:', parameters('sql_server_name'), '.database.windows.net,1433;Initial Catalog=', parameters('sql_database_name'), ';Persist Security Info=False;User ID=', parameters('sql_server_admin_login'), ';Password=', parameters('sql_server_admin_login_password'), ';MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;')]"
     },
     "resources": [

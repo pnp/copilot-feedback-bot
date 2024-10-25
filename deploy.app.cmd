@@ -92,7 +92,7 @@ echo off
 
 :: Build and publish Web project
 echo Building the web application
-call :ExecuteCmd dotnet publish "%DEPLOYMENT_SOURCE%\src\Web\Web.Server\Web.csproj" --output "%DEPLOYMENT_TEMP%" --configuration Release -property:KuduDeployment=1
+call :ExecuteCmd dotnet publish "%DEPLOYMENT_SOURCE%\src\Web\Web.Server\Web.Server.csproj" --output "%DEPLOYMENT_TEMP%" --configuration Release -property:KuduDeployment=1
 IF !ERRORLEVEL! NEQ 0 goto error
 
 :: KuduSync
