@@ -1,0 +1,10 @@
+#See https://aka.ms/overrideVSDockerComposeConfiguration to understand how Visual Studio uses this override file.
+
+#services:
+  #reactapp1.server:
+    #labels:
+      #com.microsoft.visualstudio.debuggee.program: "dotnet"
+      #com.microsoft.visualstudio.debuggee.arguments: "\"/app/ReactApp1.Server.dll\""
+      #com.microsoft.visualstudio.debuggee.workingdirectory: "/app"
+      #com.microsoft.visualstudio.debuggee.killprogram: "$kill_command$"
+      #com.microsoft.visual-studio.project-name: "ReactApp1.Server"

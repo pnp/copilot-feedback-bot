@@ -1,11 +1,12 @@
 {
   "profiles": {
-    "Docker Compose": {
+    "Docker Compose Dev": {
       "commandName": "DockerCompose",
+      "dockerComposeOverrideFilePath": "docker-compose.override.yml",
       "commandVersion": "1.0",
       "serviceActions": {
         "web.server": "StartDebugging"
       }
     }
   }
-}
+} 
