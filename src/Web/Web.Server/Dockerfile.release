@@ -1,28 +1,34 @@
 # See https://aka.ms/customizecontainer to learn how to customize your debug container and how Visual Studio uses this Dockerfile to build your images for faster debugging.
 
 # This stage is used when running from VS in fast mode (Default for Debug configuration)
-FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS base
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
 WORKDIR /app
 EXPOSE 80
 EXPOSE 443
 
 
 # This stage is used to build the service project
-FROM mcr.microsoft.com/dotnet/sdk:6.0 AS with-node
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS with-node
 RUN apt-get update
 RUN apt-get install curl
 RUN curl -sL https://deb.nodesource.com/setup_20.x | bash
 RUN apt-get -y install nodejs
 
+# Set JS vars
 
-FROM with-node AS build
+FROM setenv AS build
 ARG BUILD_CONFIGURATION=Release
-WORKDIR /src/Web
-COPY ["Web.Server/Web.Server.csproj", "Web.Server/"]
-COPY ["Web.client/Web.client.esproj", "Web.client/"]
-RUN dotnet restore "./Web.Server/Web.Server.csproj"
+WORKDIR /src
+RUN printenv > Web/web.client/.env.production
+COPY ["Web/Web.Server/Web.Server.csproj", "Web/Web.Server/"]
+COPY ["Web/web.client/web.client.esproj", "Web/web.client/"]
+COPY ["Common.Engine/Common.Engine.csproj", "Common.Engine/"]
+COPY ["Common.DataUtils/Common.DataUtils.csproj", "Common.DataUtils/"]
+COPY ["Entities.DB/Entities.DB.csproj", "Entities.DB/"]
+
+RUN dotnet restore "./Web/Web.Server/Web.Server.csproj"
 COPY . .
-WORKDIR "/src/Web"
+WORKDIR "/src/Web/Web.Server"
 RUN dotnet build "./Web.Server.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 # This stage is used to publish the service project to be copied to the final stage

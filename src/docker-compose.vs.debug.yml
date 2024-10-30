@@ -1,24 +1,5 @@
 #See https://aka.ms/overrideVSDockerComposeConfiguration to understand how Visual Studio uses this override file.
 services:
-  sql:
-    image: mcr.microsoft.com/mssql/server:2022-latest
-    environment: 
-      ACCEPT_EULA: "Y" 
-      MSSQL_SA_PASSWORD: "DevStrong@Passw0rd"
-    ports: 
-      - "1433:1433" 
-    container_name: sql
-  azurite:
-    image: mcr.microsoft.com/azure-storage/azurite
-    container_name: azurite
-    ports:
-      - "10000:10000"
-      - "10001:10001"
-      - "10002:10002"
-#services:
-  #reactapp1.server:
-    #labels:
-      #com.microsoft.visualstudio.debuggee.program: "dotnet"
-      #com.microsoft.visualstudio.debuggee.arguments: "\"/app/bin/Debug/net6.0/ReactApp1.Server.dll\""
-      #com.microsoft.visualstudio.debuggee.workingdirectory: "/app"
-      #com.microsoft.visualstudio.debuggee.killprogram: "$kill_command$"
+  web.server:
+    build:
+      dockerfile: Web\Web.Server\Dockerfile.debug

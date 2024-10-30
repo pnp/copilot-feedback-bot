@@ -4,7 +4,6 @@ using Entities.DB;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Bot.Builder;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Graph;
 using Web.Bots;
 using Web.Bots.Dialogues;
 using Microsoft.Identity.Web;
