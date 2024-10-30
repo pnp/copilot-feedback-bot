@@ -1,32 +1,35 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
-  <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <InvariantGlobalization>false</InvariantGlobalization>
-    <UserSecretsId>ae8ee577-91bc-4ce6-826b-554211828541</UserSecretsId>
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<InvariantGlobalization>false</InvariantGlobalization>
+		<UserSecretsId>ae8ee577-91bc-4ce6-826b-554211828541</UserSecretsId>
+		<DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
 
-	  <SpaRoot>..\web.client</SpaRoot>
-	  <DefaultItemExcludes>$(DefaultItemExcludes);$(SpaRoot)node_modules\**</DefaultItemExcludes>
-	  <SpaProxyServerUrl>https://localhost:5173</SpaProxyServerUrl>
-	  <SpaProxyLaunchCommand>npm run dev</SpaProxyLaunchCommand>
-	  
-  </PropertyGroup>
+		<SpaRoot>..\web.client</SpaRoot>
+		<DefaultItemExcludes>$(DefaultItemExcludes);$(SpaRoot)node_modules\**</DefaultItemExcludes>
+		<SpaProxyServerUrl>https://localhost:5173</SpaProxyServerUrl>
+		<SpaProxyLaunchCommand>npm run dev</SpaProxyLaunchCommand>
+		<DockerfileContext>..\..</DockerfileContext>
+		<DockerComposeProjectPath>..\..\docker-compose.dcproj</DockerComposeProjectPath>
 
-  <ItemGroup>
-    <Content Remove="Bots\Cards\Templates\BotDiagFinished.json" />
-    <Content Remove="Bots\Cards\Templates\BotFirstIntro.json" />
-    <Content Remove="Bots\Cards\Templates\BotReactionHappy.json" />
-    <Content Remove="Bots\Cards\Templates\BotReactionMeh.json" />
-    <Content Remove="Bots\Cards\Templates\BotResumeConversationIntro.json" />
-    <Content Remove="Bots\Cards\Templates\SurveyCardFileAction.json" />
-    <Content Remove="Bots\Cards\Templates\SurveyCardNoAction.json" />
-    <Content Remove="Bots\Cards\Templates\SurveyCardTeamsAction.json" />
-    <Content Remove="Bots\Cards\Templates\SurveyCustomPageCommon.json" />
-    <Content Remove="Bots\Cards\Templates\SurveyOverrallSatisfactionCommonBody.json" />
-  </ItemGroup>
-	
+	</PropertyGroup>
+
+	<ItemGroup>
+		<Content Remove="Bots\Cards\Templates\BotDiagFinished.json" />
+		<Content Remove="Bots\Cards\Templates\BotFirstIntro.json" />
+		<Content Remove="Bots\Cards\Templates\BotReactionHappy.json" />
+		<Content Remove="Bots\Cards\Templates\BotReactionMeh.json" />
+		<Content Remove="Bots\Cards\Templates\BotResumeConversationIntro.json" />
+		<Content Remove="Bots\Cards\Templates\SurveyCardFileAction.json" />
+		<Content Remove="Bots\Cards\Templates\SurveyCardNoAction.json" />
+		<Content Remove="Bots\Cards\Templates\SurveyCardTeamsAction.json" />
+		<Content Remove="Bots\Cards\Templates\SurveyCustomPageCommon.json" />
+		<Content Remove="Bots\Cards\Templates\SurveyOverrallSatisfactionCommonBody.json" />
+	</ItemGroup>
+
 	<ItemGroup>
 		<ProjectReference Include="..\web.client\web.client.esproj">
 			<ReferenceOutputAssembly>false</ReferenceOutputAssembly>
@@ -35,36 +38,37 @@
 
 
 	<ItemGroup>
-    <EmbeddedResource Include="Bots\Cards\Templates\BotDiagFinished.json" />
-    <EmbeddedResource Include="Bots\Cards\Templates\SurveyCustomPageCommon.json" />
-    <EmbeddedResource Include="Bots\Cards\Templates\BotFirstIntro.json" />
-    <EmbeddedResource Include="Bots\Cards\Templates\BotReactionHappy.json" />
-    <EmbeddedResource Include="Bots\Cards\Templates\BotReactionMeh.json" />
-    <EmbeddedResource Include="Bots\Cards\Templates\BotResumeConversationIntro.json" />
-    <EmbeddedResource Include="Bots\Cards\Templates\SurveyCardFileAction.json" />
-    <EmbeddedResource Include="Bots\Cards\Templates\SurveyOverrallSatisfactionCommonBody.json" />
-    <EmbeddedResource Include="Bots\Cards\Templates\SurveyCardNoAction.json" />
-    <EmbeddedResource Include="Bots\Cards\Templates\SurveyCardTeamsAction.json" />
-  </ItemGroup>
+		<EmbeddedResource Include="Bots\Cards\Templates\BotDiagFinished.json" />
+		<EmbeddedResource Include="Bots\Cards\Templates\SurveyCustomPageCommon.json" />
+		<EmbeddedResource Include="Bots\Cards\Templates\BotFirstIntro.json" />
+		<EmbeddedResource Include="Bots\Cards\Templates\BotReactionHappy.json" />
+		<EmbeddedResource Include="Bots\Cards\Templates\BotReactionMeh.json" />
+		<EmbeddedResource Include="Bots\Cards\Templates\BotResumeConversationIntro.json" />
+		<EmbeddedResource Include="Bots\Cards\Templates\SurveyCardFileAction.json" />
+		<EmbeddedResource Include="Bots\Cards\Templates\SurveyOverrallSatisfactionCommonBody.json" />
+		<EmbeddedResource Include="Bots\Cards\Templates\SurveyCardNoAction.json" />
+		<EmbeddedResource Include="Bots\Cards\Templates\SurveyCardTeamsAction.json" />
+	</ItemGroup>
 
-  <ItemGroup>
-	  <PackageReference Include="Azure.Storage.Blobs" Version="12.20.0" />
-	  <PackageReference Include="Azure.Storage.Files.Shares" Version="12.18.0" />
-	  <PackageReference Include="Azure.Storage.Queues" Version="12.18.0" />
-	  <PackageReference Include="Microsoft.AspNetCore.SpaProxy">
-		  <Version>8.*-*</Version>
-	  </PackageReference>
-	  
-    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.22.0" />
-    <PackageReference Include="Microsoft.Bot.Builder.Dialogs" Version="4.22.7" />
-    <PackageReference Include="Microsoft.Bot.Builder.Integration.AspNet.Core" Version="4.22.7" />
-    <PackageReference Include="Microsoft.Extensions.Azure" Version="1.7.3" />
-    <PackageReference Include="Microsoft.Identity.Web" Version="3.2.0" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.7.3" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Azure.Storage.Blobs" Version="12.20.0" />
+		<PackageReference Include="Azure.Storage.Files.Shares" Version="12.18.0" />
+		<PackageReference Include="Azure.Storage.Queues" Version="12.18.0" />
+		<PackageReference Include="Microsoft.AspNetCore.SpaProxy">
+			<Version>8.*-*</Version>
+		</PackageReference>
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\Common.Engine\Common.Engine.csproj" />
-  </ItemGroup>
+		<PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.22.0" />
+		<PackageReference Include="Microsoft.Bot.Builder.Dialogs" Version="4.22.7" />
+		<PackageReference Include="Microsoft.Bot.Builder.Integration.AspNet.Core" Version="4.22.7" />
+		<PackageReference Include="Microsoft.Extensions.Azure" Version="1.7.3" />
+		<PackageReference Include="Microsoft.Identity.Web" Version="3.2.0" />
+		<PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.21.0" />
+		<PackageReference Include="Swashbuckle.AspNetCore" Version="6.7.3" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\Common.Engine\Common.Engine.csproj" />
+	</ItemGroup>
 
 </Project>
