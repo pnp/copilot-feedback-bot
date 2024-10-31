@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Web.Bots;
 using Web.Bots.Dialogues;
 using Microsoft.Identity.Web;
+using Microsoft.Graph;
 
 namespace Web;
 

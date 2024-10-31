@@ -8,24 +8,22 @@ EXPOSE 443
 
 
 # This stage is used to build the service project
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS with-node
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS buildjs
 RUN apt-get update
 RUN apt-get install curl
 RUN curl -sL https://deb.nodesource.com/setup_20.x | bash
 RUN apt-get -y install nodejs
 
 # Set JS vars
-
-FROM setenv AS build
+FROM buildjs AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-RUN printenv > Web/web.client/.env.production
 COPY ["Web/Web.Server/Web.Server.csproj", "Web/Web.Server/"]
 COPY ["Web/web.client/web.client.esproj", "Web/web.client/"]
 COPY ["Common.Engine/Common.Engine.csproj", "Common.Engine/"]
 COPY ["Common.DataUtils/Common.DataUtils.csproj", "Common.DataUtils/"]
 COPY ["Entities.DB/Entities.DB.csproj", "Entities.DB/"]
-
+RUN printenv > Web/web.client/.env.production
 RUN dotnet restore "./Web/Web.Server/Web.Server.csproj"
 COPY . .
 WORKDIR "/src/Web/Web.Server"

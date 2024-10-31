@@ -1,9 +1,6 @@
 #See https://aka.ms/overrideVSDockerComposeConfiguration to understand how Visual Studio uses this override file.
 services:
   web.server:
-    build:
-      dockerfile: Web\Web.Server\Dockerfile.release
-
     environment:
       - VITE_MSAL_CLIENT_ID=5023a8dc-8448-4f41-b34c-131ee03def2f
       - VITE_MSAL_AUTHORITY=https://login.microsoftonline.com/organizations
