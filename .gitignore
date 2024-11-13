@@ -18,3 +18,4 @@ src/Functions/Properties/ServiceDependencies/copilotfeedback-function-ag - Zip D
 /src/Web/web.client/.env.development
 /src/Web/web.client/.vite/deps_temp_b4646597
 /src/docker-compose.override.yml
+/src/Web/web.client/.env.production
