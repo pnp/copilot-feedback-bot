@@ -7,7 +7,6 @@ using Microsoft.EntityFrameworkCore;
 using Web.Bots;
 using Web.Bots.Dialogues;
 using Microsoft.Identity.Web;
-using Microsoft.Graph;
 
 namespace Web;
 
@@ -29,6 +28,7 @@ public class Program
         builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddMicrosoftIdentityWebApi(ops => 
             {
+                // Hack
                 ops.Audience = "api://localhost:5173/5023a8dc-8448-4f41-b34c-131ee03def2f";
             }, o => 
             { 
@@ -70,7 +70,7 @@ public class Program
 #if DEBUG
 
         // Clear out the bot cache for dev testing. That way we get 1st time user experience every time.
-        var graph = app.Services.GetRequiredService<GraphServiceClient>();
+        var graph = app.Services.GetRequiredService<Microsoft.Graph.GraphServiceClient>();
         var botCache = new BotConversationCache(graph, config);
         var allUsers = await botCache.GetCachedUsers();
         foreach (var user in allUsers)
@@ -91,15 +91,18 @@ public class Program
             await DbInitialiser.EnsureInitialised(db, logger, config.TestUPN);
         }
 
+        app.UseHttpsRedirection();
+
+        // https://learn.microsoft.com/en-us/visualstudio/javascript/tutorial-asp-net-core-with-react?view=vs-2022#publish-the-project
+        app.UseDefaultFiles();
+        app.UseStaticFiles();
+
         // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
         {
             app.UseSwagger();
             app.UseSwaggerUI();
         }
-
-        app.UseHttpsRedirection();
-        app.UseStaticFiles();
 
         app.UseAuthorization();
 

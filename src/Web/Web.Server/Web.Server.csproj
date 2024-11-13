@@ -18,19 +18,6 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<Content Remove="Bots\Cards\Templates\BotDiagFinished.json" />
-		<Content Remove="Bots\Cards\Templates\BotFirstIntro.json" />
-		<Content Remove="Bots\Cards\Templates\BotReactionHappy.json" />
-		<Content Remove="Bots\Cards\Templates\BotReactionMeh.json" />
-		<Content Remove="Bots\Cards\Templates\BotResumeConversationIntro.json" />
-		<Content Remove="Bots\Cards\Templates\SurveyCardFileAction.json" />
-		<Content Remove="Bots\Cards\Templates\SurveyCardNoAction.json" />
-		<Content Remove="Bots\Cards\Templates\SurveyCardTeamsAction.json" />
-		<Content Remove="Bots\Cards\Templates\SurveyCustomPageCommon.json" />
-		<Content Remove="Bots\Cards\Templates\SurveyOverrallSatisfactionCommonBody.json" />
-	</ItemGroup>
-
-	<ItemGroup>
 		<ProjectReference Include="..\web.client\web.client.esproj">
 			<ReferenceOutputAssembly>false</ReferenceOutputAssembly>
 		</ProjectReference>
@@ -69,6 +56,10 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\..\Common.Engine\Common.Engine.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="wwwroot\" />
 	</ItemGroup>
 
 </Project>

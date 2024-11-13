@@ -1,0 +1,39 @@
+# Define environment specific variables and services in the override file. docker-compose.override.yml isn't git tracked.
+services:
+  web.server:
+    environment:
+      - ASPNETCORE_URLS=http://+:80
+      - WebAppURL=
+      - MicrosoftAppPassword=
+      - MicrosoftAppId=
+      - ConnectionStrings__Storage=
+      - ConnectionStrings__SQL=
+      - ConnectionStrings__ServiceBusRoot=
+      - ConnectionStrings__Redis=
+      - AuthConfig__TenantId=
+      - AuthConfig__ClientSecret=
+      - AuthConfig__ClientId=
+      - AppCatalogTeamAppId=
+      - VITE_MSAL_CLIENT_ID=
+      - VITE_MSAL_AUTHORITY=https://login.microsoftonline.com/organizations
+      - VITE_MSAL_SCOPES=
+      - VITE_TEAMSFX_START_LOGIN_PAGE_URL=
+      - VITE_API_ENDPOINT=
+    depends_on:
+        - sql
+        - azurite
+  sql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment: 
+      ACCEPT_EULA: "Y" 
+      MSSQL_SA_PASSWORD: "DevStrong@Passw0rd"
+    ports: 
+      - "1433:1433" 
+    container_name: sql
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite
+    container_name: azurite
+    ports:
+      - "10000:10000"
+      - "10001:10001"
+      - "10002:10002"
