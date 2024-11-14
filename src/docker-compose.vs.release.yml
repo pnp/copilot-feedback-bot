@@ -1,5 +1,2 @@
 #See https://aka.ms/overrideVSDockerComposeConfiguration to understand how Visual Studio uses this override file.
-services:
-  web.server:
-    volumes:
-    - ./Web/web.client/.env.production:/src/Web/web.client/.env.production
+
