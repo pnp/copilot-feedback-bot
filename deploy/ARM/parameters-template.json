@@ -53,8 +53,14 @@
         "servicebus_namespace_name": {
             "value": "<!-- REPLACE WITH YOUR VALUE -->"
         },
+        "acr_name": {
+            "value": "<!-- REPLACE WITH YOUR VALUE -->"
+        },
         "location": {
             "value": "westeurope" 
+        },
+        "git_branch": {
+            "value": "main"
         }
     }
 }

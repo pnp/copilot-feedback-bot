@@ -22,8 +22,7 @@ You need Teams admin rights and rights to assign sensitive privileges for this s
 
 ## Build Docker Image
 * Copy ``src\docker-compose.override - template.yml`` to ``src\docker-compose.override.yml``. Fill out fields. 
-* Copy ``src\Web\web.client\.env template.local`` to ``src\Web\web.client\.env.production``. Fill out fields. 
-* Build image.
+* Build image with ``docker-compose build``.
 * Push to ACR.
 * ...tbd... 
 

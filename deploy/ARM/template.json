@@ -52,6 +52,9 @@
         "servicebus_namespace_name": {
             "type": "String"
         },
+        "acr_name": {
+            "type": "String"
+        },
         "storage_account_name": {
             "type": "String"
         },
@@ -229,7 +232,8 @@
             "name": "[parameters('app_service_name')]",
             "location": "[parameters('location')]",
             "dependsOn": [
-                "[resourceId('Microsoft.Web/serverfarms', parameters('app_service_plan_name'))]"
+                "[resourceId('Microsoft.Web/serverfarms', parameters('app_service_plan_name'))]",
+                "[resourceId('Microsoft.ContainerRegistry/registries', parameters('acr_name'))]"
             ],
             "kind": "app",
             "identity": {
@@ -316,6 +320,23 @@
                     }
                 }
             ]
+        },
+
+        {
+            "name": "[parameters('acr_name')]",
+            "type": "Microsoft.ContainerRegistry/registries",
+            "location": "[parameters('location')]",
+            "apiVersion": "2022-02-01-preview",
+            "sku": {
+                "name": "Basic"
+            },
+            "dependsOn": [],
+            "properties": {
+                "adminUserEnabled": true,
+                "publicNetworkAccess": "Enabled",
+                "anonymousPullEnabled": false,
+                "zoneRedundancy": "Disabled"
+            }
         },
 
 
