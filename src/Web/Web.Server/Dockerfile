@@ -16,6 +16,12 @@ RUN apt-get -y install nodejs
 # Set JS vars
 FROM buildjs AS build
 ARG BUILD_CONFIGURATION=Release
+ARG VITE_MSAL_CLIENT_ID
+ARG VITE_MSAL_AUTHORITY
+ARG VITE_MSAL_SCOPES
+ARG VITE_TEAMSFX_START_LOGIN_PAGE_URL
+ARG VITE_API_ENDPOINT
+
 WORKDIR /src
 COPY ["Web/Web.Server/Web.Server.csproj", "Web/Web.Server/"]
 COPY ["Web/web.client/web.client.esproj", "Web/web.client/"]

@@ -28,14 +28,13 @@ public class Program
         builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddMicrosoftIdentityWebApi(ops => 
             {
-                // Hack
-                ops.Audience = "api://localhost:5173/5023a8dc-8448-4f41-b34c-131ee03def2f";
+                ops.Audience = config.AuthConfig.ApiAudience;
             }, o => 
             { 
                 o.ClientId = config.AuthConfig.ClientId; 
                 o.TenantId = config.AuthConfig.TenantId;
                 o.ClientSecret = config.AuthConfig.ClientSecret;
-                o.Authority = $"https://login.microsoftonline.com/{config.AuthConfig.TenantId}";
+                o.Authority = config.AuthConfig.Authority;
                 o.Instance = "https://login.microsoftonline.com/";
             });
 

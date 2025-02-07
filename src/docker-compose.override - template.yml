@@ -3,7 +3,6 @@ services:
   web.server:
     environment:
       - ASPNETCORE_URLS=http://+:80
-      - WebAppURL=
       - MicrosoftAppPassword=
       - MicrosoftAppId=
       - ConnectionStrings__Storage=
@@ -13,7 +12,12 @@ services:
       - AuthConfig__TenantId=
       - AuthConfig__ClientSecret=
       - AuthConfig__ClientId=
+      - AuthConfig__ApiAudience=
+      - AuthConfig__Authority=https://login.microsoftonline.com/organizations
       - AppCatalogTeamAppId=
+    build:
+      args:
+      # These arguments are used to build the JavaScript application bundle
       - VITE_MSAL_CLIENT_ID=
       - VITE_MSAL_AUTHORITY=https://login.microsoftonline.com/organizations
       - VITE_MSAL_SCOPES=

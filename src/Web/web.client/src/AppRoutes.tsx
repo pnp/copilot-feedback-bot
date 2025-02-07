@@ -2,7 +2,7 @@ import React, { PropsWithChildren } from 'react';
 
 import { Layout } from './components/app/Layout';
 import { Dashboard } from './pages/Dashboard/Dashboard';
-import { LoginRedirect } from './pages/Login/LoginRedirect';
+import { LoginPopupMSAL } from './pages/Login/LoginPopupMSAL';
 import { Redirect, Route } from "react-router-dom";
 import { SurveyManagerPage } from './pages/SurveyEdit/SurveyManagerPage';
 import { FluentProvider, teamsLightTheme } from '@fluentui/react-components';
@@ -29,14 +29,13 @@ export const AppRoutes: React.FC<PropsWithChildren<AppRoutesProps>> = (props) =>
                 (
                     <Layout>
                         <Route exact path="/">
-                            <Redirect to="/tabhome" />
+                            {props.loginMethod === LoginMethod.MSAL &&
+                                <LoginPopupMSAL />
+                            }
+                            {props.loginMethod === LoginMethod.TeamsSSO &&
+                                <LoginPopupTeams onAuthReload={props.onAuthReload} />
+                            }
                         </Route>
-                        {props.loginMethod === LoginMethod.MSAL &&
-                            <Route exact path='/tabhome' component={LoginRedirect} />
-                        }
-                        {props.loginMethod === LoginMethod.TeamsSSO &&
-                            <Route exact path='/tabhome'><LoginPopupTeams onAuthReload={props.onAuthReload} /></Route>
-                        }
                     </Layout>
                 )}
         </FluentProvider>
