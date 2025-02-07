@@ -20,6 +20,12 @@ You need Teams admin rights and rights to assign sensitive privileges for this s
 3. Add a scope for users/admins - "access".
 4. Copy the full scope name for the ARM template parameters 'api_scope' value - "api://contosobot.azurewebsites.net/5023a8dc-8448-4f41-b34c-131ee03def2f/access"
 
+## Build Docker Image
+* Copy ``src\docker-compose.override - template.yml`` to ``src\docker-compose.override.yml``. Fill out fields. 
+* Build image with ``docker-compose build``.
+* Push to ACR.
+* ...tbd... 
+
 ### Deploy User Teams App
 Next, create a Teams app from the template:
 4. In ``Teams Apps`` root dir, copy file "manifest-template.json" to "manifest.json".

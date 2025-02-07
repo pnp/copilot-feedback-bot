@@ -18,19 +18,6 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<Content Remove="Bots\Cards\Templates\BotDiagFinished.json" />
-		<Content Remove="Bots\Cards\Templates\BotFirstIntro.json" />
-		<Content Remove="Bots\Cards\Templates\BotReactionHappy.json" />
-		<Content Remove="Bots\Cards\Templates\BotReactionMeh.json" />
-		<Content Remove="Bots\Cards\Templates\BotResumeConversationIntro.json" />
-		<Content Remove="Bots\Cards\Templates\SurveyCardFileAction.json" />
-		<Content Remove="Bots\Cards\Templates\SurveyCardNoAction.json" />
-		<Content Remove="Bots\Cards\Templates\SurveyCardTeamsAction.json" />
-		<Content Remove="Bots\Cards\Templates\SurveyCustomPageCommon.json" />
-		<Content Remove="Bots\Cards\Templates\SurveyOverrallSatisfactionCommonBody.json" />
-	</ItemGroup>
-
-	<ItemGroup>
 		<ProjectReference Include="..\web.client\web.client.esproj">
 			<ReferenceOutputAssembly>false</ReferenceOutputAssembly>
 		</ProjectReference>
@@ -62,13 +49,20 @@
 		<PackageReference Include="Microsoft.Bot.Builder.Dialogs" Version="4.22.7" />
 		<PackageReference Include="Microsoft.Bot.Builder.Integration.AspNet.Core" Version="4.22.7" />
 		<PackageReference Include="Microsoft.Extensions.Azure" Version="1.7.3" />
+		<PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="8.0.1" />
 		<PackageReference Include="Microsoft.Identity.Web" Version="3.2.0" />
 		<PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.21.0" />
 		<PackageReference Include="Swashbuckle.AspNetCore" Version="6.7.3" />
+		<PackageReference Include="System.Formats.Asn1" Version="8.0.1" />
+		<PackageReference Include="System.Text.Json" Version="8.0.5" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\..\Common.Engine\Common.Engine.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="wwwroot\" />
 	</ItemGroup>
 
 </Project>

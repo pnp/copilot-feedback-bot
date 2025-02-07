@@ -1,5 +1,2 @@
-#See https://aka.ms/overrideVSDockerComposeConfiguration to understand how Visual Studio uses this override file.
-services:
-  web.server:
-    build:
-      dockerfile: Web\Web.Server\Dockerfile.debug
+#Note: JS debugger is not working in this configuration as the JS app isn't built with the VS injected docker debugging. 
+#Switch to release mode to include the JS build - debug from Visual Studio only works with the C# components.

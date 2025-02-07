@@ -22,4 +22,9 @@ public class AzureADAuthConfig : PropertyBoundConfig
     [ConfigValue]
     public string TenantId { get; set; } = null!;
 
+    [ConfigValue]
+    public string Authority { get; set; } = null!;
+
+    [ConfigValue]
+    public string ApiAudience { get; set; } = null!;
 }

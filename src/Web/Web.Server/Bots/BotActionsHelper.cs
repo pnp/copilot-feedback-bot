@@ -11,7 +11,7 @@ public class BotActionsHelper
     {
         _logger = logger;
 
-        _logger.LogInformation($"Have config: AppBaseUri:{config.WebAppURL}, MicrosoftAppId:{config.BotAppId}, AppCatalogTeamAppId:{config.AppCatalogTeamAppId}");
+        _logger.LogInformation($"Have config: MicrosoftAppId:{config.BotAppId}, AppCatalogTeamAppId:{config.AppCatalogTeamAppId}");
     }
 
     public async Task SendBotFirstIntro(ITurnContext turnContext, CancellationToken cancellationToken)
@@ -26,7 +26,5 @@ public class BotActionsHelper
         // "Hi I'm bot..."
         var introCardAttachment = new BotResumeConversationIntroduction(BotConstants.BotName).GetCardAttachment();
         await turnContext.SendActivityAsync(MessageFactory.Attachment(introCardAttachment), cancellationToken);
-
-
     }
 }

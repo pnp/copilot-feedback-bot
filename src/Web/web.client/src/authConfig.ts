@@ -1,7 +1,9 @@
+import { readConfigVal } from "./utils/configReader";
+
 export const msalConfig = {
   auth: {
-    clientId: String(import.meta.env.VITE_MSAL_CLIENT_ID),
-    authority: String(import.meta.env.VITE_MSAL_AUTHORITY),
+    clientId: readConfigVal("MSAL_CLIENT_ID"),
+    authority: readConfigVal("MSAL_AUTHORITY"),
   },
   cache: {
     cacheLocation: "sessionStorage", // This configures where your cache will be stored
@@ -10,10 +12,10 @@ export const msalConfig = {
 };
 
 export const loginRequest = {
-  scopes: [String(import.meta.env.VITE_MSAL_SCOPES)]
+  scopes: [readConfigVal("MSAL_SCOPES")]
 };
 
 export const teamsAppConfig = {
-  startLoginPageUrl: String(import.meta.env.VITE_TEAMSFX_START_LOGIN_PAGE_URL),
-  apiEndpoint: String(import.meta.env.VITE_API_ENDPOINT),
+  startLoginPageUrl: readConfigVal("TEAMSFX_START_LOGIN_PAGE_URL"),
+  apiEndpoint: readConfigVal("API_ENDPOINT"),
 }

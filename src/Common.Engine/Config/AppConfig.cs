@@ -24,9 +24,6 @@ public class AppConfig : PropertyBoundConfig
     [ConfigValue(true)]
     public string TestUPN { get; set; } = null!;
 
-    [ConfigValue(true)]
-    public string WebAppURL { get; set; } = null!;
-
     [ConfigSection()]
     public AppConnectionStrings ConnectionStrings { get; set; } = null!;
 }
