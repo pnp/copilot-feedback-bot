@@ -1,0 +1,261 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "sql_server_name": {
+            "type": "String"
+        },
+        "sql_database_name": {
+            "type": "String"
+        },
+        "sql_server_admin_login": {
+            "type": "String"
+        },
+        "sql_server_admin_login_password": {
+            "type": "SecureString"
+        },
+        "redis_account_name": {
+            "type": "String"
+        },
+        "servicebus_namespace_name": {
+            "type": "String"
+        },
+        "acr_name": {
+            "type": "String"
+        },
+        "storage_account_name": {
+            "type": "String"
+        },
+        "location": {
+            "type": "string"
+        },
+        "workspace_analytics_name": {
+            "type": "String",
+            "defaultValue": "CopilotFeedbackBotAnalytics"
+        }
+    },
+    
+    "resources": [
+        {
+            "type": "Microsoft.Sql/servers",
+            "apiVersion": "2023-08-01-preview",
+            "name": "[parameters('sql_server_name')]",
+            "location": "[parameters('location')]",
+            "kind": "v12.0",
+            "properties": {
+                "administratorLogin": "[parameters('sql_server_admin_login')]",
+                "administratorLoginPassword": "[parameters('sql_server_admin_login_password')]",
+                "version": "12.0",
+                "minimalTlsVersion": "None",
+                "publicNetworkAccess": "Enabled",
+                "administrators": {},
+                "restrictOutboundNetworkAccess": "Disabled"
+            },
+            "resources": [
+                {
+                    "type": "firewallRules",
+                    "apiVersion": "2021-11-01",
+                    "name": "AllowAllWindowsAzureIps",
+                    "location": "[parameters('location')]",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Sql/servers', parameters('sql_server_name'))]"
+                    ],
+                    "properties": {
+                        "endIpAddress": "0.0.0.0",
+                        "startIpAddress": "0.0.0.0"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "Microsoft.Sql/servers/databases",
+            "apiVersion": "2023-08-01-preview",
+            "name": "[concat(parameters('sql_server_name'), '/', parameters('sql_database_name'))]",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', parameters('sql_server_name'))]"
+            ],
+            "sku": {
+                "name": "Basic",
+                "tier": "Basic",
+                "capacity": 5
+            },
+            "kind": "v12.0,user",
+            "properties": {
+                "collation": "SQL_Latin1_General_CP1_CI_AS",
+                "maxSizeBytes": 2147483648,
+                "catalogCollation": "SQL_Latin1_General_CP1_CI_AS",
+                "zoneRedundant": false,
+                "readScale": "Disabled",
+                "requestedBackupStorageRedundancy": "Local",
+                "isLedgerOn": false,
+                "availabilityZone": "NoPreference"
+            }
+        },
+
+        {
+            "name": "[parameters('redis_account_name')]",
+            "type": "Microsoft.Cache/redis",
+            "apiVersion": "2024-04-01-preview",
+            "location": "[parameters('location')]",
+            "dependsOn": [],
+            "properties": {
+                "sku": {
+                    "name": "Basic",
+                    "family": "C",
+                    "capacity": 0
+                },
+                "redisConfiguration": {
+                    "aad-enabled": "true"
+                },
+                "enableNonSslPort": false,
+                "redisVersion": "6",
+                "disableAccessKeyAuthentication": false
+            },
+            "tags": {}
+        },
+
+        {
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "2023-05-01",
+            "name": "[parameters('storage_account_name')]",
+            "location": "[parameters('location')]",
+            "sku": {
+                "name": "Standard_LRS",
+                "tier": "Standard"
+            },
+            "kind": "StorageV2",
+            "properties": {
+                "dnsEndpointType": "Standard",
+                "defaultToOAuthAuthentication": false,
+                "publicNetworkAccess": "Enabled",
+                "allowCrossTenantReplication": false,
+                "minimumTlsVersion": "TLS1_2",
+                "allowBlobPublicAccess": false,
+                "allowSharedKeyAccess": true,
+                "networkAcls": {
+                    "bypass": "AzureServices",
+                    "virtualNetworkRules": [],
+                    "ipRules": [],
+                    "defaultAction": "Allow"
+                },
+                "supportsHttpsTrafficOnly": true,
+                "encryption": {
+                    "requireInfrastructureEncryption": false,
+                    "services": {
+                        "file": {
+                            "keyType": "Account",
+                            "enabled": true
+                        },
+                        "blob": {
+                            "keyType": "Account",
+                            "enabled": true
+                        }
+                    },
+                    "keySource": "Microsoft.Storage"
+                },
+                "accessTier": "Hot"
+            }
+        },
+
+        {
+            "name": "[parameters('acr_name')]",
+            "type": "Microsoft.ContainerRegistry/registries",
+            "location": "[parameters('location')]",
+            "apiVersion": "2022-02-01-preview",
+            "sku": {
+                "name": "Basic"
+            },
+            "dependsOn": [],
+            "properties": {
+                "adminUserEnabled": true,
+                "publicNetworkAccess": "Enabled",
+                "anonymousPullEnabled": false,
+                "zoneRedundancy": "Disabled"
+            }
+        },
+
+
+        {
+            "apiVersion": "2020-02-02-preview",
+            "name": "[parameters('workspace_analytics_name')]",
+            "type": "microsoft.insights/components",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('workspace_analytics_name'))]"
+
+            ],
+            "properties": {
+                "ApplicationId": "[parameters('workspace_analytics_name')]",
+                "WorkspaceResourceId": "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('workspace_analytics_name'))]"
+            }
+        },
+        {
+            "type": "Microsoft.OperationalInsights/workspaces",
+            "apiVersion": "2023-09-01",
+            "name": "[parameters('workspace_analytics_name')]",
+            "location": "[parameters('location')]",
+            "properties": {}
+        },
+
+
+
+        {
+            "type": "Microsoft.ServiceBus/namespaces",
+            "apiVersion": "2023-01-01-preview",
+            "name": "[parameters('servicebus_namespace_name')]",
+            "location": "[parameters('location')]",
+            "sku": {
+                "name": "Basic",
+                "tier": "Basic"
+            },
+            "properties": {
+                "geoDataReplication": {
+                    "maxReplicationLagDurationInSeconds": 0,
+                    "locations": [
+                        {
+                            "locationName": "[parameters('location')]",
+                            "roleType": "Primary"
+                        }
+                    ]
+                },
+                "premiumMessagingPartitions": 0,
+                "minimumTlsVersion": "1.2",
+                "publicNetworkAccess": "Enabled",
+                "disableLocalAuth": false,
+                "zoneRedundant": false
+            }
+        },
+        {
+            "type": "Microsoft.ServiceBus/namespaces/authorizationrules",
+            "apiVersion": "2023-01-01-preview",
+            "name": "[concat(parameters('servicebus_namespace_name'), '/ListenAndSend')]",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ServiceBus/namespaces', parameters('servicebus_namespace_name'))]"
+            ],
+            "properties": {
+                "rights": [
+                    "Listen",
+                    "Send"
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.ServiceBus/namespaces/networkrulesets",
+            "apiVersion": "2023-01-01-preview",
+            "name": "[concat(parameters('servicebus_namespace_name'), '/default')]",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ServiceBus/namespaces', parameters('servicebus_namespace_name'))]"
+            ],
+            "properties": {
+                "publicNetworkAccess": "Enabled",
+                "defaultAction": "Allow",
+                "virtualNetworkRules": [],
+                "ipRules": [],
+                "trustedServiceAccessEnabled": false
+            }
+        }
+    ]
+}

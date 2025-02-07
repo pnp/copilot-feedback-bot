@@ -20,11 +20,6 @@ You need Teams admin rights and rights to assign sensitive privileges for this s
 3. Add a scope for users/admins - "access".
 4. Copy the full scope name for the ARM template parameters 'api_scope' value - "api://contosobot.azurewebsites.net/5023a8dc-8448-4f41-b34c-131ee03def2f/access"
 
-## Build Docker Image
-* Copy ``src\docker-compose.override - template.yml`` to ``src\docker-compose.override.yml``. Fill out fields. 
-* Build image with ``docker-compose build``.
-* Push to ACR.
-* ...tbd... 
 
 ### Deploy User Teams App
 Next, create a Teams app from the template:
@@ -34,7 +29,7 @@ Next, create a Teams app from the template:
 7. Deploy that zip file to your apps catalog in Teams admin.
 8. Once deployed, copy the "App ID" generated. We'll need that ID for bot configuration so the bot can self-install to users that don't have it yet, and then send proactive messages.
 
-## PowerShell Setup for Cloud Components
+## PowerShell Setup for Cloud Components (Backend)
 There is a script to deploy all the Azure components and configure them. Recommended you use PowerShell 7 or above. 
 
 1. Install Az PowerShell - https://learn.microsoft.com/en-us/powershell/azure/install-azure-powershell
@@ -46,6 +41,21 @@ There is a script to deploy all the Azure components and configure them. Recomme
 5. In the project root folder, run: ```deploy/InstallToAzure.ps1```
 6. Installation will take upto 45 mins if not run before.
 7. You can run multiple times; if a resources is already created, it'll be skipped. 
+
+
+## Build Docker Image
+To deploy the bot for production, we use docker to build a new bot image with the ASP.Net + JavaScript application in a single image.
+* Copy ``src\docker-compose.override - template.yml`` to ``src\docker-compose.override.yml``.
+* Fill out fields in override file. You'll need your Azure PaaS resource details + the bot app registration configuration. 
+* Build image with ``docker-compose build``.
+
+## Deploy Docker Images
+* Push image to your created/existing ACR.
+* ...tbd... 
+
+## PowerShell Setup for Cloud Components (Compute)
+Now with the backend created, the docker images pushed to an ACR, we can deploy the compute components in Azure App Services.
+...tbd...
 
 ## Manual Setup - Create Azure Resources
 You can deploy the ARM template manually:
