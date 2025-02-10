@@ -61,8 +61,4 @@
 		<ProjectReference Include="..\..\Common.Engine\Common.Engine.csproj" />
 	</ItemGroup>
 
-	<ItemGroup>
-	  <Folder Include="wwwroot\" />
-	</ItemGroup>
-
 </Project>

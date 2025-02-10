@@ -121,7 +121,9 @@ export const AuthContainer: React.FC<PropsWithChildren<AuthContainerProps>> = (p
 
     return (
         <>
-            {error ? <div>API test error: {error}</div> : null}
+            {error ? 
+                <div>API test error: {error}. Please check authentication configuration, server-side and JavaScript.</div> 
+            : null}
 
             {loading ? <div>Checking back-end API connectivity...</div> :
                 <>

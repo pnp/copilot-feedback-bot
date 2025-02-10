@@ -25,7 +25,7 @@ export function LoginPopupMSAL() {
 
   return (
     <div>
-      <h1>Sign In</h1>
+      <h1>Sign In to Entra ID</h1>
       {accounts.length > 0 ?
         <>
           <p>Currently signed in as '{accounts[0].username}'...</p>

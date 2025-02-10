@@ -26,6 +26,8 @@ services:
     depends_on:
         - sql
         - azurite
+
+# If you want to run docker locally, include the following services for testing
   sql:
     image: mcr.microsoft.com/mssql/server:2022-latest
     environment: 
@@ -34,6 +36,7 @@ services:
     ports: 
       - "1433:1433" 
     container_name: sql
+    # Connection string will be: sql;Database=CopilotDev;User Id=sa;Password=DevStrong@Passw0rd;Trusted_Connection=False;TrustServerCertificate=True;
   azurite:
     image: mcr.microsoft.com/azure-storage/azurite
     container_name: azurite
@@ -41,3 +44,11 @@ services:
       - "10000:10000"
       - "10001:10001"
       - "10002:10002"
+    # Connection string will be: http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://azurite:10000/devstoreaccount1;QueueEndpoint=http://azurite:10001/devstoreaccount1;TableEndpoint=http://azurite:10002/devstoreaccount1;
+  redis:
+    image: redis:latest
+    container_name: redis-dev
+    ports:
+      - "6379:6379"
+    command: ["redis-server", "--appendonly", "yes"]
+    # Connection string will be: redis://redis:6379
