@@ -2,14 +2,8 @@
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "dockerRegistryUrl": {
+        "acr_name": {
             "type": "string"
-        },
-        "dockerRegistryUsername": {
-            "type": "string"
-        },
-        "dockerRegistryPassword": {
-            "type": "securestring"
         },
         "dockerRegistryStartupCommand": {
             "type": "string"
@@ -80,7 +74,9 @@
         "apiScope": "[concat('api://', parameters('app_service_name'), '.azurewebsites.net', '/', parameters('service_account_client_id'), '/access')]",
         "sqlConnectionString": "[concat('Server=tcp:', parameters('sql_server_name'), '.database.windows.net,1433;Initial Catalog=', parameters('sql_database_name'), ';Persist Security Info=False;User ID=', parameters('sql_server_admin_login'), ';Password=', parameters('sql_server_admin_login_password'), ';MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;')]"
     },
+    
     "resources": [
+
         {
             "type": "Microsoft.Web/serverfarms",
             "apiVersion": "2023-12-01",
@@ -121,24 +117,6 @@
                 "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('app_service_plan_name'))]",
                 "name": "[parameters('app_service_name')]",
                 "siteConfig": {
-                    "appSettings": [
-                        {
-                            "name": "DOCKER_REGISTRY_SERVER_URL",
-                            "value": "[parameters('dockerRegistryUrl')]"
-                        },
-                        {
-                            "name": "DOCKER_REGISTRY_SERVER_USERNAME",
-                            "value": "[parameters('dockerRegistryUsername')]"
-                        },
-                        {
-                            "name": "DOCKER_REGISTRY_SERVER_PASSWORD",
-                            "value": "[parameters('dockerRegistryPassword')]"
-                        },
-                        {
-                            "name": "WEBSITES_ENABLE_APP_SERVICE_STORAGE",
-                            "value": "false"
-                        }
-                    ],
                     "linuxFxVersion": "[parameters('imageWebServer')]",
                     "appCommandLine": "[parameters('dockerRegistryStartupCommand')]",
                     "alwaysOn": true,
@@ -157,6 +135,10 @@
                         "[resourceId('Microsoft.Web/sites', parameters('app_service_name'))]"
                     ],
                     "properties": {
+                        "DOCKER_REGISTRY_SERVER_URL": "[concat('https://', parameters('acr_name'), '.azurecr.io')]",
+                        "DOCKER_REGISTRY_SERVER_USERNAME": "[listCredentials(resourceId('Microsoft.ContainerRegistry/registries', parameters('acr_name')), '2019-05-01').username]",
+                        "DOCKER_REGISTRY_SERVER_PASSWORD": "[listCredentials(resourceId('Microsoft.ContainerRegistry/registries', parameters('acr_name')), '2019-05-01').passwords[0].value]",
+                        "WEBSITES_ENABLE_APP_SERVICE_STORAGE" : "false",   
                         "SITE_ROLE": "app",
                         "AppCatalogTeamAppId": "[parameters('app_catalog_team_app_id')]",
                         "AuthConfig__ClientId": "[parameters('service_account_client_id')]",
@@ -232,24 +214,6 @@
             "tags": {},
             "kind": "functionapp,linux",
             "properties": {
-                "appSettings": [
-                    {
-                        "name": "DOCKER_REGISTRY_SERVER_URL",
-                        "value": "[parameters('dockerRegistryUrl')]"
-                    },
-                    {
-                        "name": "DOCKER_REGISTRY_SERVER_USERNAME",
-                        "value": "[parameters('dockerRegistryUsername')]"
-                    },
-                    {
-                        "name": "DOCKER_REGISTRY_SERVER_PASSWORD",
-                        "value": "[parameters('dockerRegistryPassword')]"
-                    },
-                    {
-                        "name": "WEBSITES_ENABLE_APP_SERVICE_STORAGE",
-                        "value": "false"
-                    }
-                ],
                 "linuxFxVersion": "[parameters('imageFunctions')]",
                 "appCommandLine": "[parameters('dockerRegistryStartupCommand')]",
 
@@ -293,6 +257,10 @@
                         "[resourceId('Microsoft.Web/sites', parameters('function_app_service_name'))]"
                     ],
                     "properties": {
+                        "DOCKER_REGISTRY_SERVER_URL": "[concat('https://', parameters('acr_name'), '.azurecr.io')]",
+                        "DOCKER_REGISTRY_SERVER_USERNAME": "[listCredentials(resourceId('Microsoft.ContainerRegistry/registries', parameters('acr_name')), '2019-05-01').username]",
+                        "DOCKER_REGISTRY_SERVER_PASSWORD": "[listCredentials(resourceId('Microsoft.ContainerRegistry/registries', parameters('acr_name')), '2019-05-01').passwords[0].value]",
+                        "WEBSITES_ENABLE_APP_SERVICE_STORAGE" : "false",                
                         "SITE_ROLE": "function",
                         "PROJECT": "src/Functions/Functions.csproj",
                         "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",

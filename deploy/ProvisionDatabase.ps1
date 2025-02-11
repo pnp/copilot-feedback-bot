@@ -14,24 +14,26 @@ function Get-ScriptDirectory {
 	Split-Path $Invocation.MyCommand.Path
 }
 
-function Get-ArmTemplateValue {
-	param (
-		[parameter(mandatory = $true)] $config,
-		[parameter(mandatory = $true)] $parameterName
-	)
 
-	if ($null -eq $config) {
-		WriteE -message "Error: Configuration object is null." 
-		return
-	}
-	if ($null -eq $config.ARMParametersFileAppServices) {
-		WriteE "Error: ARMParametersFileAppServices value is null."
-		return
-	}
-
-	$parametersContent = Get-Content ($scriptPath + "\" + $config.ARMParametersFileAppServices) -Raw -ErrorAction Stop | ConvertFrom-Json
-
-	return $parametersContent.parameters.$parameterName.value
+function Get-AppServiceNameArmTemplateValue {
+ param ( [parameter(mandatory = $true)] $config )
+	return Get-ArmTemplateValue $config "app_service_name"
+}
+function Get-SqlServerNameArmTemplateValue {
+	param ( [parameter(mandatory = $true)] $config )
+	return Get-ArmTemplateValue $config "sql_server_name"
+}
+function Get-SqlServerUserNameArmTemplateValue {
+	param ( [parameter(mandatory = $true)] $config )
+	return Get-ArmTemplateValue $config "sql_server_admin_login"
+}
+function Get-SqlServerPasswordArmTemplateValue {
+	param ( [parameter(mandatory = $true)] $config )
+	return Get-ArmTemplateValue $config "sql_server_admin_login_password"
+}
+function Get-SqlDbNameArmTemplateValue {
+	param ( [parameter(mandatory = $true)] $config )
+	return Get-ArmTemplateValue $config "sql_database_name"
 }
 
 # write information
@@ -90,7 +92,7 @@ function ValidateAndInstall ($configFileName) {
 	}
 
 	# Validate ARM params
-	$parameters = Get-Content ($scriptPath + "\" + $config.ARMParametersFileAppServices) -Raw -ErrorAction Stop | ConvertFrom-Json
+	$parameters = Get-Content ($scriptPath + "\" + $config.ARMParametersFileBackend) -Raw -ErrorAction Stop | ConvertFrom-Json
 	if ($null -eq $parameters) {
 		WriteE -message "Error: ARM parameters file not found or valid JSon." 
 		return
@@ -127,13 +129,14 @@ function ValidateAndInstall ($configFileName) {
 
 	$solutionDeploySuccess = InstallAzComponents($config)
 	if (-not $solutionDeploySuccess) {
-		WriteE -message "App services installation failed."
+		WriteE -message "Solution installation failed."
 	}
 	else {
 		
-		WriteS -message "App services install script finished. Next steps:"
+		WriteS -message "Solution back-end install script finished. Next steps:"
 		WriteS -message "1. Check for any errors above."
-		WriteS -message "2. Provision database. Run 'ProvisionDatabase.ps1' script."
+		WriteS -message "2. Build and publish docker image."
+		WriteS -message "3. Deploy app service using published docker image."
 	}
 }
 
@@ -142,41 +145,23 @@ function InstallAzComponents {
 		[Parameter(Mandatory = $true)] $config
 	)
 	
-	# Deploy the ARM template
-	$deploySuccess = DeployARMTemplate $config
-	if (-not $deploySuccess) {  
-		WriteE -message "Deployment failed. Please check the logs above for more information and try again."
-		return $false
+	$firewallConfigured = AddClientPublicIpToSqlFirewall $config
+	TriggerAppServiceWebJob $config (Get-AppServiceNameArmTemplateValue $config)
+	
+	# Wait for the webjob to finish initialising
+	WriteI -message "Waiting for the webjob to finish initialising SQL database..."
+	Start-Sleep -Seconds 30
+	
+	# Make sure we have at least one site to filter, otherwise webjob won't run
+	if ($firewallConfigured -eq $true) {
+		# Add the URL filters to the database
+		AddUrlFiltersToDB $config
+
+		# Trigger the webjob again now we have the filters so it'll start processing
+		TriggerAppServiceWebJob $config (Get-AppServiceNameArmTemplateValue $config)
 	}
 	else {
-		WriteS -message "ARM template deployment succeeded."
-		return $true
-	}
-}
-
-
-function DeployARMTemplate {
-	param (
-		[Parameter(Mandatory = $true)] $config
-	)
-
-	# Deploy the ARM template
-	WriteI -message "Deploying App Service ARM template..."
-	$templateLocation = "$scriptPath\ARM\template-appservices.json"
-	$paramsLocation = $scriptPath + "\" + $config.ARMParametersFileAppServices
-
-	$armDeploy = New-AzResourceGroupDeployment -ResourceGroupName $config.ResourceGroupName -TemplateFile $templateLocation -TemplateParameterFile $paramsLocation -Name "FeedbackBotAppServicesDeployment" -Verbose
-
-	if ($null -eq $armDeploy) {
-		Throw "Error: ARM template deployment fataly failed to resource group '$($config.ResourceGroupName)'. Check previous errors." 
-	}
-	if ($armDeploy.ProvisioningState -eq "Succeeded") {
-		WriteS "ARM template deployment succeeded to resource group '$($config.ResourceGroupName)'." 
-		return $true
-	}
-	else {
-		WriteE -message "ARM template deployment failed. Check messages above to troubleshoot why." 
-		return $false
+		WriteE -message "Error: Unable to add URL filters to the database. Please add manually to table 'import_url_filter'"
 	}
 }
 
@@ -197,8 +182,8 @@ function ValidateConfig {
 		WriteE "Error: ResourceGroupLocation is missing in the configuration file. See 'InstallConfig-template.json' for reference configuration file needed."
 		return $false
 	}
-	if ($null -eq $config.ARMParametersFileAppServices) {
-		WriteE "Error: ARMParametersFileAppServices is missing in the configuration file. See 'InstallConfig-template.json' for reference configuration file needed."
+	if ($null -eq $config.ARMParametersFileBackend) {
+		WriteE "Error: ARMParametersFileBackend is missing in the configuration file. See 'InstallConfig-template.json' for reference configuration file needed."
 		return $false
 	}
 
