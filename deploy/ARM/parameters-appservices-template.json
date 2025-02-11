@@ -1,0 +1,72 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "imageWebServer": {
+            "value": "DOCKER|contoso.azurecr.io/webserver:latest"
+        },
+        "imageFunctions": {
+            "value": "DOCKER|contoso.azurecr.io/functions:latest"
+        },
+        "dockerRegistryUrl": {
+            "value": "https://contoso.azurecr.io"
+        },
+        "dockerRegistryUsername": {
+            "value": ""
+        },
+        "dockerRegistryPassword": {
+            "value": ""
+        },
+        "dockerRegistryStartupCommand": {
+            "value": ""
+        },
+        "service_account_client_id": {
+            "value": ""
+        },
+        "service_account_client_secret": {
+            "value": ""
+        },
+        "tenant_id": {
+            "value": ""
+        },
+        "app_catalog_team_app_id": {
+            "value": ""
+        },
+        "app_service_name": {
+            "value": ""
+        },
+        "app_service_plan_name": {
+            "value": ""
+        },
+        "function_app_service_name": {
+            "value": ""
+        },
+        "app_service_plan_sku": {
+            "value": "Standard"
+        },
+        "app_service_plan_skuCode": {
+            "value": "S1"
+        },
+        "sql_server_name": {
+            "value": ""
+        },
+        "sql_database_name": {
+            "value": "DB"
+        },
+        "sql_server_admin_login": {
+            "value": ""
+        },
+        "sql_server_admin_login_password": {
+            "value": ""
+        },
+        "storage_account_name": {
+            "value": ""
+        },
+        "redis_account_name": {
+            "value": ""
+        },
+        "location": {
+            "value": "northeurope"
+        }
+    }
+}

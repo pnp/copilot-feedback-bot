@@ -2,6 +2,18 @@
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
+        "dockerRegistryUrl": {
+            "type": "string"
+        },
+        "dockerRegistryUsername": {
+            "type": "string"
+        },
+        "dockerRegistryPassword": {
+            "type": "securestring"
+        },
+        "dockerRegistryStartupCommand": {
+            "type": "string"
+        },
         "service_account_client_id": {
             "type": "String"
         },
@@ -31,9 +43,6 @@
         "function_app_service_name": {
             "type": "String"
         },
-        "function_app_service_plan_name": {
-            "type": "String"
-        },
         "sql_server_name": {
             "type": "String"
         },
@@ -49,25 +58,17 @@
         "redis_account_name": {
             "type": "String"
         },
-        "servicebus_namespace_name": {
-            "type": "String"
+        "imageWebServer": {
+            "type": "string"
         },
-        "acr_name": {
-            "type": "String"
+        "imageFunctions": {
+            "type": "string"
         },
         "storage_account_name": {
             "type": "String"
         },
         "location": {
             "type": "string"
-        },
-        "git_branch": {
-            "type": "String",
-            "defaultValue": "main"
-        },
-        "git_repo": {
-            "type": "String",
-            "defaultValue": "https://github.com/pnp/copilot-feedback-bot.git"
         },
         "workspace_analytics_name": {
             "type": "String",
@@ -81,128 +82,6 @@
     },
     "resources": [
         {
-            "type": "Microsoft.Sql/servers",
-            "apiVersion": "2023-08-01-preview",
-            "name": "[parameters('sql_server_name')]",
-            "location": "[parameters('location')]",
-            "kind": "v12.0",
-            "properties": {
-                "administratorLogin": "[parameters('sql_server_admin_login')]",
-                "administratorLoginPassword": "[parameters('sql_server_admin_login_password')]",
-                "version": "12.0",
-                "minimalTlsVersion": "None",
-                "publicNetworkAccess": "Enabled",
-                "administrators": {},
-                "restrictOutboundNetworkAccess": "Disabled"
-            },
-            "resources": [
-                {
-                    "type": "firewallRules",
-                    "apiVersion": "2021-11-01",
-                    "name": "AllowAllWindowsAzureIps",
-                    "location": "[parameters('location')]",
-                    "dependsOn": [
-                        "[resourceId('Microsoft.Sql/servers', parameters('sql_server_name'))]"
-                    ],
-                    "properties": {
-                        "endIpAddress": "0.0.0.0",
-                        "startIpAddress": "0.0.0.0"
-                    }
-                }
-            ]
-        },
-        {
-            "type": "Microsoft.Sql/servers/databases",
-            "apiVersion": "2023-08-01-preview",
-            "name": "[concat(parameters('sql_server_name'), '/', parameters('sql_database_name'))]",
-            "location": "[parameters('location')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Sql/servers', parameters('sql_server_name'))]"
-            ],
-            "sku": {
-                "name": "Basic",
-                "tier": "Basic",
-                "capacity": 5
-            },
-            "kind": "v12.0,user",
-            "properties": {
-                "collation": "SQL_Latin1_General_CP1_CI_AS",
-                "maxSizeBytes": 2147483648,
-                "catalogCollation": "SQL_Latin1_General_CP1_CI_AS",
-                "zoneRedundant": false,
-                "readScale": "Disabled",
-                "requestedBackupStorageRedundancy": "Local",
-                "isLedgerOn": false,
-                "availabilityZone": "NoPreference"
-            }
-        },
-
-        {
-            "name": "[parameters('redis_account_name')]",
-            "type": "Microsoft.Cache/redis",
-            "apiVersion": "2024-04-01-preview",
-            "location": "[parameters('location')]",
-            "dependsOn": [],
-            "properties": {
-                "sku": {
-                    "name": "Basic",
-                    "family": "C",
-                    "capacity": 0
-                },
-                "redisConfiguration": {
-                    "aad-enabled": "true"
-                },
-                "enableNonSslPort": false,
-                "redisVersion": "6",
-                "disableAccessKeyAuthentication": false
-            },
-            "tags": {}
-        },
-
-        {
-            "type": "Microsoft.Storage/storageAccounts",
-            "apiVersion": "2023-05-01",
-            "name": "[parameters('storage_account_name')]",
-            "location": "[parameters('location')]",
-            "sku": {
-                "name": "Standard_LRS",
-                "tier": "Standard"
-            },
-            "kind": "StorageV2",
-            "properties": {
-                "dnsEndpointType": "Standard",
-                "defaultToOAuthAuthentication": false,
-                "publicNetworkAccess": "Enabled",
-                "allowCrossTenantReplication": false,
-                "minimumTlsVersion": "TLS1_2",
-                "allowBlobPublicAccess": false,
-                "allowSharedKeyAccess": true,
-                "networkAcls": {
-                    "bypass": "AzureServices",
-                    "virtualNetworkRules": [],
-                    "ipRules": [],
-                    "defaultAction": "Allow"
-                },
-                "supportsHttpsTrafficOnly": true,
-                "encryption": {
-                    "requireInfrastructureEncryption": false,
-                    "services": {
-                        "file": {
-                            "keyType": "Account",
-                            "enabled": true
-                        },
-                        "blob": {
-                            "keyType": "Account",
-                            "enabled": true
-                        }
-                    },
-                    "keySource": "Microsoft.Storage"
-                },
-                "accessTier": "Hot"
-            }
-        },
-
-        {
             "type": "Microsoft.Web/serverfarms",
             "apiVersion": "2023-12-01",
             "name": "[parameters('app_service_plan_name')]",
@@ -212,13 +91,13 @@
                 "Name": "[parameters('app_service_plan_skuCode')]",
                 "capacity": 1
             },
-            "kind": "app",
+            "kind": "linux",
             "properties": {
                 "perSiteScaling": false,
                 "elasticScaleEnabled": false,
                 "maximumElasticWorkerCount": 1,
                 "isSpot": false,
-                "reserved": false,
+                "reserved": true,
                 "isXenon": false,
                 "hyperV": false,
                 "targetWorkerCount": 0,
@@ -232,8 +111,7 @@
             "name": "[parameters('app_service_name')]",
             "location": "[parameters('location')]",
             "dependsOn": [
-                "[resourceId('Microsoft.Web/serverfarms', parameters('app_service_plan_name'))]",
-                "[resourceId('Microsoft.ContainerRegistry/registries', parameters('acr_name'))]"
+                "[resourceId('Microsoft.Web/serverfarms', parameters('app_service_plan_name'))]"
             ],
             "kind": "app",
             "identity": {
@@ -243,18 +121,30 @@
                 "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('app_service_plan_name'))]",
                 "name": "[parameters('app_service_name')]",
                 "siteConfig": {
-                    "alwaysOn": true,
-                    "ftpsState": "FtpsOnly",
-                    "netFrameworkVersion": "v8.0",
-                    "metadata": [
+                    "appSettings": [
                         {
-                            "name": "CURRENT_STACK",
-                            "value": "dotnet"
+                            "name": "DOCKER_REGISTRY_SERVER_URL",
+                            "value": "[parameters('dockerRegistryUrl')]"
+                        },
+                        {
+                            "name": "DOCKER_REGISTRY_SERVER_USERNAME",
+                            "value": "[parameters('dockerRegistryUsername')]"
+                        },
+                        {
+                            "name": "DOCKER_REGISTRY_SERVER_PASSWORD",
+                            "value": "[parameters('dockerRegistryPassword')]"
+                        },
+                        {
+                            "name": "WEBSITES_ENABLE_APP_SERVICE_STORAGE",
+                            "value": "false"
                         }
-                    ]
+                    ],
+                    "linuxFxVersion": "[parameters('imageWebServer')]",
+                    "appCommandLine": "[parameters('dockerRegistryStartupCommand')]",
+                    "alwaysOn": true,
+                    "ftpsState": "FtpsOnly"
                 },
                 "clientAffinityEnabled": true,
-                "virtualNetworkSubnetId": null,
                 "httpsOnly": true,
                 "publicNetworkAccess": "Enabled"
             },
@@ -269,10 +159,10 @@
                     "properties": {
                         "SITE_ROLE": "app",
                         "AppCatalogTeamAppId": "[parameters('app_catalog_team_app_id')]",
-                        "AuthConfig:ClientId": "[parameters('service_account_client_id')]",
-                        "AuthConfig:ClientSecret": "[parameters('service_account_client_secret')]",
-                        "AuthConfig:TenantId": "[parameters('tenant_id')]",
-                        "AuthConfig:ApiScope": "[variables('apiScope')]",
+                        "AuthConfig__ClientId": "[parameters('service_account_client_id')]",
+                        "AuthConfig__ClientSecret": "[parameters('service_account_client_secret')]",
+                        "AuthConfig__TenantId": "[parameters('tenant_id')]",
+                        "AuthConfig__ApiScope": "[variables('apiScope')]",
                         "MicrosoftAppId": "[parameters('service_account_client_id')]",
                         "MicrosoftAppPassword": "[parameters('service_account_client_secret')]",
                         "ApplicationInsightsAgent_EXTENSION_VERSION": "~2",
@@ -304,39 +194,8 @@
                             "type": "SQLAzure"
                         }
                     }
-                },
-                {
-                    "apiVersion": "2022-09-01",
-                    "name": "[concat(parameters('app_service_name'), '/web')]",
-                    "type": "Microsoft.Web/sites/sourcecontrols",
-                    "dependsOn": [
-                        "[resourceId('Microsoft.Web/sites', parameters('app_service_name'))]",
-                        "[resourceId('Microsoft.Web/sites/config', parameters('app_service_name'), 'appsettings')]"
-                    ],
-                    "properties": {
-                        "repoUrl": "[parameters('git_repo')]",
-                        "branch": "[parameters('git_branch')]",
-                        "IsManualIntegration": true
-                    }
                 }
             ]
-        },
-
-        {
-            "name": "[parameters('acr_name')]",
-            "type": "Microsoft.ContainerRegistry/registries",
-            "location": "[parameters('location')]",
-            "apiVersion": "2022-02-01-preview",
-            "sku": {
-                "name": "Basic"
-            },
-            "dependsOn": [],
-            "properties": {
-                "adminUserEnabled": true,
-                "publicNetworkAccess": "Enabled",
-                "anonymousPullEnabled": false,
-                "zoneRedundancy": "Disabled"
-            }
         },
 
 
@@ -362,46 +221,41 @@
             "properties": {}
         },
 
-
-        {
-            "type": "Microsoft.Web/serverfarms",
-            "apiVersion": "2023-12-01",
-            "name": "[parameters('function_app_service_plan_name')]",
-            "location": "[parameters('location')]",
-            "sku": {
-                "name": "Y1",
-                "tier": "Dynamic",
-                "size": "Y1",
-                "family": "Y"
-            },
-            "kind": "functionapp",
-            "properties": {
-                "perSiteScaling": false,
-                "elasticScaleEnabled": false,
-                "maximumElasticWorkerCount": 1,
-                "isSpot": false,
-                "reserved": false,
-                "isXenon": false,
-                "hyperV": false,
-                "targetWorkerCount": 0,
-                "targetWorkerSizeId": 0,
-                "zoneRedundant": false
-            }
-        },
         {
             "type": "Microsoft.Web/sites",
             "apiVersion": "2023-12-01",
             "name": "[parameters('function_app_service_name')]",
             "location": "[parameters('location')]",
             "dependsOn": [
-                "[resourceId('Microsoft.Web/serverfarms', parameters('function_app_service_plan_name'))]"
+                "[resourceId('Microsoft.Web/serverfarms', parameters('app_service_plan_name'))]"
             ],
             "tags": {},
-            "kind": "functionapp",
+            "kind": "functionapp,linux",
             "properties": {
+                "appSettings": [
+                    {
+                        "name": "DOCKER_REGISTRY_SERVER_URL",
+                        "value": "[parameters('dockerRegistryUrl')]"
+                    },
+                    {
+                        "name": "DOCKER_REGISTRY_SERVER_USERNAME",
+                        "value": "[parameters('dockerRegistryUsername')]"
+                    },
+                    {
+                        "name": "DOCKER_REGISTRY_SERVER_PASSWORD",
+                        "value": "[parameters('dockerRegistryPassword')]"
+                    },
+                    {
+                        "name": "WEBSITES_ENABLE_APP_SERVICE_STORAGE",
+                        "value": "false"
+                    }
+                ],
+                "linuxFxVersion": "[parameters('imageFunctions')]",
+                "appCommandLine": "[parameters('dockerRegistryStartupCommand')]",
+
                 "enabled": true,
                 "hostNameSslStates": [],
-                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('function_app_service_plan_name'))]",
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('app_service_plan_name'))]",
                 "reserved": false,
                 "isXenon": false,
                 "hyperV": false,
@@ -436,8 +290,7 @@
                     "name": "appsettings",
                     "type": "config",
                     "dependsOn": [
-                        "[resourceId('Microsoft.Web/sites', parameters('function_app_service_name'))]",
-                        "[resourceId('Microsoft.Storage/storageAccounts', parameters('storage_account_name'))]"
+                        "[resourceId('Microsoft.Web/sites', parameters('function_app_service_name'))]"
                     ],
                     "properties": {
                         "SITE_ROLE": "function",
@@ -445,10 +298,10 @@
                         "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
                         "FUNCTIONS_EXTENSION_VERSION": "~4",
                         "AppCatalogTeamAppId": "[parameters('app_catalog_team_app_id')]",
-                        "AuthConfig:ClientId": "[parameters('service_account_client_id')]",
-                        "AuthConfig:ApiScope": "[variables('apiScope')]",
-                        "AuthConfig:ClientSecret": "[parameters('service_account_client_secret')]",
-                        "AuthConfig:TenantId": "[parameters('tenant_id')]",
+                        "AuthConfig__ClientId": "[parameters('service_account_client_id')]",
+                        "AuthConfig__ApiScope": "[variables('apiScope')]",
+                        "AuthConfig__ClientSecret": "[parameters('service_account_client_secret')]",
+                        "AuthConfig__TenantId": "[parameters('tenant_id')]",
                         "MicrosoftAppId": "[parameters('service_account_client_id')]",
                         "MicrosoftAppPassword": "[parameters('service_account_client_secret')]",
                         "WebRoot": "[variables('webRoot')]",
@@ -480,81 +333,8 @@
                             "type": "SQLAzure"
                         }
                     }
-                },
-                {
-                    "apiVersion": "2016-08-01",
-                    "name": "web",
-                    "type": "sourcecontrols",
-                    "dependsOn": [
-                        "[resourceId('Microsoft.Web/sites', parameters('function_app_service_name'))]",
-                        "[resourceId('Microsoft.Web/sites/config', parameters('function_app_service_name'), 'appsettings')]"
-                    ],
-                    "properties": {
-                        "repoUrl": "[parameters('git_repo')]",
-                        "branch": "[parameters('git_branch')]",
-                        "IsManualIntegration": true
-                    }
                 }
             ]
-        },
-
-
-        {
-            "type": "Microsoft.ServiceBus/namespaces",
-            "apiVersion": "2023-01-01-preview",
-            "name": "[parameters('servicebus_namespace_name')]",
-            "location": "[parameters('location')]",
-            "sku": {
-                "name": "Basic",
-                "tier": "Basic"
-            },
-            "properties": {
-                "geoDataReplication": {
-                    "maxReplicationLagDurationInSeconds": 0,
-                    "locations": [
-                        {
-                            "locationName": "[parameters('location')]",
-                            "roleType": "Primary"
-                        }
-                    ]
-                },
-                "premiumMessagingPartitions": 0,
-                "minimumTlsVersion": "1.2",
-                "publicNetworkAccess": "Enabled",
-                "disableLocalAuth": false,
-                "zoneRedundant": false
-            }
-        },
-        {
-            "type": "Microsoft.ServiceBus/namespaces/authorizationrules",
-            "apiVersion": "2023-01-01-preview",
-            "name": "[concat(parameters('servicebus_namespace_name'), '/ListenAndSend')]",
-            "location": "[parameters('location')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.ServiceBus/namespaces', parameters('servicebus_namespace_name'))]"
-            ],
-            "properties": {
-                "rights": [
-                    "Listen",
-                    "Send"
-                ]
-            }
-        },
-        {
-            "type": "Microsoft.ServiceBus/namespaces/networkrulesets",
-            "apiVersion": "2023-01-01-preview",
-            "name": "[concat(parameters('servicebus_namespace_name'), '/default')]",
-            "location": "[parameters('location')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.ServiceBus/namespaces', parameters('servicebus_namespace_name'))]"
-            ],
-            "properties": {
-                "publicNetworkAccess": "Enabled",
-                "defaultAction": "Allow",
-                "virtualNetworkRules": [],
-                "ipRules": [],
-                "trustedServiceAccessEnabled": false
-            }
         }
     ]
 }

@@ -2,50 +2,54 @@
 # Setup Steps
 For this, we assume a decent knowledge of Teams apps deployment, .Net, and Azure PaaS. 
 
-## Create Bot and Deploy Teams Bot App
 Note, that for all these steps you can do them all in PowerShell if you wish. 
 
 You need Teams admin rights and rights to assign sensitive privileges for this setup to work. The bot app is just a bot that interacts with all/any Teams users - there's another Teams app for administering the solution that should be more restrictively installed.
 
-### Create Bot
+## Create Bot
 1. Go to: https://dev.teams.microsoft.com/bots and create a new bot (or alternatively in the Azure Portal, create a new Azure bot - the 1st link doesn't require an Azure subscription).
 2. Create a new client secret for the bot application registration. Note down the client ID & the secret of the bot.
 3. Grant permissions (specified below) and have an admin grant consent.
-
-### Configure App Registration API Access
-1. Configure API access for app registration so the JavaScript app can access the backend.
-2. The application URI needs to be in format: api://[DOMAIN]/5023a8dc-8448-4f41-b34c-131ee03def2f, with port if not standard. Examples
-   1. api://contosobot.azurewebsites.net/5023a8dc-8448-4f41-b34c-131ee03def2f
-   2. api://localhost:5173/c8c85903-7e4a-4314-898b-08d01382e025
-3. Add a scope for users/admins - "access".
-4. Copy the full scope name for the ARM template parameters 'api_scope' value - "api://contosobot.azurewebsites.net/5023a8dc-8448-4f41-b34c-131ee03def2f/access"
-
-
-### Deploy User Teams App
-Next, create a Teams app from the template:
-4. In ``Teams Apps`` root dir, copy file "manifest-template.json" to "manifest.json".
-5. Edit ``manifest.json`` and update all instances of ```<<BOT_APP_ID>>``` with your app registration client ID. 
-6. Make zip-file of the folder with files: ``manifest.json``, ``color.png``, ``outline.png`` only. Make sure zip file has these files in the root.  
-7. Deploy that zip file to your apps catalog in Teams admin.
-8. Once deployed, copy the "App ID" generated. We'll need that ID for bot configuration so the bot can self-install to users that don't have it yet, and then send proactive messages.
 
 ## PowerShell Setup for Cloud Components (Backend)
 There is a script to deploy all the Azure components and configure them. Recommended you use PowerShell 7 or above. 
 
 1. Install Az PowerShell - https://learn.microsoft.com/en-us/powershell/azure/install-azure-powershell
 2. Authenticate with your target Azure subscription with ```Connect-AzAccount```
+
+Now we need to configure some parameters to create the backend, specifically the bot app details and the resource names we want in Azure. 
 3. Copy script config file template ```deploy/InstallConfig-template.json``` to ```deploy/InstallConfig.json```
-   1. Fill out mandatory values and check the others.
-4. Copy ARM parameters file template ```deploy/ARM/parameters-template.json``` to ```deploy/ARM/parameters.json```
-   1. Fill out mandatory values and check the others.
-5. In the project root folder, run: ```deploy/InstallToAzure.ps1```
+   1. Fill out mandatory values and check the others. This file contains where the ARM parameters file is, and some basic Azure subscription/resources config. 
+4. Copy ARM parameters file template ```deploy/ARM/parameters-backend-template.json``` to ```deploy/ARM/parameters-backend.json```
+   1. Fill out mandatory values and check the others. This is to install everything except the App Service. 
+5. In the project root folder, run: ```deploy/InstallBackEnd.ps1```
 6. Installation will take upto 45 mins if not run before.
 7. You can run multiple times; if a resources is already created, it'll be skipped. 
+
+
+## Configure App Registration API Access
+1. Configure API access for app registration so the JavaScript app can access the backend.
+2. The application URI needs to be in format: api://[DOMAIN]/5023a8dc-8448-4f41-b34c-131ee03def2f, with port if not standard. Examples:
+   1. api://contosobot.azurewebsites.net/5023a8dc-8448-4f41-b34c-131ee03def2f
+   2. api://localhost:5173/c8c85903-7e4a-4314-898b-08d01382e025
+   3. This value is needed for the ```AuthConfig__ApiAudience``` configuration.
+3. Add a scope for users/admins - "access".
+4. Copy the full scope name for the ARM template parameters ```api_scope``` value - "api://contosobot.azurewebsites.net/5023a8dc-8448-4f41-b34c-131ee03def2f/access"
+
+## Deploy User Teams App
+Next, create a Teams app from the template to enable the bot in your org:
+4. In ``Teams Apps`` root dir, copy file "manifest-template.json" to "manifest.json".
+5. Edit ``manifest.json`` and update all instances of ```<<BOT_APP_ID>>``` with your app registration client ID. 
+6. Make zip-file of the folder with files: ``manifest.json``, ``color.png``, ``outline.png`` only. Make sure zip file has these files in the root.  
+7. Deploy that zip file to your apps catalog in Teams admin.
+8. Once deployed, copy the "App ID" generated. We'll need that ID for bot configuration so the bot can self-install to users that don't have it yet, and then send proactive messages.
 
 
 ## Build Docker Image
 To deploy the bot for production, we use docker to build a new bot image with the ASP.Net + JavaScript application in a single image.
 * Copy ``src\docker-compose.override - template.yml`` to ``src\docker-compose.override.yml``.
+  * Fill out all the connection info from the 
+  * There are some services in the 
 * Fill out fields in override file. You'll need your Azure PaaS resource details + the bot app registration configuration. 
 * Build image with ``docker-compose build``.
 
@@ -55,7 +59,11 @@ To deploy the bot for production, we use docker to build a new bot image with th
 
 ## PowerShell Setup for Cloud Components (Compute)
 Now with the backend created, the docker images pushed to an ACR, we can deploy the compute components in Azure App Services.
-...tbd...
+
+2. Copy ARM parameters file template ```deploy/ARM/parameters-appservices-template.json``` to ```deploy/ARM/parameters-appservices.json```
+   1. Fill out mandatory values and check the others. This is to install the App Services and Application Insights. 
+3. In the project root folder, run: ```deploy/InstallAppService.ps1```
+
 
 ## Manual Setup - Create Azure Resources
 You can deploy the ARM template manually:
@@ -80,6 +88,9 @@ ConnectionStrings:Redis | Redis connection string, used for caching delta tokens
 ConnectionStrings:ServiceBusRoot | Used for async processing of various things
 ConnectionStrings:SQL | The database connection string.
 ConnectionStrings:Storage | Connection string. Conversation cache and other table storage
+
+_Note_: For Docker/Linux, values with ":" in the configuration should be replaced with double underscore "__" as ":" is not supported for environmental variable names.
+Example: ```ConnectionStrings__SQL``` instead of ```ConnectionStrings:SQL```.
 
 ConnectionStrings go in their own section in App Services (and prefix "ConnectionStrings:" to the name you give there for .Net). 
 

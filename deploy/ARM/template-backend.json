@@ -187,7 +187,8 @@
             ],
             "properties": {
                 "ApplicationId": "[parameters('workspace_analytics_name')]",
-                "WorkspaceResourceId": "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('workspace_analytics_name'))]"
+                "WorkspaceResourceId": "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('workspace_analytics_name'))]",
+                "Application_Type": "web"
             }
         },
         {

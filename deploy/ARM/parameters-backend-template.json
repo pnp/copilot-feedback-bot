@@ -1,0 +1,33 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {    
+        "sql_server_name": {
+            "value": ""
+        },
+        "sql_database_name": {
+            "value": "DB"
+        },
+        "sql_server_admin_login": {
+            "value": "sqladmin"
+        },
+        "sql_server_admin_login_password": {
+            "value": ""
+        },
+        "storage_account_name": {
+            "value": ""
+        },
+        "redis_account_name": {
+            "value": ""
+        },
+        "servicebus_namespace_name": {
+            "value": ""
+        },
+        "acr_name": {
+            "value": ""
+        },
+        "location": {
+            "value": "northeurope"
+        }
+    }
+}

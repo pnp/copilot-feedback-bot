@@ -1,5 +1,6 @@
 {
-  "ARMParametersFile": "ARM\\parameters.json",
+  "ARMParametersFileBackend": "ARM\\parameters-backend.json",
+  "ARMParametersFileAppServices": "ARM\\parameters-appservices.json",
   "ResourceGroupName": "<!-- REPLACE WITH YOUR VALUE -->",
   "ResourceGroupLocation": "westeurope",
   "SubcriptionId": "<!-- REPLACE WITH YOUR VALUE -->",
