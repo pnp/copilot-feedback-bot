@@ -6,7 +6,7 @@ Note, that for all these steps you can do them all in PowerShell if you wish.
 
 You need Teams admin rights and rights to assign sensitive privileges for this setup to work. The bot app is just a bot that interacts with all/any Teams users - there's another Teams app for administering the solution that should be more restrictively installed.
 
-## Create Bot
+## Create Bot with new App ID
 1. Go to: https://dev.teams.microsoft.com/bots and create a new bot (or alternatively in the Azure Portal, create a new Azure bot - the 1st link doesn't require an Azure subscription).
 2. Create a new client secret for the bot application registration. Note down the client ID & the secret of the bot.
 3. Grant permissions (specified below) and have an admin grant consent.
@@ -44,26 +44,37 @@ Next, create a Teams app from the template to enable the bot in your org:
 7. Deploy that zip file to your apps catalog in Teams admin.
 8. Once deployed, copy the "App ID" generated. We'll need that ID for bot configuration so the bot can self-install to users that don't have it yet, and then send proactive messages.
 
-
-## Build Docker Image
-To deploy the bot for production, we use docker to build a new bot image with the ASP.Net + JavaScript application in a single image.
+## Build Docker Images
+To deploy the bot for production, we use docker to build a new bot image with the ASP.Net + JavaScript application in a single image, and the functions app in another image.
 * Copy ``src\docker-compose.override - template.yml`` to ``src\docker-compose.override.yml``.
   * Fill out all the connection info from the 
   * There are some services in the 
 * Fill out fields in override file. You'll need your Azure PaaS resource details + the bot app registration configuration. 
-* Build image with ``docker-compose build``.
+* Build images with ``docker-compose build`` from the ``src`` folder.
+* You will end up with two images:
+   1. copilotbot-functions - Azure functions app image.
+   2. copilotbot-web - this contains the ASP.Net + built JavaScript with your bot registration details compiled in via the docker-compose.override.yml changes you made earlier.
+* Next, we need to push them to your ACR that was created with the backend components. 
 
-## Deploy Docker Images
-* Push image to your created/existing ACR.
-* ...tbd... 
+## Deploy Docker Images to Azure Container Registry
+* Push image to your created Azure Container Registry. First you need to connect to it with:
+```PowerShell
+Connect-AzAccount # You might not need to do this
+Connect-AzContainerRegistry -Name [myregistry]    # Change for your ACR name
+```
+* Tag images for ACR with:
+  * docker tag copilotbot-functions [myregistry].azurecr.io/copilotbot-functions
+  * docker tag copilotbot-web [myregistry].azurecr.io/copilotbot-web
+* Push images with:
+  * docker push [myregistry].azurecr.io/copilotbot-functions
+  * docker push [myregistry].azurecr.io/copilotbot-web
 
 ## PowerShell Setup for Cloud Components (Compute)
-Now with the backend created, the docker images pushed to an ACR, we can deploy the compute components in Azure App Services.
+Now with the backend created and the docker images pushed to an ACR, we can deploy the compute components in Azure App Services.
 
-2. Copy ARM parameters file template ```deploy/ARM/parameters-appservices-template.json``` to ```deploy/ARM/parameters-appservices.json```
+1. Copy ARM parameters file template ```deploy/ARM/parameters-appservices-template.json``` to ```deploy/ARM/parameters-appservices.json```
    1. Fill out mandatory values and check the others. This is to install the App Services and Application Insights. 
-3. In the project root folder, run: ```deploy/InstallAppService.ps1```
-
+2. In the project root folder, run: ```deploy/InstallAppService.ps1```
 
 ## Manual Setup - Create Azure Resources
 You can deploy the ARM template manually:

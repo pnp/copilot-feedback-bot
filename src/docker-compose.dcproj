@@ -7,7 +7,7 @@
     <ProjectGuid>7983a552-db33-4310-bc01-8426c9b8f2c9</ProjectGuid>
     <DockerLaunchAction>LaunchBrowser</DockerLaunchAction>
     <DockerServiceUrl>{Scheme}://localhost:{ServicePort}/swagger</DockerServiceUrl>
-    <DockerServiceName>web.server</DockerServiceName>
+    <DockerServiceName>copilotbot-web</DockerServiceName>
   </PropertyGroup>
   <ItemGroup>
     <None Include=".dockerignore" />

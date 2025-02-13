@@ -71,12 +71,12 @@
     },
     "variables": {
         "webRoot": "[concat('https://', parameters('app_service_name'), '.azurewebsites.net')]",
-        "apiScope": "[concat('api://', parameters('app_service_name'), '.azurewebsites.net', '/', parameters('service_account_client_id'), '/access')]",
+        "apiAudience": "[concat('api://', parameters('app_service_name'), '.azurewebsites.net', '/', parameters('service_account_client_id'))]",
+        "apiScope": "[concat(variables('apiAudience'), '/access')]",
         "sqlConnectionString": "[concat('Server=tcp:', parameters('sql_server_name'), '.database.windows.net,1433;Initial Catalog=', parameters('sql_database_name'), ';Persist Security Info=False;User ID=', parameters('sql_server_admin_login'), ';Password=', parameters('sql_server_admin_login_password'), ';MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;')]"
     },
     
     "resources": [
-
         {
             "type": "Microsoft.Web/serverfarms",
             "apiVersion": "2023-12-01",
@@ -120,6 +120,7 @@
                     "linuxFxVersion": "[parameters('imageWebServer')]",
                     "appCommandLine": "[parameters('dockerRegistryStartupCommand')]",
                     "alwaysOn": true,
+                    "acrUseManagedIdentityCreds": false,
                     "ftpsState": "FtpsOnly"
                 },
                 "clientAffinityEnabled": true,
@@ -127,6 +128,28 @@
                 "publicNetworkAccess": "Enabled"
             },
             "resources": [
+                {
+                    "type": "Microsoft.Web/sites/basicPublishingCredentialsPolicies",
+                    "apiVersion": "2022-09-01",
+                    "name": "[concat(parameters('app_service_name'), '/scm')]",
+                    "properties": {
+                        "allow": false
+                    },
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Web/Sites', parameters('app_service_name'))]"
+                    ]
+                },
+                {
+                    "type": "Microsoft.Web/sites/basicPublishingCredentialsPolicies",
+                    "apiVersion": "2022-09-01",
+                    "name": "[concat(parameters('app_service_name'), '/ftp')]",
+                    "properties": {
+                        "allow": false
+                    },
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Web/Sites', parameters('app_service_name'))]"
+                    ]
+                },
                 {
                     "apiVersion": "2015-08-01",
                     "name": "appsettings",
@@ -145,6 +168,8 @@
                         "AuthConfig__ClientSecret": "[parameters('service_account_client_secret')]",
                         "AuthConfig__TenantId": "[parameters('tenant_id')]",
                         "AuthConfig__ApiScope": "[variables('apiScope')]",
+                        "AuthConfig__Authority": "https://login.microsoftonline.com/organizations",
+                        "AuthConfig__ApiAudience": "[variables('apiAudience')]",
                         "MicrosoftAppId": "[parameters('service_account_client_id')]",
                         "MicrosoftAppPassword": "[parameters('service_account_client_secret')]",
                         "ApplicationInsightsAgent_EXTENSION_VERSION": "~2",
@@ -216,7 +241,6 @@
             "properties": {
                 "linuxFxVersion": "[parameters('imageFunctions')]",
                 "appCommandLine": "[parameters('dockerRegistryStartupCommand')]",
-
                 "enabled": true,
                 "hostNameSslStates": [],
                 "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('app_service_plan_name'))]",
@@ -250,6 +274,28 @@
             },
             "resources": [
                 {
+                    "type": "Microsoft.Web/sites/basicPublishingCredentialsPolicies",
+                    "apiVersion": "2022-09-01",
+                    "name": "[concat(parameters('function_app_service_name'), '/scm')]",
+                    "properties": {
+                        "allow": false
+                    },
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Web/Sites', parameters('function_app_service_name'))]"
+                    ]
+                },
+                {
+                    "type": "Microsoft.Web/sites/basicPublishingCredentialsPolicies",
+                    "apiVersion": "2022-09-01",
+                    "name": "[concat(parameters('function_app_service_name'), '/ftp')]",
+                    "properties": {
+                        "allow": false
+                    },
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Web/Sites', parameters('function_app_service_name'))]"
+                    ]
+                },
+                {
                     "apiVersion": "2015-08-01",
                     "name": "appsettings",
                     "type": "config",
@@ -270,6 +316,8 @@
                         "AuthConfig__ApiScope": "[variables('apiScope')]",
                         "AuthConfig__ClientSecret": "[parameters('service_account_client_secret')]",
                         "AuthConfig__TenantId": "[parameters('tenant_id')]",
+                        "AuthConfig__Authority": "https://login.microsoftonline.com/organizations",
+                        "AuthConfig__ApiAudience": "[variables('apiAudience')]",
                         "MicrosoftAppId": "[parameters('service_account_client_id')]",
                         "MicrosoftAppPassword": "[parameters('service_account_client_secret')]",
                         "WebRoot": "[variables('webRoot')]",

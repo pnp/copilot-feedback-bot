@@ -1,9 +1,14 @@
 services:
 
-  web.server:
-    image: ${DOCKER_REGISTRY-}webserver
+  copilotbot-web:
+    image: copilotbot-web
     build:
       context: .
       dockerfile: Web/Web.Server/Dockerfile
     ports:
-    - "80:80"
+    - "80:8080"
+  copilotbot-functions:
+    image: copilotbot-functions
+    build:
+        context: .
+        dockerfile: Functions/Dockerfile

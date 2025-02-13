@@ -5,10 +5,10 @@
             "value": ""
         },
         "imageWebServer": {
-            "value": "DOCKER|contoso.azurecr.io/webserver:latest"
+            "value": "DOCKER|contoso.azurecr.io/copilotbot-web:latest"
         },
         "imageFunctions": {
-            "value": "DOCKER|contoso.azurecr.io/functions:latest"
+            "value": "DOCKER|contoso.azurecr.io/copilotbot-functions:latest"
         },
         "dockerRegistryStartupCommand": {
             "value": ""

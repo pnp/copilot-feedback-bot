@@ -11,8 +11,8 @@ public class TeamsAppConfig : AppConfig
     public TeamsAppConfig(IConfiguration config) : base(config)
     {
     }
-    [ConfigValue]
-    public string AppCatalogTeamAppId { get; set; } = null!;
+    [ConfigValue(true)]
+    public string? AppCatalogTeamAppId { get; set; } = null!;
 }
 
 /// <summary>

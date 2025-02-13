@@ -6,6 +6,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <UserSecretsId>1a379bc6-8036-4af6-93ea-8fe2d92fe60e</UserSecretsId>
+    <DockerFastModeProjectMountDirectory>/home/site/wwwroot</DockerFastModeProjectMountDirectory>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Azure.Functions.Worker" Version="1.23.0" />
@@ -19,6 +21,8 @@
 	  <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="8.0.1" />
 
 	  <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="8.0.0" />
+
+	  <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.21.0" />
 
 	  <PackageReference Include="System.Formats.Asn1" Version="8.0.1" />
 
