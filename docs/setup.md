@@ -74,7 +74,15 @@ Now with the backend created and the docker images pushed to an ACR, we can depl
 
 1. Copy ARM parameters file template ```deploy/ARM/parameters-appservices-template.json``` to ```deploy/ARM/parameters-appservices.json```
    1. Fill out mandatory values and check the others. This is to install the App Services and Application Insights. 
-2. In the project root folder, run: ```deploy/InstallAppService.ps1```
+   2. **Very important**: make sure "imageWebServer" and "imageFunctions" parameters both follow this format:
+        ```DOCKER|[myacrname].azurecr.io/copilotbot-functions:[tag]```
+      For example:
+        ```DOCKER|contosofeedbackbotprod.azurecr.io/copilotbot-functions:latest```
+      If the value isn't 100%, the app service deployment will fail.
+
+2. In the project root folder, run: ```deploy/InstallAppService.ps1```.
+3. The script will deploy an app-service and functions app using the image names you've built and published. 
+4. Check the app-service deployment center logs to make sure everything deployed ok.
 
 ## Manual Setup - Create Azure Resources
 You can deploy the ARM template manually:

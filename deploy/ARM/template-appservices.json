@@ -6,7 +6,8 @@
             "type": "string"
         },
         "dockerRegistryStartupCommand": {
-            "type": "string"
+            "type": "string",
+            "defaultValue": ""
         },
         "service_account_client_id": {
             "type": "String"
@@ -70,7 +71,6 @@
         }
     },
     "variables": {
-        "webRoot": "[concat('https://', parameters('app_service_name'), '.azurewebsites.net')]",
         "apiAudience": "[concat('api://', parameters('app_service_name'), '.azurewebsites.net', '/', parameters('service_account_client_id'))]",
         "apiScope": "[concat(variables('apiAudience'), '/access')]",
         "sqlConnectionString": "[concat('Server=tcp:', parameters('sql_server_name'), '.database.windows.net,1433;Initial Catalog=', parameters('sql_database_name'), ';Persist Security Info=False;User ID=', parameters('sql_server_admin_login'), ';Password=', parameters('sql_server_admin_login_password'), ';MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;')]"
@@ -176,7 +176,6 @@
                         "XDT_MicrosoftApplicationInsights_Mode": "default",
                         "WEBSITE_NODE_DEFAULT_VERSION": "18.18.0",
                         "WEBSITE_NPM_DEFAULT_VERSION": "9.8.1",
-                        "WebRoot": "[variables('webRoot')]",
                         "APPLICATIONINSIGHTS_CONNECTION_STRING": "[reference(resourceId('microsoft.insights/components', parameters('workspace_analytics_name')), '2015-05-01').ConnectionString]"
                     }
                 },
@@ -321,7 +320,6 @@
                         "AuthConfig__ApiAudience": "[variables('apiAudience')]",
                         "MicrosoftAppId": "[parameters('service_account_client_id')]",
                         "MicrosoftAppPassword": "[parameters('service_account_client_secret')]",
-                        "WebRoot": "[variables('webRoot')]",
                         "ApplicationInsightsAgent_EXTENSION_VERSION": "~2",
                         "XDT_MicrosoftApplicationInsights_Mode": "default",
                         "APPLICATIONINSIGHTS_CONNECTION_STRING": "[reference(resourceId('microsoft.insights/components', parameters('workspace_analytics_name')), '2015-05-01').ConnectionString]",

@@ -133,7 +133,8 @@ function ValidateAndInstall ($configFileName) {
 		
 		WriteS -message "App services install script finished. Next steps:"
 		WriteS -message "1. Check for any errors above."
-		WriteS -message "2. Provision database. Run 'ProvisionDatabase.ps1' script."
+		WriteS -message "2. Check for any errors in the app service deployment center logs."
+		WriteS -message "3. Provision database. Run 'ProvisionDatabase.ps1' script."
 	}
 }
 

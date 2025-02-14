@@ -23,15 +23,24 @@ public class Program
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
 
+
         var config = DependencyInjection.AddBotServices(builder.Services, builder.Configuration);
 
+        if (config.AppInsightsConnectionString != null)
+        {
+            builder.Services.AddApplicationInsightsTelemetry((appInsightConfig) =>
+                    appInsightConfig.ConnectionString = config.AppInsightsConnectionString
+                );
+        }
+
+
         builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-            .AddMicrosoftIdentityWebApi(ops => 
+            .AddMicrosoftIdentityWebApi(ops =>
             {
                 ops.Audience = config.AuthConfig.ApiAudience;
-            }, o => 
-            { 
-                o.ClientId = config.AuthConfig.ClientId; 
+            }, o =>
+            {
+                o.ClientId = config.AuthConfig.ClientId;
                 o.TenantId = config.AuthConfig.TenantId;
                 o.ClientSecret = config.AuthConfig.ClientSecret;
                 o.Authority = config.AuthConfig.Authority;
@@ -40,7 +49,6 @@ public class Program
 
         // Bot services --->
         // Create the Bot Framework Adapter with error handling enabled.
-
 
         // Create the storage we'll be using for User and Conversation state. (Memory is great for testing purposes.)
         builder.Services.AddSingleton<IStorage, MemoryStorage>();
@@ -77,19 +85,26 @@ public class Program
 
         // Ensure DB
         var optionsBuilder = new DbContextOptionsBuilder<DataContext>();
-        
+
         optionsBuilder.UseSqlServer(config.ConnectionStrings.SQL);
         using (var db = new DataContext(optionsBuilder.Options))
         {
-            var logger = LoggerFactory.Create(config =>
+            var logger = LoggerFactory.Create(c =>
             {
-                config.AddConsole();
-            }).CreateLogger("Import console");
+                c.AddConsole();
+
+                if (config.AppInsightsConnectionString != null)
+                {
+                    c.AddApplicationInsights(configureTelemetryConfiguration: (appInsightConfig) =>
+                        appInsightConfig.ConnectionString = config.AppInsightsConnectionString,
+                        configureApplicationInsightsLoggerOptions: (options) => { }
+                    );
+                }
+            }).CreateLogger("DB init");
             logger.LogInformation($"Using SQL connection-string: {config.ConnectionStrings.SQL}");
             await DbInitialiser.EnsureInitialised(db, logger, config.TestUPN);
-        }
 
-        app.UseHttpsRedirection();
+        }
 
         // https://learn.microsoft.com/en-us/visualstudio/javascript/tutorial-asp-net-core-with-react?view=vs-2022#publish-the-project
         app.UseDefaultFiles();
