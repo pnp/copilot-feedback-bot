@@ -28,13 +28,13 @@ Now we need to configure some parameters to create the backend, specifically the
 
 
 ## Configure App Registration API Access
-1. Configure API access for app registration so the JavaScript app can access the backend.
-2. The application URI needs to be in format: api://[DOMAIN]/5023a8dc-8448-4f41-b34c-131ee03def2f, with port if not standard. Examples:
+Configure API access for app registration so the JavaScript app can access the backend. If you want Teams SSO to work, the URL of the JavaScript must match the App URI too. If you don't care, then you can pick any URI. 
+1. The application URI needs to be in format: api://[DOMAIN]/[CLIENT_ID], with port if not standard. Examples:
    1. api://contosobot.azurewebsites.net/5023a8dc-8448-4f41-b34c-131ee03def2f
    2. api://localhost:5173/c8c85903-7e4a-4314-898b-08d01382e025
-   3. This value is needed for the ```AuthConfig__ApiAudience``` configuration.
-3. Add a scope for users/admins - "access".
-4. Copy the full scope name for the ARM template parameters ```api_scope``` value - "api://contosobot.azurewebsites.net/5023a8dc-8448-4f41-b34c-131ee03def2f/access"
+      This value is needed for the ```AuthConfig__ApiAudience``` configuration.
+2. Add a scope for users/admins - "access".
+3. Copy the full scope name for the ARM template parameters ```api_scope``` value - "api://contosobot.azurewebsites.net/5023a8dc-8448-4f41-b34c-131ee03def2f/access"
 
 ## Deploy User Teams App
 Next, create a Teams app from the template to enable the bot in your org:
@@ -47,9 +47,10 @@ Next, create a Teams app from the template to enable the bot in your org:
 ## Build Docker Images
 To deploy the bot for production, we use docker to build a new bot image with the ASP.Net + JavaScript application in a single image, and the functions app in another image.
 * Copy ``src\docker-compose.override - template.yml`` to ``src\docker-compose.override.yml``.
-  * Fill out all the connection info from the 
-  * There are some services in the 
-* Fill out fields in override file. You'll need your Azure PaaS resource details + the bot app registration configuration. 
+  * Fill out all the build args for the copilotbot-web service - environmental data will be handled by Azure. Config will include:
+    * Client ID of bot (VITE_MSAL_CLIENT_ID).
+    * Optional for Teams SSO - login page URL (VITE_TEAMSFX_START_LOGIN_PAGE_URL.) There is a certain chicken/egg game here; we assume an app-service URL before we know we have it.
+    * Created scope ID (VITE_MSAL_SCOPES), based on domain-name of app-service if Teams SSO is required, otherwise any ID.
 * Build images with ``docker-compose build`` from the ``src`` folder (change directory to ".\src" to run command).
 * You will end up with two images:
    1. copilotbot-functions - Azure functions app image.
@@ -75,7 +76,7 @@ Now with the backend created and the docker images pushed to an ACR, we can depl
 1. Copy ARM parameters file template ```deploy/ARM/parameters-appservices-template.json``` to ```deploy/ARM/parameters-appservices.json```
    1. Fill out mandatory values and check the others. This is to install the App Services and Application Insights. 
    2. **Very important**: make sure "imageWebServer" and "imageFunctions" parameters both follow this format:
-        ```DOCKER|[myacrname].azurecr.io/copilotbot-functions:[tag]```
+        ```DOCKER|[myregistry].azurecr.io/copilotbot-functions:[tag]```
       For example:
         ```DOCKER|contosofeedbackbotprod.azurecr.io/copilotbot-functions:latest```
       If the value isn't 100%, the app service deployment will fail.

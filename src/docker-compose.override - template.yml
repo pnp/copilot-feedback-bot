@@ -1,9 +1,9 @@
 # Define environment specific variables and services in the override file. docker-compose.override.yml isn't git tracked.
 services:
   copilotbot-web:
-    # Environment vars are only needed if you want to run the solution in docker-compose locally
+    # Environment vars are only needed if you want to run the solution in docker-compose locally. 
+    # If you're just building an image for Azure, you can remove these.
     environment:
-      - ASPNETCORE_URLS=http://+:80
       - MicrosoftAppPassword=
       - MicrosoftAppId=
       - ConnectionStrings__Storage=
@@ -22,8 +22,7 @@ services:
       - VITE_MSAL_CLIENT_ID=
       - VITE_MSAL_AUTHORITY=https://login.microsoftonline.com/organizations
       - VITE_MSAL_SCOPES=
-      - VITE_TEAMSFX_START_LOGIN_PAGE_URL=
-      - VITE_API_ENDPOINT=
+      - VITE_TEAMSFX_START_LOGIN_PAGE_URL=https://[contosocopilot].azurewebsites.net/auth-start.html
     depends_on:
       sql:
         condition: service_healthy
@@ -35,7 +34,6 @@ services:
   copilotbot-functions:
     # Environment vars are only needed if you want to run the solution in docker-compose locally
     environment:
-      - ASPNETCORE_URLS=http://+:80
       - MicrosoftAppPassword=
       - MicrosoftAppId=
       - ConnectionStrings__Storage=

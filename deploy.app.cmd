@@ -87,7 +87,6 @@ echo off
     echo VITE_MSAL_CLIENT_ID=%AuthConfig:ClientId%
     echo VITE_MSAL_SCOPES=%AuthConfig:ApiScope%
     echo VITE_TEAMSFX_START_LOGIN_PAGE_URL=%WebRoot%/auth-start.html
-    echo VITE_API_ENDPOINT=%WebRoot%
 ) > "%DEPLOYMENT_SOURCE%\src\Web\web.client\.env.production"
 
 :: Build and publish Web project
