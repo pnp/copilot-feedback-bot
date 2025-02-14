@@ -61,9 +61,6 @@ public class Program
         builder.Services.AddTransient<IBot, CopilotFeedbackBot<SurveyDialogue>>();
         builder.Services.AddSingleton<IConversationResumeHandler, SurveyConversationResumeHandler>();
 
-#if !DEBUG
-        builder.Services.AddApplicationInsightsTelemetry();
-#endif
         var app = builder.Build();
 
 #if DEBUG
@@ -80,6 +77,7 @@ public class Program
 
         // Ensure DB
         var optionsBuilder = new DbContextOptionsBuilder<DataContext>();
+        
         optionsBuilder.UseSqlServer(config.ConnectionStrings.SQL);
         using (var db = new DataContext(optionsBuilder.Options))
         {
@@ -87,6 +85,7 @@ public class Program
             {
                 config.AddConsole();
             }).CreateLogger("Import console");
+            logger.LogInformation($"Using SQL connection-string: {config.ConnectionStrings.SQL}");
             await DbInitialiser.EnsureInitialised(db, logger, config.TestUPN);
         }
 

@@ -50,7 +50,7 @@ To deploy the bot for production, we use docker to build a new bot image with th
   * Fill out all the connection info from the 
   * There are some services in the 
 * Fill out fields in override file. You'll need your Azure PaaS resource details + the bot app registration configuration. 
-* Build images with ``docker-compose build`` from the ``src`` folder.
+* Build images with ``docker-compose build`` from the ``src`` folder (change directory to ".\src" to run command).
 * You will end up with two images:
    1. copilotbot-functions - Azure functions app image.
    2. copilotbot-web - this contains the ASP.Net + built JavaScript with your bot registration details compiled in via the docker-compose.override.yml changes you made earlier.

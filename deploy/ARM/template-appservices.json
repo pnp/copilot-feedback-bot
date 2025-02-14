@@ -311,6 +311,7 @@
                         "PROJECT": "src/Functions/Functions.csproj",
                         "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
                         "FUNCTIONS_EXTENSION_VERSION": "~4",
+                        "WEBSITES_PORT": "8080",
                         "AppCatalogTeamAppId": "[parameters('app_catalog_team_app_id')]",
                         "AuthConfig__ClientId": "[parameters('service_account_client_id')]",
                         "AuthConfig__ApiScope": "[variables('apiScope')]",

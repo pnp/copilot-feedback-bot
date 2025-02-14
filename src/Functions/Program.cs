@@ -11,6 +11,7 @@ var host = new HostBuilder()
     .ConfigureFunctionsWorkerDefaults()
     .ConfigureAppConfiguration(c =>
     {
+#if DEBUG
         c.AddEnvironmentVariables()
             .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("local.settings.json", optional: true, reloadOnChange: true)
@@ -18,6 +19,15 @@ var host = new HostBuilder()
             .AddEnvironmentVariables()
             .AddUserSecrets<Program>()
             .Build();
+#else
+        c.AddEnvironmentVariables()
+            .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("local.settings.json", optional: true, reloadOnChange: true)
+            .AddCommandLine(args)            
+            .AddEnvironmentVariables()
+            .Build();
+#endif
+
     })
     .ConfigureServices((context, services) =>
     {

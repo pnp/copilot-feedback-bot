@@ -25,9 +25,13 @@ services:
       - VITE_TEAMSFX_START_LOGIN_PAGE_URL=
       - VITE_API_ENDPOINT=
     depends_on:
-        - sql
-        - azurite
-        - redis
+      sql:
+        condition: service_healthy
+      azurite:
+        condition: service_started
+      redis:
+        condition: service_started
+
   copilotbot-functions:
     # Environment vars are only needed if you want to run the solution in docker-compose locally
     environment:
@@ -44,6 +48,13 @@ services:
       - AuthConfig__ApiAudience=
       - AuthConfig__Authority=https://login.microsoftonline.com/organizations
       - AppCatalogTeamAppId=
+    depends_on:
+      sql:
+        condition: service_healthy
+      azurite:
+        condition: service_started
+      redis:
+        condition: service_started
 
 # If you want to run docker locally, include the following services for testing
   sql:
@@ -54,7 +65,14 @@ services:
     ports: 
       - "1433:1433" 
     container_name: sql
+    healthcheck:    # Mark service as healthy when the following SQL command works 
+      test: /opt/mssql-tools18/bin/sqlcmd -U sa -P "DevStrong@Passw0rd" -C -Q "SELECT 1" -b -o /dev/null
+      start_period: 10s
+      timeout: 2s
+      interval: 30s
+      retries: 3
     # Connection string will be: sql;Database=CopilotDev;User Id=sa;Password=DevStrong@Passw0rd;Trusted_Connection=False;TrustServerCertificate=True;
+    
   azurite:
     image: mcr.microsoft.com/azure-storage/azurite
     container_name: azurite
