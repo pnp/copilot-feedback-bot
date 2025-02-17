@@ -7,6 +7,8 @@ export abstract class BaseAxiosApiLoader {
     baseUrl: string;
     client?: AxiosInstance;
     constructor(baseUrl: string) {
+        if (!baseUrl) 
+            throw new Error("Base URL must be provided");
         this.baseUrl = baseUrl;
     }
     abstract logOut: () => void;

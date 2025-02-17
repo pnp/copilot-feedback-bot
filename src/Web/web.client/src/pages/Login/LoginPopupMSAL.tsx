@@ -31,7 +31,6 @@ export function LoginPopupMSAL() {
           <p>Currently signed in as '{accounts[0].username}'...</p>
           <Button onClick={logout}>Logout</Button>
         </>
-
         :
         <>
           <p>It looks like you're running this app outside of Teams (with SSO configured).</p>
@@ -44,6 +43,7 @@ export function LoginPopupMSAL() {
         </>
       }
 
+      <p>App version: dev</p>
     </div>
   );
 }

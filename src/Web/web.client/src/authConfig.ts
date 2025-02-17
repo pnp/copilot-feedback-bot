@@ -17,5 +17,4 @@ export const loginRequest = {
 
 export const teamsAppConfig = {
   startLoginPageUrl: readConfigVal("TEAMSFX_START_LOGIN_PAGE_URL"),
-  apiEndpoint: readConfigVal("API_ENDPOINT"),
 }

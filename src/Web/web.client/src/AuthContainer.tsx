@@ -9,6 +9,7 @@ import { useTeamsUserCredential } from '@microsoft/teamsfx-react';
 
 import { BaseAxiosApiLoader, MsalAxiosApiLoader, TeamsSsoAxiosApiLoader } from './api/AxiosApiLoader';
 import { getBasicStats } from './api/ApiCalls';
+import { getRootUrl } from './utils/DataUtils';
 
 export const AuthContainer: React.FC<PropsWithChildren<AuthContainerProps>> = (props) => {
 
@@ -35,8 +36,8 @@ export const AuthContainer: React.FC<PropsWithChildren<AuthContainerProps>> = (p
                 .then((info) => {
                     console.log("initAuth: Teams SSO test succesfull. User info: ", info);
 
-                    const loader = new TeamsSsoAxiosApiLoader(teamsUserCredential, teamsAppConfig.apiEndpoint);
-                    setApiLoader(loader);       // Will tr
+                    const loader = new TeamsSsoAxiosApiLoader(teamsUserCredential, getRootUrl(window.location.href));
+                    setApiLoader(loader);      
                     setLoginMethod(LoginMethod.TeamsSSO);
 
                     props.loginMethodChange(LoginMethod.TeamsSSO);
@@ -86,7 +87,7 @@ export const AuthContainer: React.FC<PropsWithChildren<AuthContainerProps>> = (p
         if (accounts.length > 0) {
             if (msalInitialised && instance && !apiLoader) {
                 console.debug("Creating MSAL API loader");
-                const loader = new MsalAxiosApiLoader(instance, accounts[0], teamsAppConfig.apiEndpoint);
+                const loader = new MsalAxiosApiLoader(instance, accounts[0], getRootUrl(window.location.href));
                 setApiLoader(loader);
             }
         }
@@ -122,7 +123,7 @@ export const AuthContainer: React.FC<PropsWithChildren<AuthContainerProps>> = (p
     return (
         <>
             {error ? 
-                <div>API test error: {error}. Please check authentication configuration, server-side and JavaScript.</div> 
+                <div>API test error: {error}. Please check authentication configuration, server-side and JavaScript. Refresh page to retry.</div> 
             : null}
 
             {loading ? <div>Checking back-end API connectivity...</div> :
