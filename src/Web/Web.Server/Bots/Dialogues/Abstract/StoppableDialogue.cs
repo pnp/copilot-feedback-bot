@@ -1,10 +1,11 @@
 ﻿using Common.Engine;
+using Common.Engine.Bot;
 using Common.Engine.Config;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Schema;
 using Microsoft.Graph;
 
-namespace Web.Bots.Dialogues.Abstract;
+namespace Web.Server.Bots.Dialogues.Abstract;
 
 /// <summary>
 /// A dialogue that can be stopped by the user and told to stop bothering them

@@ -1,7 +1,7 @@
 ﻿using Common.Engine.Surveys;
 using Newtonsoft.Json.Linq;
 
-namespace Web.Bots.Cards;
+namespace Common.Engine.Bot;
 
 public class BotReactionCard : BaseAdaptiveCard
 {

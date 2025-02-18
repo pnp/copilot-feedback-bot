@@ -3,7 +3,7 @@ using Common.Engine.Surveys;
 using Entities.DB;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Web.Controllers;
+namespace Web.Server.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]

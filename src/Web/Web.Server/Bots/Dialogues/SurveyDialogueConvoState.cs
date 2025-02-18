@@ -1,6 +1,7 @@
 ﻿using Entities.DB.Entities.AuditLog;
+using Web.Server.Bots;
 
-namespace Web.Bots.Dialogues;
+namespace Web.Server.Bots.Dialogues;
 
 internal class SurveyDialogueConvoState
 {

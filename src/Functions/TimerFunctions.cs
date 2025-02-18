@@ -31,13 +31,13 @@ public class TimerFunctions
         _tracer.LogInformation($"{nameof(TriggerNotifications)} function executed at: {DateTime.Now}");
         var sm = new SurveyManager(_surveyManagerDataLoader, _surveyProcessor, _loggerSM);
         await sm.FindAndProcessNewSurveyEventsAllUsers();
-        _tracer.LogInformation($"Next timer schedule at: {timerInfo.ScheduleStatus.Next}");
+        _tracer.LogInformation($"Next timer schedule at: {timerInfo.ScheduleStatus?.Next}");
     }
 }
 
 public class TimerJobRefreshInfo
 {
-    public TimerJobRefreshScheduleStatus ScheduleStatus { get; set; } = null!;
+    public TimerJobRefreshScheduleStatus? ScheduleStatus { get; set; } = null!;
     public bool IsPastDue { get; set; }
 }
 

@@ -1,4 +1,6 @@
 using Common.Engine;
+using Common.Engine.Notifications;
+using Common.Engine.Surveys;
 using Entities.DB;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.EntityFrameworkCore;
@@ -32,6 +34,7 @@ var host = new HostBuilder()
     .ConfigureServices((context, services) =>
     {
         var config = DependencyInjection.AddTeamsAppServices(services, context.Configuration);
+        services.AddSingleton<IConversationResumeHandler, SurveyConversationResumeHandler>();
 
 #if !DEBUG
         services.AddApplicationInsightsTelemetryWorkerService();

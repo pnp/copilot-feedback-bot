@@ -1,8 +1,9 @@
-﻿using Common.Engine.Config;
+﻿using Common.Engine.Bot;
+using Common.Engine.Config;
 using Microsoft.Bot.Builder;
-using Web.Bots.Cards;
+using Web.Server.Bots.Cards;
 
-namespace Web.Bots;
+namespace Web.Server.Bots;
 
 public class BotActionsHelper
 {

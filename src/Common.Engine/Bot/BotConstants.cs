@@ -1,4 +1,4 @@
-﻿namespace Web.Bots;
+﻿namespace Common.Engine.Bot;
 
 public static class BotConstants
 {

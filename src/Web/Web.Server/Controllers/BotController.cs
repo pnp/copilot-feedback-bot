@@ -2,7 +2,7 @@
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Integration.AspNet.Core;
 
-namespace Web.Controllers;
+namespace Web.Server.Controllers;
 
 [Route("api/messages")]
 [ApiController]

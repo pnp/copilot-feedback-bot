@@ -3,7 +3,7 @@ using Common.Engine.Config;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Web.Controllers;
+namespace Web.Server.Controllers;
 
 [Authorize]
 [Route("api/[controller]")]

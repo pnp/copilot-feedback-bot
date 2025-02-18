@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
 
-namespace Web.Controllers;
+namespace Web.Server.Controllers;
 
 /// <summary>
 /// Return stats for bot surveys

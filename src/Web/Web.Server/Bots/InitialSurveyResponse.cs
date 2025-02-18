@@ -1,6 +1,7 @@
-﻿using System.Text.Json.Serialization;
+﻿using Common.Engine.Bot;
+using System.Text.Json.Serialization;
 
-namespace Web.Bots;
+namespace Web.Server.Bots;
 
 public class InitialSurveyResponse
 {

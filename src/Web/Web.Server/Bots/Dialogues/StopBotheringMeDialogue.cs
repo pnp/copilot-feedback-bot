@@ -4,9 +4,9 @@ using Common.Engine.Surveys;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Builder.Dialogs.Choices;
 using Microsoft.Graph;
-using Web.Bots.Dialogues.Abstract;
+using Web.Server.Bots.Dialogues.Abstract;
 
-namespace Web.Bots.Dialogues;
+namespace Web.Server.Bots.Dialogues;
 
 /// <summary>
 /// Entrypoint to all new conversations
@@ -61,17 +61,17 @@ public class StopBotheringMeDialogue : CommonBotDialogue
         if (response.Value == BTN_YES)
         {
             var botUser = await BotUserUtils.GetBotUserAsync(stepContext.Context, _botConfig, _graphServiceClient);
-            var chatUser = await base.GetCachedUser(botUser);
+            var chatUser = await GetCachedUser(botUser);
             if (chatUser != null && chatUser.UserPrincipalName != null)
             {
                 SurveyPendingActivities? userPendingEvents = null;
-                await base.GetSurveyManagerService(async surveyManager =>
+                await GetSurveyManagerService(async surveyManager =>
                 {
-                    userPendingEvents = await base.GetSurveyPendingActivities(surveyManager, chatUser.UserPrincipalName);
+                    userPendingEvents = await GetSurveyPendingActivities(surveyManager, chatUser.UserPrincipalName);
                 });
 
                 // Register survey request sent so we don't repeatedly ask for the same event
-                await base.GetSurveyManagerService(async surveyManager => await surveyManager.Loader.StopBotheringUser(chatUser.UserPrincipalName, DateTime.MaxValue));
+                await GetSurveyManagerService(async surveyManager => await surveyManager.Loader.StopBotheringUser(chatUser.UserPrincipalName, DateTime.MaxValue));
 
                 await SendMsg(stepContext.Context, "Bye then 😞. You can always say hi, and I'll always respond if I can ♥️");
             }

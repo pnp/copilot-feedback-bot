@@ -4,11 +4,12 @@ using Entities.DB;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Bot.Builder;
 using Microsoft.EntityFrameworkCore;
-using Web.Bots;
-using Web.Bots.Dialogues;
 using Microsoft.Identity.Web;
+using Common.Engine.Surveys;
+using Web.Server.Bots.Dialogues;
+using Web.Server.Bots;
 
-namespace Web;
+namespace Web.Server;
 
 public class Program
 {

@@ -3,7 +3,7 @@ using Common.Engine.Surveys.Model;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Web.Controllers;
+namespace Web.Server.Controllers;
 
 /// <summary>
 /// Handles updates to survey questions

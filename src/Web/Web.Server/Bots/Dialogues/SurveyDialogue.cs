@@ -1,4 +1,5 @@
 ﻿using Common.Engine;
+using Common.Engine.Bot;
 using Common.Engine.Config;
 using Common.Engine.Notifications;
 using Common.Engine.Surveys;
@@ -8,10 +9,10 @@ using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Builder.Dialogs.Choices;
 using Microsoft.Graph;
 using System.Text.Json;
-using Web.Bots.Cards;
-using Web.Bots.Dialogues.Abstract;
+using Web.Server.Bots.Cards;
+using Web.Server.Bots.Dialogues.Abstract;
 
-namespace Web.Bots.Dialogues;
+namespace Web.Server.Bots.Dialogues;
 
 
 /// <summary>
@@ -63,19 +64,19 @@ public class SurveyDialogue : StoppableDialogue
         var convoState = await GetConvoStateAsync(stepContext.Context);
 
         // Check if user wants to stop the bot from bothering them
-        var cancel = await base.InterruptAsync(stepContext, cancellationToken);
+        var cancel = await InterruptAsync(stepContext, cancellationToken);
         if (cancel != null)
             return cancel;
 
         // Get cached user and conversation. We do it here too in case the conversation cache has been cleared.
         var botUser = await BotUserUtils.GetBotUserAsync(stepContext.Context, _botConfig, _graphServiceClient);
-        var cachedUserAndConversation = await base.GetCachedUser(botUser);
+        var cachedUserAndConversation = await GetCachedUser(botUser);
         if (cachedUserAndConversation == null || cachedUserAndConversation.UserPrincipalName == null)
         {
             // This may be the first time we've met this user if they've spoken to the bot, but the conversation cache has been cleared.
             // Add them to the cache and try again.
-            await base._botConversationCache.AddConversationReferenceToCache(stepContext.Context.Activity, botUser);
-            cachedUserAndConversation = await base.GetCachedUser(botUser);
+            await _botConversationCache.AddConversationReferenceToCache(stepContext.Context.Activity, botUser);
+            cachedUserAndConversation = await GetCachedUser(botUser);
 
             // Now we've tried to add their user to the conversation cache, check again
             if (cachedUserAndConversation == null || cachedUserAndConversation.UserPrincipalName == null)
@@ -142,7 +143,7 @@ public class SurveyDialogue : StoppableDialogue
             if (response.Value == BTN_SEND_SURVEY)
             {
                 var botUser = await BotUserUtils.GetBotUserAsync(stepContext.Context, _botConfig, _graphServiceClient);
-                var chatUserAndConversation = await base.GetCachedUser(botUser);
+                var chatUserAndConversation = await GetCachedUser(botUser);
                 if (chatUserAndConversation == null || chatUserAndConversation.UserPrincipalName == null)
                 {
                     // We really shouldn't get here, but just in case...
@@ -184,14 +185,14 @@ public class SurveyDialogue : StoppableDialogue
         // Save survey data?
         var botUser = await BotUserUtils.GetBotUserAsync(stepContext.Context, _botConfig, _graphServiceClient);
         SurveyPage? surveyPage = null;
-        var chatUserAndConvo = await base.GetCachedUser(botUser);
+        var chatUserAndConvo = await GetCachedUser(botUser);
         if (chatUserAndConvo == null || chatUserAndConvo.UserPrincipalName == null)
             await SendMsg(stepContext.Context, "Oops, can't report feedback for anonymous users. Your login is needed even if we don't report on it. Thanks for letting me know anyway.");
         else
         {
             BaseAdaptiveCard? responseCard = null;
             var endDiagWithResponseCard = false;
-            await base.GetSurveyManagerService(async surveyManager =>
+            await GetSurveyManagerService(async surveyManager =>
             {
                 var initialSurveyRatingResponse = JsonSerializer.Deserialize<InitialSurveyResponse>(stepContext.Context.Activity.Text);
                 if (initialSurveyRatingResponse?.Response != null)
@@ -282,7 +283,7 @@ public class SurveyDialogue : StoppableDialogue
         var result = stepContext.Context.Activity.Text;
         var botUser = await BotUserUtils.GetBotUserAsync(stepContext.Context, _botConfig, _graphServiceClient);
 
-        var chatUserAndConvo = await base.GetCachedUser(botUser);
+        var chatUserAndConvo = await GetCachedUser(botUser);
 
         if (chatUserAndConvo?.UserPrincipalName != null)
         {
@@ -291,7 +292,7 @@ public class SurveyDialogue : StoppableDialogue
             if (convoState.SurveyIdUpdatedOrCreated > 0 && surveyResponse.IsValid)
             {
                 var goAroundAgain = false;
-                await base.GetSurveyManagerService(async surveyManager =>
+                await GetSurveyManagerService(async surveyManager =>
                 {
                     // Add follow-up survey data
                     await surveyManager.SaveCustomSurveyResponse(surveyResponse, convoState.SurveyIdUpdatedOrCreated.Value);

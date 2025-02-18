@@ -6,9 +6,8 @@ using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Schema;
 using Microsoft.Graph;
 using System.Text.Json;
-using Web.Bots.Cards;
 
-namespace Web.Bots.Dialogues.Abstract;
+namespace Web.Server.Bots.Dialogues.Abstract;
 
 public abstract class CommonBotDialogue : ComponentDialog
 {

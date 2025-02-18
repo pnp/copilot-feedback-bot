@@ -1,6 +1,7 @@
-﻿using System.Reflection;
+﻿using Common.DataUtils;
+using System.Reflection;
 
-namespace Web;
+namespace Web.Server;
 
 internal class Utils
 {
@@ -8,21 +9,6 @@ internal class Utils
     {
         var assembly = Assembly.GetExecutingAssembly();
 
-        // Format: "{Namespace}.{Folder}.{filename}.{Extension}"
-        var manifests = assembly.GetManifestResourceNames();
-
-
-        using (var stream = assembly.GetManifestResourceStream(resourcePath))
-            if (stream != null)
-            {
-                using (var reader = new StreamReader(stream))
-                {
-                    return reader.ReadToEnd();
-                }
-            }
-            else
-            {
-                throw new ArgumentOutOfRangeException(nameof(resourcePath), $"No resource found by name '{resourcePath}'");
-            }
+        return ResourceUtils.ReadResource(assembly, resourcePath);
     }
 }

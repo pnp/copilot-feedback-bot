@@ -6,7 +6,7 @@ using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Schema;
 using Microsoft.Graph;
 
-namespace Web.Bots;
+namespace Web.Server.Bots;
 
 public class CopilotFeedbackBot<T> : DialogueBot<T> where T : Dialog
 {
