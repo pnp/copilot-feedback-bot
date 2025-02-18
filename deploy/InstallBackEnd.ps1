@@ -15,10 +15,6 @@ function Get-ScriptDirectory {
 }
 
 
-function Get-AppServiceNameArmTemplateValue {
- param ( [parameter(mandatory = $true)] $config )
-	return Get-ArmTemplateValue $config "app_service_name"
-}
 function Get-SqlServerNameArmTemplateValue {
 	param ( [parameter(mandatory = $true)] $config )
 	return Get-ArmTemplateValue $config "sql_server_name"
@@ -35,63 +31,6 @@ function Get-SqlDbNameArmTemplateValue {
 	param ( [parameter(mandatory = $true)] $config )
 	return Get-ArmTemplateValue $config "sql_database_name"
 }
-
-function Get-ArmTemplateValue {
-	param (
-		[parameter(mandatory = $true)] $config,
-		[parameter(mandatory = $true)] $parameterName
-	)
-
-	if ($null -eq $config) {
-		WriteE -message "Error: Configuration object is null." 
-		return
-	}
-	if ($null -eq $config.ARMParametersFileBackend) {
-		WriteE "Error: ARMParametersFileBackend value is null."
-		return
-	}
-
-	$parametersContent = Get-Content ($scriptPath + "\" + $config.ARMParametersFileBackend) -Raw -ErrorAction Stop | ConvertFrom-Json
-
-	return $parametersContent.parameters.$parameterName.value
-}
-
-# write information
-function WriteI {
-	param(
-		[parameter(mandatory = $true)]
-		[string]$message
-	)
-	Write-Host $message -foregroundcolor white
-}
-
-# write error
-function WriteE {
-	param(
-		[parameter(mandatory = $true)]
-		[string]$message
-	)
-	Write-Host $message -foregroundcolor red -BackgroundColor black
-}
-
-# write warning
-function WriteW {
-	param(
-		[parameter(mandatory = $true)]
-		[string]$message
-	)
-	Write-Host $message -foregroundcolor yellow -BackgroundColor black
-}
-
-# write success
-function WriteS {
-	param(
-		[parameter(mandatory = $true)]
-		[string]$message
-	)
-	Write-Host $message -foregroundcolor green -BackgroundColor black
-}
-
 
 
 # Install custom action in all sites listed in the config
@@ -232,37 +171,15 @@ function ValidateConfig {
 	return $true
 }
 
+
 $scriptPath = Get-ScriptDirectory
+
+# Load common script functions
+$scriptContent = Get-Content -Path $scriptPath + "\" + SharedFunctions.ps1 -Raw
+Invoke-Expression $scriptContent
+
 # Install the Az module if it's not already installed
-$moduleInstalled = $false
-if ($PSVersionTable.PSVersion.Major -lt 7) {
-	if (Get-InstalledModule -Name Az -ErrorAction SilentlyContinue) {
-		$moduleInstalled = $true
-	}
-}
-else {
-	if (Get-Module -ListAvailable -Name Az) {
-		$moduleInstalled = $true
-	} 
-}
-
-if (-not $moduleInstalled) {
-	WriteE -message "Az PowerShell module not found. Please install it using 'Install-Module -Name Az -AllowClobber -Scope CurrentUser'." 
-	WriteI -message "Documentation: https://learn.microsoft.com/en-us/powershell/azure/install-azure-powershell"
-}
-else {
-	WriteI -message "Az PowerShell module found. Checking for Azure login context..."
-	
-	# Check if there is an Azure context
-	$context = Get-AzContext
-
-	if ($null -eq $context) {
-		WriteE -message "No Azure login context found. Please log in using Connect-AzAccount." 
-	}
-	else {
-		$accountId = $context.Account.Id
-		WriteS -message "Azure login context found for account '$accountId'. Installing solution..."
-		
-		ValidateAndInstall($ConfigFileName)
-	}
+$canInstall = LoadAzModuleGetAzContext
+if ($canInstall) {
+	ValidateAndInstall($ConfigFileName)
 }

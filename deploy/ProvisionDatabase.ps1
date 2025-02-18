@@ -36,42 +36,6 @@ function Get-SqlDbNameArmTemplateValue {
 	return Get-ArmTemplateValue $config "sql_database_name"
 }
 
-# write information
-function WriteI {
-	param(
-		[parameter(mandatory = $true)]
-		[string]$message
-	)
-	Write-Host $message -foregroundcolor white
-}
-
-# write error
-function WriteE {
-	param(
-		[parameter(mandatory = $true)]
-		[string]$message
-	)
-	Write-Host $message -foregroundcolor red -BackgroundColor black
-}
-
-# write warning
-function WriteW {
-	param(
-		[parameter(mandatory = $true)]
-		[string]$message
-	)
-	Write-Host $message -foregroundcolor yellow -BackgroundColor black
-}
-
-# write success
-function WriteS {
-	param(
-		[parameter(mandatory = $true)]
-		[string]$message
-	)
-	Write-Host $message -foregroundcolor green -BackgroundColor black
-}
-
 
 
 # Install custom action in all sites listed in the config
@@ -194,6 +158,10 @@ function ValidateConfig {
 
 	return $true
 }
+
+# Load common script functions
+$scriptContent = Get-Content -Path .\SharedFunctions.ps1 -Raw
+Invoke-Expression $scriptContent
 
 $scriptPath = Get-ScriptDirectory
 # Install the Az module if it's not already installed

@@ -14,63 +14,10 @@ function Get-ScriptDirectory {
 	Split-Path $Invocation.MyCommand.Path
 }
 
-function Get-ArmTemplateValue {
-	param (
-		[parameter(mandatory = $true)] $config,
-		[parameter(mandatory = $true)] $parameterName
-	)
-
-	if ($null -eq $config) {
-		WriteE -message "Error: Configuration object is null." 
-		return
-	}
-	if ($null -eq $config.ARMParametersFileAppServices) {
-		WriteE "Error: ARMParametersFileAppServices value is null."
-		return
-	}
-
-	$parametersContent = Get-Content ($scriptPath + "\" + $config.ARMParametersFileAppServices) -Raw -ErrorAction Stop | ConvertFrom-Json
-
-	return $parametersContent.parameters.$parameterName.value
-}
-
-# write information
-function WriteI {
-	param(
-		[parameter(mandatory = $true)]
-		[string]$message
-	)
-	Write-Host $message -foregroundcolor white
-}
-
-# write error
-function WriteE {
-	param(
-		[parameter(mandatory = $true)]
-		[string]$message
-	)
-	Write-Host $message -foregroundcolor red -BackgroundColor black
-}
-
-# write warning
-function WriteW {
-	param(
-		[parameter(mandatory = $true)]
-		[string]$message
-	)
-	Write-Host $message -foregroundcolor yellow -BackgroundColor black
-}
-
-# write success
-function WriteS {
-	param(
-		[parameter(mandatory = $true)]
-		[string]$message
-	)
-	Write-Host $message -foregroundcolor green -BackgroundColor black
-}
-
-
+function Get-AppServiceNameArmTemplateValue {
+	param ( [parameter(mandatory = $true)] $config )
+	   return Get-ArmTemplateValue $config "app_service_name"
+   }
 
 # Install custom action in all sites listed in the config
 function ValidateAndInstall ($configFileName) {
@@ -131,6 +78,12 @@ function ValidateAndInstall ($configFileName) {
 	}
 	else {
 		
+		$appContainer = get-AzContainerApp -ResourceGroupName $config.ResourceGroupName -Name Get-AppServiceNameArmTemplateValue($config)
+		if ($null -eq $appContainer) {
+			WriteE -message "Error: App service container not found."
+			return
+		}
+
 		WriteS -message "App services install script finished. Next steps:"
 		WriteS -message "1. Check for any errors above."
 		WriteS -message "2. Check for any errors in the app service deployment center logs."
@@ -211,37 +164,20 @@ function ValidateConfig {
 	return $true
 }
 
+# Set global variables
 $scriptPath = Get-ScriptDirectory
-# Install the Az module if it's not already installed
-$moduleInstalled = $false
-if ($PSVersionTable.PSVersion.Major -lt 7) {
-	if (Get-InstalledModule -Name Az -ErrorAction SilentlyContinue) {
-		$moduleInstalled = $true
-	}
-}
-else {
-	if (Get-Module -ListAvailable -Name Az) {
-		$moduleInstalled = $true
-	} 
-}
 
-if (-not $moduleInstalled) {
-	WriteE -message "Az PowerShell module not found. Please install it using 'Install-Module -Name Az -AllowClobber -Scope CurrentUser'." 
-	WriteI -message "Documentation: https://learn.microsoft.com/en-us/powershell/azure/install-azure-powershell"
+# Load common script functions
+$scriptContent = Get-Content -Path ($scriptPath + "\SharedFunctions.ps1") -Raw
+Invoke-Expression $scriptContent
+$azAppInstalled = LoadModuleGetAzContext -moduleName "Az.App" -loadContext $false
+if (-not $azAppInstalled) {
+	WriteI -message "Documentation: https://learn.microsoft.com/en-us/powershell/module/az.app"
+	return
 }
-else {
-	WriteI -message "Az PowerShell module found. Checking for Azure login context..."
-	
-	# Check if there is an Azure context
-	$context = Get-AzContext
+Import-Module Az.App
 
-	if ($null -eq $context) {
-		WriteE -message "No Azure login context found. Please log in using Connect-AzAccount." 
-	}
-	else {
-		$accountId = $context.Account.Id
-		WriteS -message "Azure login context found for account '$accountId'. Installing solution..."
-		
-		ValidateAndInstall($ConfigFileName)
-	}
+$canInstall = LoadAzModuleGetAzContext
+if ($canInstall) {
+	ValidateAndInstall($ConfigFileName)
 }
