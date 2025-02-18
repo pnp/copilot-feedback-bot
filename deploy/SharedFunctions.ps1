@@ -10,6 +10,9 @@ function Get-ArmTemplateValue {
         return
     }
     if ($null -eq $config.ARMParametersFileAppServices) {
+        # Write contents of $config
+        Write-Host $config
+        
         WriteE "Error: ARMParametersFileAppServices value is null."
         return
     }
@@ -85,6 +88,9 @@ function LoadModuleGetAzContext {
     }
     else {
         if (Get-Module -ListAvailable -Name $moduleName) {
+            $ver = Get-Module -ListAvailable -Name $moduleName | Select-Object -First 1 -ExpandProperty Version
+            
+            WriteI "Module $moduleName found with version $ver"
             $moduleInstalled = $true
         } 
     }

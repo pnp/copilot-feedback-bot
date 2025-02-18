@@ -16,8 +16,12 @@ function Get-ScriptDirectory {
 
 function Get-AppServiceNameArmTemplateValue {
 	param ( [parameter(mandatory = $true)] $config )
-	   return Get-ArmTemplateValue $config "app_service_name"
-   }
+	return Get-ArmTemplateValue $config "app_service_name"
+}
+function Get-ClientIdArmTemplateValue {
+	param ( [parameter(mandatory = $true)] $config )
+	return Get-ArmTemplateValue $config "service_account_client_id"
+}
 
 # Install custom action in all sites listed in the config
 function ValidateAndInstall ($configFileName) {
@@ -78,16 +82,24 @@ function ValidateAndInstall ($configFileName) {
 	}
 	else {
 		
-		$appContainer = get-AzContainerApp -ResourceGroupName $config.ResourceGroupName -Name Get-AppServiceNameArmTemplateValue($config)
+		$AppServiceName = Get-AppServiceNameArmTemplateValue($config)
+		$appContainer = Get-AzContainerApp -ResourceGroupName $config.ResourceGroupName -Name $AppServiceName
 		if ($null -eq $appContainer) {
 			WriteE -message "Error: App service container not found."
 			return
 		}
-
+		$appContainerConfig = $appContainer | select -ExpandProperty Configuration | ConvertFrom-Json
 		WriteS -message "App services install script finished. Next steps:"
 		WriteS -message "1. Check for any errors above."
-		WriteS -message "2. Check for any errors in the app service deployment center logs."
-		WriteS -message "3. Provision database. Run 'ProvisionDatabase.ps1' script."
+		WriteS -message "2. Check for any errors in the app service deployment center logs. IMPORTANT: The app service container URL is not yet accessible. It will be accessible after the deployment center finishes deploying the app service container."
+		WriteS -message "3. Configure the Entra ID app to include the above FQDN reply URL, and optionally the app URI if you want SSO for Teams."
+		Write-Host ""
+		WriteI -message "App service container FQDN is: $($appContainerConfig.ingress.fqdn)"
+		WriteI -message "App service container URL is: https://$($appContainerConfig.ingress.fqdn)"
+
+		$clientId = Get-ClientIdArmTemplateValue($config)
+		WriteW -message "Make sure app ID $($clientId) has the right reply URLs etc for the app service container URL."
+
 	}
 }
 
@@ -167,9 +179,11 @@ function ValidateConfig {
 # Set global variables
 $scriptPath = Get-ScriptDirectory
 
+
 # Load common script functions
 $scriptContent = Get-Content -Path ($scriptPath + "\SharedFunctions.ps1") -Raw
 Invoke-Expression $scriptContent
+
 $azAppInstalled = LoadModuleGetAzContext -moduleName "Az.App" -loadContext $false
 if (-not $azAppInstalled) {
 	WriteI -message "Documentation: https://learn.microsoft.com/en-us/powershell/module/az.app"
