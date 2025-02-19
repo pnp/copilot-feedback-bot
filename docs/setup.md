@@ -90,6 +90,7 @@ To deploy the bot for production, we use docker to build a new bot image with th
 * You will end up with two images:
    1. ```copilotbot-functions``` - Azure functions app image.
    2. ```copilotbot-web``` - this contains the ASP.Net + built JavaScript with your bot registration details compiled in via the docker-compose.override.yml changes you made earlier.
+   3. ```copilotbot-importer``` - an importer task that looks for usage activity. 
 * Next, we need to push them to your ACR that was created with the backend components. 
 
 ## Deploy Docker Images to Azure Container Registry
@@ -103,16 +104,18 @@ Connect-AzContainerRegistry -Name [myregistry]    # Change for your ACR name
 * Tag images for ACR with:
   * ```docker tag copilotbot-functions [myregistry].azurecr.io/copilotbot-functions```
   * ```docker tag copilotbot-web [myregistry].azurecr.io/copilotbot-web```
+  * ```docker tag copilotbot-importer [myregistry].azurecr.io/copilotbot-importer```
 * Push images with:
   * ```docker push [myregistry].azurecr.io/copilotbot-functions```
   * ```docker push [myregistry].azurecr.io/copilotbot-web```
+  * ```docker push [myregistry].azurecr.io/copilotbot-importer```
 
 ## PowerShell Setup for Cloud Components (Compute)
 Now with the backend created and the docker images pushed to an ACR, we can deploy the compute components in Azure App Services.
 
 1. Copy ARM parameters file template ```deploy/ARM/parameters-appservices-template.json``` to ```deploy/ARM/parameters-appservices.json```
    1. Fill out mandatory values and check the others. This is to install the App Services and Application Insights. 
-   2. **Important**: make sure "imageWebServer" and "imageFunctions" parameters both follow this format:
+   2. **Important**: make sure "imageWebServer", "imageImporter" and "imageFunctions" parameters both follow this format:
         ```[myregistry].azurecr.io/copilotbot-functions:[tag]```
       For example:
         ```contosofeedbackbotprod.azurecr.io/copilotbot-functions:latest```
@@ -121,6 +124,16 @@ Now with the backend created and the docker images pushed to an ACR, we can depl
 2. In the project root folder, run: ```deploy/InstallAppService.ps1```.
 3. The script will deploy an app-service and functions app using the image names you've built and published. 
 4. Check the app-service deployment center logs to make sure everything deployed ok.
+
+## Add URLs to import_url_filter Table
+The last required step is to add at least one filter to import_url_filter in the SQL database. Without this the importer will fail with error:
+
+```
+FATAL ERROR: No import URLs found in database! This means everything would be ignored for SharePoint audit data. Add at least one URL to the import_url_filter table for this to work.
+```
+This is a safety mechanism to make sure confidential activity does not accidentally end up in the SQL database. The system only reports on activity in general terms ("File X was edited by user Y"), and we recommend you add a broad a scope as possible, but this is a step you the customer must do yourself.
+
+Run ```deploy/ProvisionDatabase.ps1``` to insert the URLs stored in your ```InstallConfig.json``` file into this table. 
 
 ## Manual Setup - Create Back-end Azure Resources
 You can deploy the ARM template manually:

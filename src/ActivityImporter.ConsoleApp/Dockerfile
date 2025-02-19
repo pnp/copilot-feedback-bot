@@ -1,7 +1,7 @@
 # See https://aka.ms/customizecontainer to learn how to customize your debug container and how Visual Studio uses this Dockerfile to build your images for faster debugging.
 
 # This stage is used when running from VS in fast mode (Default for Debug configuration)
-FROM mcr.microsoft.com/dotnet/runtime:8.0 AS base
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
 USER $APP_UID
 WORKDIR /app
 
@@ -15,6 +15,7 @@ COPY ["ActivityImporter.Engine/ActivityImporter.Engine.csproj", "ActivityImporte
 COPY ["Common.DataUtils/Common.DataUtils.csproj", "Common.DataUtils/"]
 COPY ["Common.Engine/Common.Engine.csproj", "Common.Engine/"]
 COPY ["Entities.DB/Entities.DB.csproj", "Entities.DB/"]
+COPY ["Directory.Build.props", ""]
 RUN dotnet restore "./ActivityImporter.ConsoleApp/ActivityImporter.ConsoleApp.csproj"
 COPY . .
 WORKDIR "/src/ActivityImporter.ConsoleApp"

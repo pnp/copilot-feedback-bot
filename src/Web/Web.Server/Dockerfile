@@ -23,10 +23,10 @@ ARG VITE_TEAMSFX_START_LOGIN_PAGE_URL
 
 WORKDIR /src
 COPY ["Web/Web.Server/Web.Server.csproj", "Web/Web.Server/"]
-COPY ["Web/web.client/web.client.esproj", "Web/web.client/"]
 COPY ["Common.Engine/Common.Engine.csproj", "Common.Engine/"]
 COPY ["Common.DataUtils/Common.DataUtils.csproj", "Common.DataUtils/"]
 COPY ["Entities.DB/Entities.DB.csproj", "Entities.DB/"]
+COPY ["Directory.Build.props", ""]
 RUN dotnet restore "./Web/Web.Server/Web.Server.csproj"
 COPY . .
 

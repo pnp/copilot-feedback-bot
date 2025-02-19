@@ -5,11 +5,17 @@
         "acr_name": {
             "value": ""
         },
+        "environment_name": {
+            "value": "prodbotenvironment"
+        },
         "imageWebServer": {
-            "value": "DOCKER|contoso.azurecr.io/copilotbot-web:latest"
+            "value": "contoso.azurecr.io/copilotbot-web:latest"
         },
         "imageFunctions": {
-            "value": "DOCKER|contoso.azurecr.io/copilotbot-functions:latest"
+            "value": "contoso.azurecr.io/copilotbot-functions:latest"
+        },
+        "imageImporter": {
+            "value": "contoso.azurecr.io/copilotbot-importer:latest"
         },
         "dockerRegistryStartupCommand": {
             "value": ""
