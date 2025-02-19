@@ -1,7 +1,7 @@
 #
-# InstallToAzure.ps1
+# InstallBackEnd.ps1
 #
-# Installs the solution to Azure using the provided configuration file.
+# Installs the solution back-end components to Azure using the provided configuration file.
 
 Param 
 (

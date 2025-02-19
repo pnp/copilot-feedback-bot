@@ -1,7 +1,7 @@
 #
-# InstallToAzure.ps1
+# InstallAppService.ps1
 #
-# Installs the solution to Azure using the provided configuration file.
+# Installs the solution compute components to Azure using the provided configuration file.
 
 Param 
 (
@@ -93,6 +93,7 @@ function ValidateAndInstall ($configFileName) {
 		WriteS -message "1. Check for any errors above."
 		WriteS -message "2. Check for any errors in the app service deployment center logs. IMPORTANT: The app service container URL is not yet accessible. It will be accessible after the deployment center finishes deploying the app service container."
 		WriteS -message "3. Configure the Entra ID app to include the above FQDN reply URL, and optionally the app URI if you want SSO for Teams."
+		WriteS -message "4. Run ProvisionDatabase.ps1 to ensure there is minimum data for filtering. Without records in table 'import_url_filter', the importer will abort."
 		Write-Host ""
 		WriteI -message "App service container FQDN is: $($appContainerConfig.ingress.fqdn)"
 		WriteI -message "App service container URL is: https://$($appContainerConfig.ingress.fqdn)"

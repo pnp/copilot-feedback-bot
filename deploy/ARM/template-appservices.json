@@ -44,6 +44,9 @@
     "imageWebServer": {
       "type": "string"
     },
+    "imageImporter": {
+      "type": "string"
+    },
     "imageFunctions": {
       "type": "string"
     },
@@ -213,6 +216,7 @@
         "publicNetworkAccess": "Enabled"
       }
     },
+
     {
       "apiVersion": "2024-10-02-preview",
       "name": "[parameters('environment_name')]",
@@ -240,11 +244,13 @@
 
     {
       "apiVersion": "2024-10-02-preview",
-      "name": "[parameters('app_service_name')]",
+      "name": "web",
       "type": "Microsoft.App/containerapps",
       "kind": "containerapps",
       "location": "[parameters('location')]",
-      "dependsOn": [],
+      "dependsOn": [
+        "[resourceId('Microsoft.App/managedEnvironments', parameters('environment_name'))]"
+      ],
       "properties": {
         "environmentId": "[resourceId('Microsoft.App/managedEnvironments', parameters('environment_name'))]",
         "configuration": {
@@ -357,6 +363,119 @@
             "minReplicas": 0,
             "maxReplicas": 1
           }
+        },
+        "workloadProfileName": "Consumption"
+      }
+    },
+
+    {
+      "apiVersion": "2024-10-02-preview",
+      "name": "importer",
+      "type": "Microsoft.App/jobs",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.App/managedEnvironments', parameters('environment_name'))]"
+      ],
+      "properties": {
+        "environmentId": "[resourceId('Microsoft.App/managedEnvironments', parameters('environment_name'))]",
+        "configuration": {
+          "secrets": [
+            {
+              "name": "[concat(parameters('acr_name'), '-password')]",
+              "value": "[listCredentials(resourceId('Microsoft.ContainerRegistry/registries', parameters('acr_name')), '2019-05-01').passwords[0].value]"
+            }
+          ],
+          "registries": [
+            {
+              "server": "[concat(parameters('acr_name'), '.azurecr.io')]",
+              "username": "[listCredentials(resourceId('Microsoft.ContainerRegistry/registries', parameters('acr_name')), '2019-05-01').username]",
+              "passwordSecretRef": "[concat(parameters('acr_name'), '-password')]"
+            }
+          ],
+          "replicaTimeout": 1800,
+          "replicaRetryLimit": 0,
+          "triggerType": "Schedule",
+          "scheduleTriggerConfig": {
+            "replicaCompletionCount": 1,
+            "parallelism": 1,
+            "cronExpression": "0 0 * * *"
+          }
+        },
+        "template": {
+          "containers": [
+            {
+              "name": "importer",
+              "image": "[parameters('imageImporter')]",
+              "command": [],
+              "args": [],
+              "resources": {
+                "cpu": 2,
+                "memory": "4Gi"
+              },
+              "env": [
+                {
+                  "name": "DOCKER_REGISTRY_SERVER_USERNAME",
+                  "value": "[listCredentials(resourceId('Microsoft.ContainerRegistry/registries', parameters('acr_name')), '2019-05-01').username]"
+                },
+                {
+                  "name": "DOCKER_REGISTRY_SERVER_PASSWORD",
+                  "value": "[listCredentials(resourceId('Microsoft.ContainerRegistry/registries', parameters('acr_name')), '2019-05-01').passwords[0].value]"
+                },
+                {
+                  "name": "APPLICATIONINSIGHTS_CONNECTION_STRING",
+                  "value": "[reference(concat('microsoft.insights/components/', parameters('workspace_analytics_name')), '2015-05-01').ConnectionString]"
+                },
+                {
+                  "name": "AppCatalogTeamAppId",
+                  "value": "[parameters('app_catalog_team_app_id')]"
+                },
+                {
+                  "name": "AuthConfig__ClientId",
+                  "value": "[parameters('service_account_client_id')]"
+                },
+                {
+                  "name": "AuthConfig__ApiScope",
+                  "value": "[variables('apiScope')]"
+                },
+                {
+                  "name": "AuthConfig__ClientSecret",
+                  "value": "[parameters('service_account_client_secret')]"
+                },
+                {
+                  "name": "AuthConfig__TenantId",
+                  "value": "[parameters('tenant_id')]"
+                },
+                {
+                  "name": "AuthConfig__Authority",
+                  "value": "https://login.microsoftonline.com/organizations"
+                },
+                {
+                  "name": "AuthConfig__ApiAudience",
+                  "value": "[variables('apiAudience')]"
+                },
+                {
+                  "name": "MicrosoftAppId",
+                  "value": "[parameters('service_account_client_id')]"
+                },
+                {
+                  "name": "MicrosoftAppPassword",
+                  "value": "[parameters('service_account_client_secret')]"
+                },
+                {
+                  "name": "ConnectionStrings__SQL",
+                  "value": "[variables('sqlConnectionString')]"
+                },
+                {
+                  "name": "ConnectionStrings__Redis",
+                  "value": "[concat(parameters('redis_account_name'), '.redis.cache.windows.net:6380,password=','{your-redis-password}',',ssl=True,abortConnect=False')]"
+                },
+                {
+                  "name": "ConnectionStrings__Storage",
+                  "value": "[concat('DefaultEndpointsProtocol=https;AccountName=',parameters('storage_account_name'),';AccountKey=',listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storage_account_name')), '2022-05-01').keys[0].value,';EndpointSuffix=','core.windows.net')]"
+                }
+              ]
+            }
+          ]
         },
         "workloadProfileName": "Consumption"
       }

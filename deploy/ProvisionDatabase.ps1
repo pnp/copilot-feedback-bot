@@ -1,7 +1,7 @@
 #
-# InstallToAzure.ps1
+# ProvisionDatabase.ps1
 #
-# Installs the solution to Azure using the provided configuration file.
+# Adds the filtering configuration to SQL using the provided configuration file. Without entries in import_url_filter, the importer will abort.
 
 Param 
 (
@@ -14,11 +14,6 @@ function Get-ScriptDirectory {
 	Split-Path $Invocation.MyCommand.Path
 }
 
-
-function Get-AppServiceNameArmTemplateValue {
- param ( [parameter(mandatory = $true)] $config )
-	return Get-ArmTemplateValue $config "app_service_name"
-}
 function Get-SqlServerNameArmTemplateValue {
 	param ( [parameter(mandatory = $true)] $config )
 	return Get-ArmTemplateValue $config "sql_server_name"
@@ -35,7 +30,6 @@ function Get-SqlDbNameArmTemplateValue {
 	param ( [parameter(mandatory = $true)] $config )
 	return Get-ArmTemplateValue $config "sql_database_name"
 }
-
 
 
 # Install custom action in all sites listed in the config
@@ -62,71 +56,90 @@ function ValidateAndInstall ($configFileName) {
 		return
 	}
 
-	# Get the list of all subscriptions
-	$subscriptions = Get-AzSubscription
-
-	# Check if the subscription exists
-	$subscriptionExists = $subscriptions | Where-Object { $_.Id -eq $config.SubcriptionId }
-
-	$subId = $config.SubcriptionId
-	if ($null -eq $subscriptionExists) {
-		WriteE -message "Error: Subscription with ID $subId not found."
-		return
-	}
-	else {
-		WriteS -message "Subscription with ID $subId exists."
-	}
-
-	# Select the subscription
-	WriteI -message "Selecting subscription with ID $subId..."
-	Select-AzSubscription -SubscriptionId $subId
-	$resourceGroup = Get-AzResourceGroup -Name $config.ResourceGroupName -ErrorAction SilentlyContinue
-
-	if ($null -eq $resourceGroup) {
-		# Create the resource group if it doesn't exist
-		New-AzResourceGroup -Name $config.ResourceGroupName -Location $config.ResourceGroupLocation
-		WriteS -message "Resource group '$($config.ResourceGroupName)' created in location '$($config.ResourceGroupLocation)'." 
-	}
-	else {
-		WriteS -message "Resource group '$($config.ResourceGroupName)' already exists."
-	}
-
-	$solutionDeploySuccess = InstallAzComponents($config)
-	if (-not $solutionDeploySuccess) {
-		WriteE -message "Solution installation failed."
-	}
-	else {
-		
-		WriteS -message "Solution back-end install script finished. Next steps:"
-		WriteS -message "1. Check for any errors above."
-		WriteS -message "2. Build and publish docker image."
-		WriteS -message "3. Deploy app service using published docker image."
-	}
-}
-
-function InstallAzComponents {
-	param (
-		[Parameter(Mandatory = $true)] $config
-	)
-	
 	$firewallConfigured = AddClientPublicIpToSqlFirewall $config
-	TriggerAppServiceWebJob $config (Get-AppServiceNameArmTemplateValue $config)
-	
-	# Wait for the webjob to finish initialising
-	WriteI -message "Waiting for the webjob to finish initialising SQL database..."
-	Start-Sleep -Seconds 30
 	
 	# Make sure we have at least one site to filter, otherwise webjob won't run
 	if ($firewallConfigured -eq $true) {
 		# Add the URL filters to the database
 		AddUrlFiltersToDB $config
 
-		# Trigger the webjob again now we have the filters so it'll start processing
-		TriggerAppServiceWebJob $config (Get-AppServiceNameArmTemplateValue $config)
+		WriteS -message "Database provisioning completed successfully. All setup tasks have been completed."
 	}
 	else {
 		WriteE -message "Error: Unable to add URL filters to the database. Please add manually to table 'import_url_filter'"
 	}
+}
+
+function AddUrlFiltersToDB {
+	param (
+		[Parameter(Mandatory = $true)] $config
+	)
+	$server = Get-SqlServerNameArmTemplateValue $config
+	$database = Get-SqlDbNameArmTemplateValue $config
+	$userId = Get-SqlServerUserNameArmTemplateValue $config
+	$password = Get-SqlServerPasswordArmTemplateValue $config
+
+	WriteI -message "Adding URL filters to database '$database' on server '$server' ..."
+
+	$connectionString = "Server=tcp:$server.database.windows.net,1433;Initial Catalog=$database;Persist Security Info=False;User ID=$userId;Password=$password;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
+	$connection = New-Object System.Data.SqlClient.SqlConnection
+	$connection.ConnectionString = $connectionString
+
+	$connection.Open()
+
+	foreach ($site in $config.RecordAuditEventsOnSites) {
+		$siteUrl = $site.SiteUrl
+		$exactMatch = $site.ExactMatch
+
+		$query = "
+		IF NOT EXISTS (select * from [import_url_filter] where url_base = '$siteUrl')
+		BEGIN
+			INSERT INTO [import_url_filter] (url_base, exact_match) VALUES ('$siteUrl', '$exactMatch') 
+		END
+		" 
+
+		$command = $connection.CreateCommand()
+		$command.CommandText = $query
+
+		$command.ExecuteNonQuery() | Out-Null
+	}
+
+	$connection.Close()
+	WriteS -message "URL filters added to database '$database' on server '$server'."
+}
+
+function AddClientPublicIpToSqlFirewall {
+	param (
+		[Parameter(Mandatory = $true)] $config
+	)
+	$ruleName = "SetupScript-$env:USERNAME-on-$env:COMPUTERNAME"
+	$server = Get-SqlServerNameArmTemplateValue $config
+
+	# Check if the rule already exists
+	$existingRule = Get-AzSqlServerFirewallRule -ServerName $server -ResourceGroupName $config.ResourceGroupName | Where-Object { $_.FirewallRuleName -eq $ruleName}
+	if ($null -ne $existingRule) {
+		WriteW -message "Your public IP is already added to the SQL server firewall (rule name '$ruleName'), so we won't detect & add it again."
+		return $true
+	}
+
+	# Get your current IP address
+	WriteI -message "Getting your public IP address from http://checkip.dyndns.org..."
+	$client = New-Object System.Net.WebClient
+
+	try {
+		[xml]$response = $client.DownloadString("http://checkip.dyndns.org")
+	}
+	catch {
+		WriteE -message "Error: Unable to get your public IP address. This is likely because you're behind a proxy or firewall that blocks the request, or you have only an IPv6 address that can be seen externally."
+		WriteW "You can always add your public IP address manually to the SQL server '$server' firewall using the Azure portal (rule name '$ruleName')."
+		return $false
+	}
+	$ip = ($response.html.body -split ':')[1].Trim()
+
+	WriteI -message "Adding your public IP '$ip' to the SQL server firewall (rule name '$ruleName')..."
+
+	New-AzSqlServerFirewallRule -ServerName $server -ResourceGroupName $config.ResourceGroupName -FirewallRuleName $ruleName -StartIpAddress $ip -EndIpAddress $ip
+	WriteS -message "Your public IP '$ip' has been added to the SQL server firewall (rule name '$ruleName')."
 }
 
 function ValidateConfig {
@@ -159,41 +172,17 @@ function ValidateConfig {
 	return $true
 }
 
+
+# Set global variables
+$scriptPath = Get-ScriptDirectory
+
+
 # Load common script functions
-$scriptContent = Get-Content -Path .\SharedFunctions.ps1 -Raw
+$scriptContent = Get-Content -Path ($scriptPath + "\SharedFunctions.ps1") -Raw
 Invoke-Expression $scriptContent
 
-$scriptPath = Get-ScriptDirectory
-# Install the Az module if it's not already installed
-$moduleInstalled = $false
-if ($PSVersionTable.PSVersion.Major -lt 7) {
-	if (Get-InstalledModule -Name Az -ErrorAction SilentlyContinue) {
-		$moduleInstalled = $true
-	}
-}
-else {
-	if (Get-Module -ListAvailable -Name Az) {
-		$moduleInstalled = $true
-	} 
-}
-
-if (-not $moduleInstalled) {
-	WriteE -message "Az PowerShell module not found. Please install it using 'Install-Module -Name Az -AllowClobber -Scope CurrentUser'." 
-	WriteI -message "Documentation: https://learn.microsoft.com/en-us/powershell/azure/install-azure-powershell"
-}
-else {
-	WriteI -message "Az PowerShell module found. Checking for Azure login context..."
-	
-	# Check if there is an Azure context
-	$context = Get-AzContext
-
-	if ($null -eq $context) {
-		WriteE -message "No Azure login context found. Please log in using Connect-AzAccount." 
-	}
-	else {
-		$accountId = $context.Account.Id
-		WriteS -message "Azure login context found for account '$accountId'. Installing solution..."
-		
-		ValidateAndInstall($ConfigFileName)
-	}
+# Check if we can install
+$canInstall = LoadAzModuleGetAzContext
+if ($canInstall) {
+	ValidateAndInstall($ConfigFileName)
 }
