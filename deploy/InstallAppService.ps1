@@ -81,9 +81,7 @@ function ValidateAndInstall ($configFileName) {
 		WriteE -message "App services installation failed."
 	}
 	else {
-		
-		$AppServiceName = Get-AppServiceNameArmTemplateValue($config)
-		$appContainer = Get-AzContainerApp -ResourceGroupName $config.ResourceGroupName -Name $AppServiceName
+		$appContainer = Get-AzContainerApp -ResourceGroupName $config.ResourceGroupName -Name "web"
 		if ($null -eq $appContainer) {
 			WriteE -message "Error: App service container not found."
 			return

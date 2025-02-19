@@ -87,7 +87,7 @@ internal class ProgramTasks(AppConfig importConfig, ILogger logger)
             }
             catch (HttpRequestException ex)
             {
-                logger.LogError($"Got unexpected exception importing activity: {ex.Message}");
+                logger.LogError($"Got unexpected exception importing user usage activity: {ex.Message}");
             }
         }
         return true;
