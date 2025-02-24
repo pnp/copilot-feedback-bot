@@ -72,7 +72,7 @@
     "schedule1pm": "[concat(parameters('scheduleStartTime'), 'T13:00:00+00:00')]",
     "schedule6pm": "[concat(parameters('scheduleStartTime'), 'T18:00:00+00:00')]",
     "schedule11pm": "[concat(parameters('scheduleStartTime'), 'T23:00:00+00:00')]",
-    "scriptsLocation": "https://raw.githubusercontent.com/pnp/Microsoft365-Analytics-Insights/refs/heads/main/src/AnalyticsEngine/WebJob.Office365ActivityImporter/AutomationPS/ProfilingJobs/",
+    "scriptsLocation": "https://raw.githubusercontent.com/pnp/copilot-feedback-bot/refs/heads/ProfilingExtension/deploy/profiling/ProfilingJobs/",
     "scripts": {
       "runbooks": [
         {
@@ -140,7 +140,7 @@
         },
         {
           "name": "SqlServer",
-          "value": "[concat('\"', parameters('sql_server_name'), '\"')]",
+          "value": "[concat(parameters('sql_server_name'), '.database.windows.net')]",
           "isEncrypted": false
         }
       ],
@@ -461,7 +461,7 @@
         "startTime": "[variables('scripts').schedules[copyIndex()].startTime]",
         "interval": "[variables('scripts').schedules[copyIndex()].interval]",
         "frequency": "[variables('scripts').schedules[copyIndex()].frequency]",
-        "expiryTime": "9999-12-31T23:59:00+00:00",
+        "expiryTime": "9999-12-31T23:59:59+00:00",
         "timeZone": "[parameters('scheduleTimeZone')]",
         "advancedSchedule": "[variables('scripts').schedules[copyIndex()].advancedSchedule]"
       }

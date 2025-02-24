@@ -2,7 +2,12 @@
 
 Deployment PC:
 * [Docker desktop](https://docs.docker.com/desktop/setup/install/windows-install/) + [firewall exceptions](https://docs.docker.com/desktop/setup/allow-list/)
-* [Az PowerShell](https://learn.microsoft.com/en-us/powershell/azure/install-azure-powershell) version 13.2.0 or above. 
+* PowerShell
+  * [PowerShell 7.5](https://learn.microsoft.com/en-gb/powershell/scripting/install/installing-powershell-on-windows)
+  * [Az PowerShell](https://learn.microsoft.com/en-us/powershell/azure/install-azure-powershell) version 13.2.0 or above. 
+  * Modules:
+    * SqlServer
+    * Az.Apps
 * Firewall connectivity to your created Azure SQL Server port 1433, once back-end is created.
 * At least 50GB of free space. 
 
