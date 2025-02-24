@@ -172,7 +172,13 @@ Graph permissions needed (application):
 * Reports.Read.All - for reading activity data so we can cross-check who's active but not using copilot. 
 * TeamsAppInstallation.ReadWriteForUser.All - so the bot can proactively install itself into users Teams, to start a new conversation. 
 
-Office 365 Management APIs
+When the activity import detects copilot events that have a context (a meeting/file), it'll try and load the metadata about that context if permissions are in place:
+* OnlineMeetings.Read.All - read meeting info for meetings with copilot interactions.
+* Files.Read.All - read file info for copilot related files.
+
+The system and stats still work high-level without these permissions, but the deep filtering and reporting isn't possible without this extra metadata.
+
+Office 365 Management APIs (Required)
 * ActivityFeed.Read - for detecting copilot and Office 365 audit events. 
 
 All these permissions need administrator consent to be effective. 

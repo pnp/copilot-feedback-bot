@@ -35,10 +35,11 @@ public class GraphFileMetadataLoader : ICopilotMetadataLoader
         }
         catch (ODataError ex)
         {
-            _logger.LogWarning(ex, "Error getting meeting info for meetingId {meetingId}", meetingId);
+            LogGraphError(ex, $"getting meeting info for meetingId {meetingId}");
             return null;
         }
     }
+
 
     /// <summary>
     /// From a Copilot context ID, get the file metadata
@@ -90,7 +91,7 @@ public class GraphFileMetadataLoader : ICopilotMetadataLoader
             }
             catch (ODataError ex) when (ex.ResponseStatusCode == 404)
             {
-                _logger.LogWarning("No item found for driveItemId {driveItemId}", driveItemId);
+                LogGraphError(ex, $"getting item info for driveItemId {driveItemId}");
                 return null;
             }
 
@@ -118,7 +119,7 @@ public class GraphFileMetadataLoader : ICopilotMetadataLoader
             }
             catch (ODataError ex)
             {
-                _logger.LogWarning(ex, "Error getting items info for list {spListId} on site {siteUrl}", spListId, siteUrl);
+                LogGraphError(ex, $"getting items info for list {spListId} on site {siteUrl}");
                 return null;
             }
 
@@ -143,7 +144,7 @@ public class GraphFileMetadataLoader : ICopilotMetadataLoader
         }
         catch (ODataError ex)
         {
-            _logger.LogWarning(ex, "Error getting drive info for user {eventUpn}", eventUpn);
+            LogGraphError(ex, $"getting drive info for user {eventUpn}");
             return null;
         }
     }
@@ -178,7 +179,7 @@ public class GraphFileMetadataLoader : ICopilotMetadataLoader
             }
             catch (ODataError ex)
             {
-                _logger.LogWarning(ex, $"Error {ex.ResponseStatusCode} getting site info for site {siteUrl}", siteUrl);
+                LogGraphError(ex, $"getting site info for site {siteUrl}");
                 return null;
             }
 
@@ -216,5 +217,9 @@ public class GraphFileMetadataLoader : ICopilotMetadataLoader
         {
             return siteDrive;
         }
+    }
+    void LogGraphError(ODataError error, string action)
+    {
+        _logger.LogWarning(error, $"Error '{error.Error?.Code}' {action}");
     }
 }
