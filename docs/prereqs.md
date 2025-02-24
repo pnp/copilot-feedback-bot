@@ -1,0 +1,29 @@
+# Prerequisites
+
+Deployment PC:
+* [Docker desktop](https://docs.docker.com/desktop/setup/install/windows-install/) + [firewall exceptions](https://docs.docker.com/desktop/setup/allow-list/)
+* [Az PowerShell](https://learn.microsoft.com/en-us/powershell/azure/install-azure-powershell) version 13.2.0 or above. 
+* Firewall connectivity to your created Azure SQL Server port 1433, once back-end is created.
+* At least 50GB of free space. 
+
+Cloud:
+* Contributor rights to an Azure subscription.
+* Team admin right to publish new applications.
+* Global admin rights to create Teams bot and consent to bot/app API permissions.
+
+## Application Permissions
+Graph permissions needed (application):
+* User.Read.All - for looking up user metadata, allowing activity & survey slicing by demographics (job title, location etc)
+* Reports.Read.All - for reading activity data so we can cross-check who's active but not using copilot. 
+* TeamsAppInstallation.ReadWriteForUser.All - so the bot can proactively install itself into users Teams, to start a new conversation. 
+
+When the activity import detects copilot events that have a context (a meeting/file), it'll try and load the metadata about that context if permissions are in place:
+* OnlineMeetings.Read.All - read meeting info for meetings with copilot interactions.
+* Files.Read.All - read file info for copilot related files.
+
+The system and stats still work high-level without these permissions, but the deep filtering and reporting isn't possible without this extra metadata.
+
+Office 365 Management APIs (Required)
+* ActivityFeed.Read - for detecting copilot and Office 365 audit events. 
+
+All these permissions need administrator consent to be effective. 

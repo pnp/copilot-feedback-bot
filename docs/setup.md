@@ -18,16 +18,7 @@ You need Teams admin rights and rights to assign sensitive privileges for this s
 Docker is used in this guide just because it gives a consistent build process, but is not essential. You could also build and publish with GitHub actions. 
 
 ## Requirements
-Deployment PC:
-* [Docker desktop](https://docs.docker.com/desktop/setup/install/windows-install/) + [firewall exceptions](https://docs.docker.com/desktop/setup/allow-list/)
-* [Az PowerShell](https://learn.microsoft.com/en-us/powershell/azure/install-azure-powershell) version 13.2.0 or above. 
-* Firewall connectivity to your created Azure SQL Server port 1433, once back-end is created.
-* At least 50GB of free space. 
-
-Cloud:
-* Contributor rights to an Azure subscription.
-* Team admin right to publish new applications.
-* Global admin rights to consent to bot API permissions.
+Check the [prerequisites](prereqs.md) document before attempting setup. 
 
 ## Create Bot with new App ID
 1. Go to: https://dev.teams.microsoft.com/bots and create a new bot (or alternatively in the Azure Portal, create a new Azure bot - the 1st link doesn't require an Azure subscription).
@@ -165,23 +156,6 @@ Example: ```ConnectionStrings__SQL``` instead of ```ConnectionStrings:SQL```.
 ConnectionStrings go in their own section in App Services (and prefix "ConnectionStrings:" to the name you give there for .Net). 
 
 _Important:_ **If any values are missing, the process will crash at start-up**. Check the local VM application log if you get a start-up error (in Kudu for app services).
-
-## Application Permissions
-Graph permissions needed (application):
-* User.Read.All - for looking up user metadata, allowing activity & survey slicing by demographics (job title, location etc)
-* Reports.Read.All - for reading activity data so we can cross-check who's active but not using copilot. 
-* TeamsAppInstallation.ReadWriteForUser.All - so the bot can proactively install itself into users Teams, to start a new conversation. 
-
-When the activity import detects copilot events that have a context (a meeting/file), it'll try and load the metadata about that context if permissions are in place:
-* OnlineMeetings.Read.All - read meeting info for meetings with copilot interactions.
-* Files.Read.All - read file info for copilot related files.
-
-The system and stats still work high-level without these permissions, but the deep filtering and reporting isn't possible without this extra metadata.
-
-Office 365 Management APIs (Required)
-* ActivityFeed.Read - for detecting copilot and Office 365 audit events. 
-
-All these permissions need administrator consent to be effective. 
 
 ## Optional - Deploy Bot Admin Teams App
 There is a React web application deployed to the app service that handles administration of bot questions, and other areas. The app can be accessed via MSAL logins or with Teams SSO. Teams is the preferred method as it doesn't require any extra authentication. 
