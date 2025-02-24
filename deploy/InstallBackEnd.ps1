@@ -175,7 +175,7 @@ function ValidateConfig {
 $scriptPath = Get-ScriptDirectory
 
 # Load common script functions
-$scriptContent = Get-Content -Path $scriptPath + "\" + SharedFunctions.ps1 -Raw
+$scriptContent = Get-Content -Path ($scriptPath + "\SharedFunctions.ps1") -Raw
 Invoke-Expression $scriptContent
 
 # Install the Az module if it's not already installed
