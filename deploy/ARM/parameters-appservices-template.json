@@ -38,9 +38,6 @@
         "app_service_plan_name": {
             "value": ""
         },
-        "function_app_service_name": {
-            "value": ""
-        },
         "app_service_plan_sku": {
             "value": "Standard"
         },
