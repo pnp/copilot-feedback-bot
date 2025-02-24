@@ -20,6 +20,9 @@ This is an automated way to get real feedback from your users about what they th
 
 All data is stored in your own SQL Server.
 
+## Prerequisites
+Check the [prerequisites](docs/prereqs.md) document to see everything you'll need to get the system running. 
+
 ## Usage
 **Quick version**: run the activity import and let the bot do the rest. The functions app will look for users that have used copilot and then survey them.
 
