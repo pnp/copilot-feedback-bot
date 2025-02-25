@@ -4,16 +4,6 @@ namespace ActivityImporter.Engine.Graph.O365UsageReports.Models;
 
 public class TeamsUserActivityUserRecord : AbstractUserActivityUserRecordWithUpn
 {
-    [JsonProperty("reportRefreshDate")]
-    public string ReportRefreshDate { get; set; } = null!;
-
-    [JsonProperty("isLicensed")]
-    public bool IsLicensed { get; set; }
-
-
-    [JsonProperty("isDeleted")]
-    public bool IsDeleted { get; set; }
-
     [JsonProperty("deletedDate")]
     public string DeletedDate { get; set; } = null!;
 
@@ -62,8 +52,12 @@ public class TeamsUserActivityUserRecord : AbstractUserActivityUserRecordWithUpn
 
     [JsonProperty("screenShareDuration")] public string ScreenShareDuration { get; set; } = null!;
 
-    [JsonProperty("hasOtherAction")]
-    public bool HasOtherAction { get; set; }
+    [JsonProperty("postMessages")]
+    public long PostMessages { get; set; }
 
-    [JsonProperty("reportPeriod")] public string ReportPeriod { get; set; } = null!;
+    [JsonProperty("replyMessages")]
+    public long ReplyMessages { get; set; }
+
+    [JsonProperty("urgentMessages")]
+    public long UrgentMessages { get; set; }
 }

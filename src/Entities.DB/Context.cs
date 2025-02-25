@@ -38,7 +38,10 @@ public class DataContext : DbContext
     public DbSet<UserOfficeLocation> UserOfficeLocations { get; set; }
     public DbSet<GlobalTeamsUserUsageLog> TeamUserActivityLogs { get; set; }
     public DbSet<GlobalTeamsUserDeviceUsageLog> TeamsUserDeviceUsageLog { get; set; }
+    public DbSet<YammerUserActivityLog> YammerUserActivityLogs { get; set; }
+    public DbSet<YammerDeviceActivityLog> YammerDeviceActivityLogs { get; set; }
 
+    public DbSet<AppPlatformUserActivityLog> AppPlatformUserUsageLog { get; set; }
 
     public DbSet<OutlookUsageActivityLog> OutlookUsageActivityLogs { get; set; }
     public DbSet<OneDriveUserActivityLog> OneDriveUserActivityLogs { get; set; }
@@ -110,6 +113,11 @@ public class DataContext : DbContext
 
         modelBuilder.Entity<User>()
          .HasIndex(t => new { t.UserPrincipalName })
+         .IsUnique();
+
+
+        modelBuilder.Entity<UserLicenseTypeLookup>()
+         .HasIndex(t => new { t.LicenseTypeId, t.UserId })
          .IsUnique();
 
         modelBuilder.Entity<SurveyQuestionDB>()

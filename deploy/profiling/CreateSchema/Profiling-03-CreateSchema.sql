@@ -231,7 +231,7 @@ AS
   )
   SELECT
     eu.id,
-    user_name,
+    upn,
     azure_ad_id,
     mail,
     office_location_id,

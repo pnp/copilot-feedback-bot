@@ -33,6 +33,11 @@ public class TeamsUserUsageLoader : AbstractActivityLoader<GlobalTeamsUserUsageL
         todaysLog.ScheduledRecurringMeetingsAttendedCount = userActivityReportPage.ScheduledRecurringMeetingsAttendedCount;
         todaysLog.ScheduledRecurringMeetingsOrganizedCount = userActivityReportPage.ScheduledRecurringMeetingsOrganizedCount;
 
+
+        todaysLog.UrgentMessages = userActivityReportPage.UrgentMessages;
+        todaysLog.PostMessages = userActivityReportPage.PostMessages;
+        todaysLog.ReplyMessages = userActivityReportPage.ReplyMessages;
+
         // ISO8601 duration strings.
         todaysLog.AudioDurationSeconds = System.Xml.XmlConvert.ToTimeSpan(userActivityReportPage.AudioDuration).Seconds;
         todaysLog.VideoDurationSeconds = System.Xml.XmlConvert.ToTimeSpan(userActivityReportPage.VideoDuration).Seconds;

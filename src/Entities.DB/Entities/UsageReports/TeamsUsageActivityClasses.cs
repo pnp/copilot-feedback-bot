@@ -54,6 +54,19 @@ public class GlobalTeamsUserUsageLog : UserRelatedAbstractUsageActivity
 
     [Column("screenshare_duration_seconds")]
     public int ScreenShareDurationSeconds { get; set; }
+
+
+    /// <summary>
+    /// The number of post messages in all channels during the specified time period.
+    /// </summary>
+    [Column("post_messages")]
+    public long PostMessages { get; set; }
+
+    [Column("reply_messages")]
+    public long ReplyMessages { get; set; }
+
+    [Column("urgent_messages")]
+    public long UrgentMessages { get; set; }
 }
 
 
