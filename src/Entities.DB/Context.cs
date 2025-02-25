@@ -37,6 +37,8 @@ public class DataContext : DbContext
     public DbSet<CompanyName> CompanyNames { get; set; }
     public DbSet<UserOfficeLocation> UserOfficeLocations { get; set; }
     public DbSet<GlobalTeamsUserUsageLog> TeamUserActivityLogs { get; set; }
+    public DbSet<GlobalTeamsUserDeviceUsageLog> TeamsUserDeviceUsageLog { get; set; }
+
 
     public DbSet<OutlookUsageActivityLog> OutlookUsageActivityLogs { get; set; }
     public DbSet<OneDriveUserActivityLog> OneDriveUserActivityLogs { get; set; }
