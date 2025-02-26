@@ -13,7 +13,7 @@ public class User : AbstractEFEntity
     public string UserPrincipalName { get; set; } = null!;
 
     [Column("mail")]
-    public string Mail { get; set; } = string.Empty;
+    public string? Mail { get; set; } = string.Empty;
 
     [Column("last_updated")]
     public DateTime? LastUpdated { get; set; } = null;

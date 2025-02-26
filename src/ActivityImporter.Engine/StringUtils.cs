@@ -117,7 +117,7 @@ public class StringUtils
     }
 
 
-    public static string EnsureMaxLength(string potentiallyLongString, int maxLength)
+    public static string EnsureMaxLength(string? potentiallyLongString, int maxLength)
     {
         if (string.IsNullOrEmpty(potentiallyLongString))
         {

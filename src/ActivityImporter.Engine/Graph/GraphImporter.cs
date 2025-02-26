@@ -54,8 +54,10 @@ public class GraphImporter : AbstractApiLoader
         userMetadaTimer.Start();
 
         // Update Graph users first
-        var userUpdater = new UserMetadataUpdater(_appConfig, _telemetry, _graphAppIndentityOAuthContext.Creds, httpClient);
-        await userUpdater.InsertAndUpdateDatabaseUsersFromGraph();
+        using (var userUpdater = new UserMetadataUpdater(_appConfig, _telemetry, _graphAppIndentityOAuthContext.Creds, httpClient))
+        {
+            await userUpdater.InsertAndUpdateDatabaseUsersFromGraph();
+        }
 
         // Track finished event 
         userMetadaTimer.TrackFinishedEventAndStopTimer(AnalyticsEvent.FinishedSectionImport);

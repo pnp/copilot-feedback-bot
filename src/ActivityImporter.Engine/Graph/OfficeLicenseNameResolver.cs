@@ -34,8 +34,11 @@ public class OfficeLicenseNameResolver
 
     }
 
-    public string? GetDisplayNameFor(string id)
+    public string? GetDisplayNameFor(string? id)
     {
+        if (string.IsNullOrEmpty(id))
+            return null;
+
         var result = _records.Where(r => r.IdString.ToLower() == id.ToLower()).FirstOrDefault();
         if (result == null)
             return null;

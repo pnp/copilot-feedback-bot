@@ -14,14 +14,15 @@ namespace ActivityImporter.Engine.Graph.GraphUser;
 /// <summary>
 /// Ensures user table info is upto-date from Graph
 /// </summary>
-public class UserMetadataUpdater : AbstractApiLoader
+public class UserMetadataUpdater : AbstractApiLoader, IDisposable
 {
     #region Constructor & Privates
     private readonly AppConfig _appConfig;
     private readonly ManualGraphCallClient _httpClient;
     private readonly GraphServiceClient _graphServiceClient;
     private readonly OfficeLicenseNameResolver _officeLicenseNameResolver;
-    private UserMetadataCache? _userMetaCache;
+    private readonly UserMetadataCache _userMetaCache;
+    private readonly DataContext _db;
     private readonly GraphUserLoader _userLoader;
 
     public UserMetadataUpdater(AppConfig settings, ILogger telemetry, TokenCredential creds, ManualGraphCallClient manualGraphCallClient)
@@ -30,6 +31,13 @@ public class UserMetadataUpdater : AbstractApiLoader
         this._graphServiceClient = new GraphServiceClient(creds);
         this._officeLicenseNameResolver = new OfficeLicenseNameResolver();
         _appConfig = settings;
+
+
+        var optionsBuilder = new DbContextOptionsBuilder<DataContext>();
+        optionsBuilder.UseSqlServer(_appConfig.ConnectionStrings.SQL);
+        _db = new DataContext(optionsBuilder.Options);
+
+        _userMetaCache = new UserMetadataCache(_db);
 
         // Override default
         _httpClient = manualGraphCallClient;
@@ -45,130 +53,141 @@ public class UserMetadataUpdater : AbstractApiLoader
     /// </summary>
     public async Task InsertAndUpdateDatabaseUsersFromGraph()
     {
-        var optionsBuilder = new DbContextOptionsBuilder<DataContext>();
-        optionsBuilder.UseSqlServer(_appConfig.ConnectionStrings.SQL);
+        _telemetry.LogInformation($"{DateTime.Now.ToShortTimeString()} User import - start");
 
-        using (var db = new DataContext(optionsBuilder.Options))
+
+        // If we have no active users, assume new install so clear delta key
+        var activeUserCount = await _db.Users.Where(u => u.AccountEnabled.HasValue && u.AccountEnabled.Value == true).CountAsync();
+        if (activeUserCount == 0)
         {
-            _userMetaCache = new UserMetadataCache(db);
-
-            _telemetry.LogInformation($"{DateTime.Now.ToShortTimeString()} User import - start");
-
-
-            // If we have no active users, assume new install so clear delta key
-            var activeUserCount = await db.Users.Where(u => u.AccountEnabled.HasValue && u.AccountEnabled.Value == true).CountAsync();
-            if (activeUserCount == 0)
-            {
-                await _userLoader.ClearUserQueryDeltaCode();
-            }
-
-            // Load from Graph & update delta code once done
-            var allActiveGraphUsers = await _userLoader.LoadAllActiveUsers();
-
-            // Get SKUs from tenant
-            SubscribedSkuCollectionResponse? skus = null;
-            try
-            {
-                skus = await _graphServiceClient.SubscribedSkus.GetAsync();
-            }
-            catch (ODataError ex)
-            {
-                if ((System.Net.HttpStatusCode)ex.ResponseStatusCode == System.Net.HttpStatusCode.Forbidden)
-                {
-                    _telemetry.LogError($"User import - couldn't load SKUs for org - {ex.Message}. Ensure 'Organization.Read.All' in granted.");
-                }
-                else
-                {
-                    _telemetry.LogError(ex, $"User import - couldn't load SKUs for org - {ex.Message}");
-                }
-
-                // If we can't get tenant SKUs to find all users by, we can get SKUs per user instead, but this can be very slow.
-                _telemetry.LogWarning($"User import - will load SKUs directly from each user instead. This will be slow.");
-            }
-
-            var allDbUsers = await db.Users.Include(u => u.LicenseLookups).ToListAsync();
-            var graphMentionedExistingDbUsers = GetDbUsersFromGraphUsers(allActiveGraphUsers, allDbUsers);
-
-            // Insert any user we've not seen so far
-            var insertedDbUsers = await InsertMissingUsers(db, allActiveGraphUsers, graphMentionedExistingDbUsers, skus == null);
-            var notInserted = allActiveGraphUsers.Where(
-                u => !string.IsNullOrEmpty(u.UserPrincipalName) &&
-                    !insertedDbUsers.Where(i => i.UserPrincipalName.ToLower() == u.UserPrincipalName.ToLower()).Any()).ToList();
-
-
-            // Check existing users again Graph updates
-            _telemetry.LogInformation($"User import - updating {notInserted.Count.ToString("N0")} existing users...");
-            foreach (var existingGraphUser in notInserted)
-            {
-                var dbUser = graphMentionedExistingDbUsers.Where(u => u.UserPrincipalName.ToLower() == existingGraphUser.UserPrincipalName.ToLower()).SingleOrDefault();
-                await UpdateDbUserWithGraphData(db, existingGraphUser, allActiveGraphUsers, allDbUsers, dbUser, skus == null);
-            }
-
-            // Combine inserted & modified db users
-            var allProcessedDbUsers = new List<Entities.DB.Entities.User>(insertedDbUsers);
-            var notInsertDbUsers = GetDbUsersFromGraphUsers(notInserted, graphMentionedExistingDbUsers);
-            allProcessedDbUsers.AddRange(notInsertDbUsers);
-
-            // Can we update SKUs for users on batch (ie Organization.Read.All granted)?
-            if (skus != null)
-            {
-                await ProcessSKUsForAllUsers(skus, allProcessedDbUsers, db);
-                _telemetry.LogInformation($"User import - updated user license information from {skus.Value.Count.ToString("N0")} tenant SKUs");
-            }
-
-            db.ChangeTracker.DetectChanges();
-            await db.SaveChangesAsync();
-            _telemetry.LogInformation($"{DateTime.Now.ToShortTimeString()} User import - inserted {insertedDbUsers.Count.ToString("N0")} new users and updated {notInserted.Count.ToString("N0")} from Graph API");
+            await _userLoader.ClearUserQueryDeltaCode();
         }
+
+        // Load from Graph & update delta code once done
+        var allActiveGraphUsers = await _userLoader.LoadAllActiveUsers();
+
+        // Get SKUs from tenant
+        SubscribedSkuCollectionResponse? skus = null;
+        try
+        {
+            skus = await _graphServiceClient.SubscribedSkus.GetAsync();
+        }
+        catch (ODataError ex)
+        {
+            if ((System.Net.HttpStatusCode)ex.ResponseStatusCode == System.Net.HttpStatusCode.Forbidden)
+            {
+                _telemetry.LogError($"User import - couldn't load SKUs for org - {ex.Message}. Ensure 'Organization.Read.All' in granted.");
+            }
+            else
+            {
+                _telemetry.LogError(ex, $"User import - couldn't load SKUs for org - {ex.Message}");
+            }
+
+            // If we can't get tenant SKUs to find all users by, we can get SKUs per user instead, but this can be very slow.
+            _telemetry.LogWarning($"User import - will load SKUs directly from each user instead. This will be slow.");
+        }
+
+        var allDbUsers = await _db.Users.Include(u => u.LicenseLookups).ToListAsync();
+        var graphMentionedExistingDbUsers = GetDbUsersFromGraphUsers(allActiveGraphUsers, allDbUsers);
+
+        // Insert any user we've not seen so far
+        var insertedDbUsers = await InsertMissingUsers(_db, allActiveGraphUsers, graphMentionedExistingDbUsers, skus == null);
+        var notInserted = allActiveGraphUsers.Where(
+            u => !string.IsNullOrEmpty(u.UserPrincipalName) &&
+                !insertedDbUsers.Where(i => i.UserPrincipalName.ToLower() == u.UserPrincipalName.ToLower()).Any()).ToList();
+
+
+        // Check existing users again Graph updates
+        _telemetry.LogInformation($"User import - updating {notInserted.Count.ToString("N0")} existing users...");
+        foreach (var existingGraphUser in notInserted)
+        {
+            var dbUser = graphMentionedExistingDbUsers.Where(u => u.UserPrincipalName.ToLower() == existingGraphUser.UserPrincipalName.ToLower()).SingleOrDefault();
+            if (dbUser == null)
+            {
+                _telemetry.LogDebug($"User import - couldn't find existing user '{existingGraphUser.UserPrincipalName}' in DB");
+                continue;
+            }
+            
+            await UpdateDbUserWithGraphData(_db, existingGraphUser, allActiveGraphUsers, allDbUsers, dbUser, skus == null);
+        }
+
+        // Combine inserted & modified _db users
+        var allProcessedDbUsers = new List<Entities.DB.Entities.User>(insertedDbUsers);
+        var notInsertDbUsers = GetDbUsersFromGraphUsers(notInserted, graphMentionedExistingDbUsers);
+        allProcessedDbUsers.AddRange(notInsertDbUsers);
+
+        // Can we update SKUs for users on batch (ie Organization.Read.All granted)?
+        if (skus?.Value != null)
+        {
+            await ProcessSKUsForAllUsers(skus.Value, allProcessedDbUsers);
+            _telemetry.LogInformation($"User import - updated user license information from {skus.Value.Count.ToString("N0")} tenant SKUs");
+        }
+
+        _db.ChangeTracker.DetectChanges();
+        await _db.SaveChangesAsync();
+        _telemetry.LogInformation($"{DateTime.Now.ToShortTimeString()} User import - inserted {insertedDbUsers.Count.ToString("N0")} new users and updated {notInserted.Count.ToString("N0")} from Graph API");
+
     }
 
-    private async Task ProcessSKUsForAllUsers(SubscribedSkuCollectionResponse skus, List<Entities.DB.Entities.User> graphFoundDbUsers, DataContext db)
+    private async Task ProcessSKUsForAllUsers(List<SubscribedSku> skus, List<Entities.DB.Entities.User> graphFoundDbUsers)
     {
         // Remove all license info from all users 1st
-        db.UserLicenseTypeLookups.RemoveRange(graphFoundDbUsers.SelectMany(u => u.LicenseLookups));
+        _db.UserLicenseTypeLookups.RemoveRange(graphFoundDbUsers.SelectMany(u => u.LicenseLookups));
 
-        foreach (var sku in skus.Value)
+        foreach (var sku in skus)
         {
-            var req = await _graphServiceClient.Users.GetAsync(o =>
+            var usersWithSku = await _graphServiceClient.Users.GetAsync(o =>
             {
                 o.QueryParameters.Select = ["userPrincipalName"];
                 o.QueryParameters.Filter = $"assignedLicenses/any(u:u/skuId eq {sku.SkuId})";
             });
+            if (usersWithSku != null)
+            {
 
-            var allUsersWithSku = new List<Microsoft.Graph.Models.User>();
+                var allUsersWithSku = new List<Microsoft.Graph.Models.User>();
 
-            int skuPage = 1;
-
-
-            // Recursively load users 
-            var pageIterator = PageIterator<Microsoft.Graph.Models.User, UserCollectionResponse>
-            .CreatePageIterator(
-                _graphServiceClient,
-                req,
-                // Callback executed for each item in
-                // the collection
-                (userWithSku) =>
-                {
-                    allUsersWithSku.Add(userWithSku);
-                    skuPage++;
-                    Console.WriteLine($"DEBUG: SKU {sku.SkuPartNumber} page {skuPage}");
-
-                    return true;
-                });
+                int skuPage = 1;
 
 
-            // Update all
-            await AddSkuForUsers(graphFoundDbUsers, allUsersWithSku, sku, db);
+                // Recursively load users 
+                var pageIterator = PageIterator<Microsoft.Graph.Models.User, UserCollectionResponse>
+                .CreatePageIterator(
+                    _graphServiceClient,
+                    usersWithSku,
+                    // Callback executed for each item in
+                    // the collection
+                    (userWithSku) =>
+                    {
+                        allUsersWithSku.Add(userWithSku);
+                        skuPage++;
+
+#if DEBUG
+                        Console.WriteLine($"DEBUG: SKU {sku.SkuPartNumber} page {skuPage}");
+#endif
+                        return true;
+                    });
+
+
+                // Update all
+                await AddSkuForUsers(graphFoundDbUsers, allUsersWithSku, sku);
+            }
+
         }
 
     }
 
-    private async Task AddSkuForUsers(List<Entities.DB.Entities.User> graphFoundDbUsers, List<Microsoft.Graph.Models.User> usersWithSku, SubscribedSku sku, DataContext db)
+    private async Task AddSkuForUsers(List<Entities.DB.Entities.User> graphFoundDbUsers, List<Microsoft.Graph.Models.User> usersWithSku, 
+        SubscribedSku sku)
     {
+        if (sku.SkuPartNumber == null)
+        {
+            _telemetry.LogWarning($"User import - SKU with no part-number found. Skipping.");
+            return;
+        }
         var relevantDbUsers = new List<Entities.DB.Entities.User>();
         foreach (var graphUser in usersWithSku)
             foreach (var dbUser in graphFoundDbUsers)
-                if (graphUser.UserPrincipalName.ToLower() == dbUser.UserPrincipalName.ToLower())
+                if (graphUser.UserPrincipalName?.ToLower() == dbUser.UserPrincipalName.ToLower())
                 {
                     relevantDbUsers.Add(dbUser);
                     break;
@@ -188,10 +207,10 @@ public class UserMetadataUpdater : AbstractApiLoader
                 Console.WriteLine($"User {i.ToString("N0")} / {relevantDbUsers.Count.ToString("N0")} processed for licenses.");
             }
         }
-        db.UserLicenseTypeLookups.AddRange(list);
+        _db.UserLicenseTypeLookups.AddRange(list);
     }
 
-    private async Task UpdateDbUserWithGraphData(DataContext db, GraphUser graphUser, List<GraphUser> allGraphUsers, List<Entities.DB.Entities.User> allDbUsers, Entities.DB.Entities.User dbUser, bool readUserSkus)
+    private async Task UpdateDbUserWithGraphData(DataContext _db, GraphUser graphUser, List<GraphUser> allGraphUsers, List<Entities.DB.Entities.User> allDbUsers, Entities.DB.Entities.User dbUser, bool readUserSkus)
     {
         UpdateDbUserFromGraphUser(dbUser, graphUser);
 
@@ -277,16 +296,17 @@ public class UserMetadataUpdater : AbstractApiLoader
                 _telemetry.LogError(ex, $"User import - couldn't load service-plans for user ID '{graphUser.Id}' - {ex.Message}");
             }
 
-            if (userServicePlans != null)
+            if (userServicePlans?.Value != null)
             {
                 var allLicenses = new List<LicenseType>();
                 foreach (var userPlan in userServicePlans.Value)
                 {
-                    allLicenses.Add(await GetLicenseType(userPlan.SkuPartNumber));
+                    if (userPlan.SkuPartNumber != null)
+                        allLicenses.Add(await GetLicenseType(userPlan.SkuPartNumber));
                 }
 
                 // Remove old lookups (simpler) & re-add
-                db.UserLicenseTypeLookups.RemoveRange(dbUser.LicenseLookups.Where(l => l.IsSavedToDB));
+                _db.UserLicenseTypeLookups.RemoveRange(dbUser.LicenseLookups.Where(l => l.IsSavedToDB));
                 foreach (var licence in allLicenses)
                 {
                     dbUser.LicenseLookups.Add(new UserLicenseTypeLookup { License = licence, User = dbUser });
@@ -340,7 +360,7 @@ public class UserMetadataUpdater : AbstractApiLoader
     /// <summary>
     /// Inserts missing users into DB & calls UpdateDbUserWithGraphData
     /// </summary>
-    private async Task<List<Entities.DB.Entities.User>> InsertMissingUsers(DataContext db, List<GraphUser> allGraphUsers, List<Entities.DB.Entities.User> graphMentionedDbUsers, bool readUserSkus)
+    private async Task<List<Entities.DB.Entities.User>> InsertMissingUsers(DataContext _db, List<GraphUser> allGraphUsers, List<Entities.DB.Entities.User> graphMentionedDbUsers, bool readUserSkus)
     {
         _telemetry.LogInformation($"User import - Inserting missing users...");
         var usersInserted = new List<Entities.DB.Entities.User>();
@@ -365,7 +385,12 @@ public class UserMetadataUpdater : AbstractApiLoader
         foreach (var newDbUser in usersInserted)
         {
             var graphUser = allGraphUsers.Where(u => u.UserPrincipalName.ToLower() == newDbUser.UserPrincipalName).FirstOrDefault();
-            await UpdateDbUserWithGraphData(db, graphUser, allGraphUsers, graphMentionedDbUsers, newDbUser, readUserSkus);
+            if (graphUser == null)
+            {
+                _telemetry.LogWarning($"User import - couldn't find Graph user for new user '{newDbUser.UserPrincipalName}'");
+                continue;
+            }
+            await UpdateDbUserWithGraphData(_db, graphUser, allGraphUsers, graphMentionedDbUsers, newDbUser, readUserSkus);
 
             if (i > 0 && i % 1000 == 0)
             {
@@ -374,10 +399,10 @@ public class UserMetadataUpdater : AbstractApiLoader
             i++;
         }
 
-        db.Users.AddRange(usersInserted);
+        _db.Users.AddRange(usersInserted);
 
         Console.WriteLine($"User import - Saving {usersInserted.Count.ToString("N0")} new users to SQL...");
-        await db.SaveChangesAsync();
+        await _db.SaveChangesAsync();
 
         return usersInserted;
     }
@@ -390,5 +415,10 @@ public class UserMetadataUpdater : AbstractApiLoader
         dbUser.Mail = graphUser.Mail;
 
         return dbUser;
+    }
+
+    public void Dispose()
+    {
+        _db.Dispose();
     }
 }
