@@ -126,7 +126,7 @@ function DeployARMTemplate {
 	$templateLocation = "$scriptPath\ARM\template-backend.json"
 	$paramsLocation = $scriptPath + "\" + $config.ARMParametersFileBackend
 
-	$armDeploy = New-AzResourceGroupDeployment -ResourceGroupName $config.ResourceGroupName -TemplateFile $templateLocation -TemplateParameterFile $paramsLocation -Name "FeedbackBotDeployment" -Verbose
+	$armDeploy = New-AzResourceGroupDeployment -ResourceGroupName $config.ResourceGroupName -TemplateFile $templateLocation -TemplateParameterFile $paramsLocation -Name "FeedbackBotBackEndDeployment" -Verbose
 
 	if ($null -eq $armDeploy) {
 		Throw "Error: ARM template deployment fataly failed to resource group '$($config.ResourceGroupName)'. Check previous errors." 

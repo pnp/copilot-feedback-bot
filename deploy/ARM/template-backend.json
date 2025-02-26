@@ -140,7 +140,7 @@
         },
         {
           "name": "SqlServer",
-          "value": "[concat(parameters('sql_server_name'), '.database.windows.net')]",
+          "value": "[concat('\"', parameters('sql_server_name'), '.database.windows.net', '\"')]",
           "isEncrypted": false
         }
       ],
