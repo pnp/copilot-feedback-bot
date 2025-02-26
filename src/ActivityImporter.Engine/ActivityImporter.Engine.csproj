@@ -12,6 +12,7 @@
     <EmbeddedResource Include="ActivityAPI\Copilot\SQL\insert_chat_only_copilot_events_from_staging_table.sql" />
     <EmbeddedResource Include="ActivityAPI\Copilot\SQL\insert_sp_copilot_events_from_staging_table.sql" />
     <EmbeddedResource Include="ActivityAPI\Copilot\SQL\insert_teams_copilot_events_from_staging_table.sql" />
+    <EmbeddedResource Include="Graph\O365ProductIdentifiers.csv" />
   </ItemGroup>
 
   <ItemGroup>

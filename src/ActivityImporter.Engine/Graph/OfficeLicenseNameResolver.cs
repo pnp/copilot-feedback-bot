@@ -1,12 +1,6 @@
 ﻿using CsvHelper;
 using CsvHelper.Configuration.Attributes;
-using System;
-using System.Collections.Generic;
-using System.Formats.Asn1;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ActivityImporter.Engine.Graph;
 
@@ -21,7 +15,7 @@ public class OfficeLicenseNameResolver
         var assembly = Assembly.GetExecutingAssembly();
 
         // Format: "{Namespace}.{Folder}.{filename}.{Extension}"
-        const string RESOURCE_NAME = "WebJob.Office365ActivityImporter.Engine.Resources.Product_names_and_service_plan_identifiers_for_licensing.csv";
+        const string RESOURCE_NAME = "ActivityImporter.Engine.Graph.O365ProductIdentifiers.csv";
         using (var stream = assembly.GetManifestResourceStream(RESOURCE_NAME))
             if (stream != null)
             {
@@ -35,12 +29,12 @@ public class OfficeLicenseNameResolver
             }
             else
             {
-                throw new ArgumentOutOfRangeException(nameof(RESOURCE_NAME), $"No resource found by name '{RESOURCE_NAME}'");
+                throw new ArgumentOutOfRangeException(nameof(RESOURCE_NAME), $"No license info resource found by name '{RESOURCE_NAME}'");
             }
 
     }
 
-    public string GetDisplayNameFor(string id)
+    public string? GetDisplayNameFor(string id)
     {
         var result = _records.Where(r => r.IdString.ToLower() == id.ToLower()).FirstOrDefault();
         if (result == null)
@@ -53,10 +47,10 @@ public class OfficeLicenseNameResolver
 public class OfficeNamesCsvImportLine
 {
     [Name("Product_Display_Name")]
-    public string DisplayName { get; set; }
+    public required string DisplayName { get; set; }
 
-    [Name("String_ Id")]
-    public string IdString { get; set; }
+    [Name("String_Id")]
+    public required string IdString { get; set; }
 
     public override string ToString()
     {
