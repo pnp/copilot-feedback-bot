@@ -31,6 +31,7 @@ public class DataContext : DbContext
     public DbSet<Url> Urls { get; set; }
     public DbSet<UserDepartment> UserDepartments { get; set; }
 
+    public DbSet<StateOrProvince> StateOrProvinces { get; set; }
     public DbSet<OnlineMeeting> OnlineMeetings { get; set; }
 
     public DbSet<CountryOrRegion> CountryOrRegions { get; set; }
@@ -50,6 +51,9 @@ public class DataContext : DbContext
     public DbSet<CopilotChat> CopilotChats { get; set; }
     public DbSet<CopilotEventMetadataFile> CopilotEventMetadataFiles { get; set; }
     public DbSet<CopilotEventMetadataMeeting> CopilotEventMetadataMeetings { get; set; }
+
+    public DbSet<LicenseType> LicenseTypes { get; set; }
+    public DbSet<UserLicenseTypeLookup> UserLicenseTypeLookups { get; set; }
 
 
     public DbSet<UserSurveyResponseDB> SurveyResponses { get; set; }

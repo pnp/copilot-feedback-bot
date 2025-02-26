@@ -115,4 +115,28 @@ public class StringUtils
         var meetingId = copilotDocContextId.Substring(start, copilotDocContextId.Length - start);
         return meetingId;
     }
+
+
+    public static string EnsureMaxLength(string potentiallyLongString, int maxLength)
+    {
+        if (string.IsNullOrEmpty(potentiallyLongString))
+        {
+            return string.Empty;
+        }
+        const string END = "...";
+
+        if (maxLength < END.Length)
+        {
+            throw new ArgumentOutOfRangeException(nameof(maxLength));
+        }
+
+        if (potentiallyLongString.Length > maxLength)
+        {
+            return potentiallyLongString.Substring(0, maxLength - END.Length) + END;
+        }
+        else
+        {
+            return potentiallyLongString;
+        }
+    }
 }
