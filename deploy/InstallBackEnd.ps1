@@ -126,7 +126,7 @@ function DeployARMTemplate {
 	$templateLocation = "$scriptPath\ARM\template-backend.json"
 	$paramsLocation = $scriptPath + "\" + $config.ARMParametersFileBackend
 
-	$armDeploy = New-AzResourceGroupDeployment -ResourceGroupName $config.ResourceGroupName -TemplateFile $templateLocation -TemplateParameterFile $paramsLocation -Name "FeedbackBotDeployment" -Verbose
+	$armDeploy = New-AzResourceGroupDeployment -ResourceGroupName $config.ResourceGroupName -TemplateFile $templateLocation -TemplateParameterFile $paramsLocation -Name "FeedbackBotBackEndDeployment" -Verbose
 
 	if ($null -eq $armDeploy) {
 		Throw "Error: ARM template deployment fataly failed to resource group '$($config.ResourceGroupName)'. Check previous errors." 
@@ -175,7 +175,7 @@ function ValidateConfig {
 $scriptPath = Get-ScriptDirectory
 
 # Load common script functions
-$scriptContent = Get-Content -Path $scriptPath + "\" + SharedFunctions.ps1 -Raw
+$scriptContent = Get-Content -Path ($scriptPath + "\SharedFunctions.ps1") -Raw
 Invoke-Expression $scriptContent
 
 # Install the Az module if it's not already installed

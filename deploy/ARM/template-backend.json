@@ -1,262 +1,521 @@
 {
-    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-    "contentVersion": "1.0.0.0",
-    "parameters": {
-        "sql_server_name": {
-            "type": "String"
-        },
-        "sql_database_name": {
-            "type": "String"
-        },
-        "sql_server_admin_login": {
-            "type": "String"
-        },
-        "sql_server_admin_login_password": {
-            "type": "SecureString"
-        },
-        "redis_account_name": {
-            "type": "String"
-        },
-        "servicebus_namespace_name": {
-            "type": "String"
-        },
-        "acr_name": {
-            "type": "String"
-        },
-        "storage_account_name": {
-            "type": "String"
-        },
-        "location": {
-            "type": "string"
-        },
-        "workspace_analytics_name": {
-            "type": "String",
-            "defaultValue": "CopilotFeedbackBotAnalytics"
-        }
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "automation_account_name": {
+      "type": "String"
     },
-    
-    "resources": [
+    "sql_server_name": {
+      "type": "String"
+    },
+    "sql_database_name": {
+      "type": "String"
+    },
+    "sql_server_admin_login": {
+      "type": "String"
+    },
+    "sql_server_admin_login_password": {
+      "type": "SecureString"
+    },
+    "redis_account_name": {
+      "type": "String"
+    },
+    "servicebus_namespace_name": {
+      "type": "String"
+    },
+    "acr_name": {
+      "type": "String"
+    },
+    "storage_account_name": {
+      "type": "String"
+    },
+    "location": {
+      "type": "string"
+    },
+    "workspace_analytics_name": {
+      "type": "String",
+      "defaultValue": "CopilotFeedbackBotAnalytics"
+    },
+
+    "createJobSchedules": {
+      "type": "bool",
+      "defaultValue": false,
+      "metadata": {
+        "description": "Should the job schedules be created? Only set it to true the first time."
+      }
+    },
+    "tags": {
+      "type": "object",
+      "defaultValue": {},
+      "metadata": {
+        "description": "Use {\"tagname\":\"tagvalue\"} to add tags. Use {} if no tags need to be created."
+      }
+    },
+    "scheduleStartTime": {
+      "type": "string",
+      "defaultValue": "[dateTimeAdd(utcNow(), 'P1D', 'yyyy-MM-dd')]"
+    },
+    "scheduleTimeZone": {
+      "type": "string",
+      "defaultValue": "Etc/UTC"
+    },
+    "deploymentTime": {
+      "type": "string",
+      "defaultValue": "[utcNow('yyyyMMdd_HHmm')]",
+      "metadata": {
+        "description": "Internal use only."
+      }
+    }
+  },
+
+  "variables": {
+    "schedule1pm": "[concat(parameters('scheduleStartTime'), 'T13:00:00+00:00')]",
+    "schedule6pm": "[concat(parameters('scheduleStartTime'), 'T18:00:00+00:00')]",
+    "schedule11pm": "[concat(parameters('scheduleStartTime'), 'T23:00:00+00:00')]",
+    "scriptsLocation": "https://raw.githubusercontent.com/pnp/copilot-feedback-bot/refs/heads/ProfilingExtension/deploy/profiling/ProfilingJobs/",
+    "scripts": {
+      "runbooks": [
         {
-            "type": "Microsoft.Sql/servers",
-            "apiVersion": "2023-08-01-preview",
-            "name": "[parameters('sql_server_name')]",
-            "location": "[parameters('location')]",
-            "kind": "v12.0",
-            "properties": {
-                "administratorLogin": "[parameters('sql_server_admin_login')]",
-                "administratorLoginPassword": "[parameters('sql_server_admin_login_password')]",
-                "version": "12.0",
-                "minimalTlsVersion": "None",
-                "publicNetworkAccess": "Enabled",
-                "administrators": {},
-                "restrictOutboundNetworkAccess": "Disabled"
-            },
-            "resources": [
-                {
-                    "type": "firewallRules",
-                    "apiVersion": "2021-11-01",
-                    "name": "AllowAllWindowsAzureIps",
-                    "location": "[parameters('location')]",
-                    "dependsOn": [
-                        "[resourceId('Microsoft.Sql/servers', parameters('sql_server_name'))]"
-                    ],
-                    "properties": {
-                        "endIpAddress": "0.0.0.0",
-                        "startIpAddress": "0.0.0.0"
-                    }
-                }
-            ]
+          "name": "Weekly_Update",
+          "url": "[uri(variables('scriptsLocation'), 'Weekly.ps1')]",
+          "version": "1.0.0.0",
+          "type": "PowerShell72",
+          "description": "[concat('Aggregates weekly activities.', '\r\n\r\nDeployed: ', parameters('deploymentTime'))]"
         },
         {
-            "type": "Microsoft.Sql/servers/databases",
-            "apiVersion": "2023-08-01-preview",
-            "name": "[concat(parameters('sql_server_name'), '/', parameters('sql_database_name'))]",
-            "location": "[parameters('location')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Sql/servers', parameters('sql_server_name'))]"
-            ],
-            "sku": {
-                "name": "Basic",
-                "tier": "Basic",
-                "capacity": 5
-            },
-            "kind": "v12.0,user",
-            "properties": {
-                "collation": "SQL_Latin1_General_CP1_CI_AS",
-                "maxSizeBytes": 2147483648,
-                "catalogCollation": "SQL_Latin1_General_CP1_CI_AS",
-                "zoneRedundant": false,
-                "readScale": "Disabled",
-                "requestedBackupStorageRedundancy": "Local",
-                "isLedgerOn": false,
-                "availabilityZone": "NoPreference"
-            }
-        },
-
-        {
-            "name": "[parameters('redis_account_name')]",
-            "type": "Microsoft.Cache/redis",
-            "apiVersion": "2024-04-01-preview",
-            "location": "[parameters('location')]",
-            "dependsOn": [],
-            "properties": {
-                "sku": {
-                    "name": "Basic",
-                    "family": "C",
-                    "capacity": 0
-                },
-                "redisConfiguration": {
-                    "aad-enabled": "true"
-                },
-                "enableNonSslPort": false,
-                "redisVersion": "6",
-                "disableAccessKeyAuthentication": false
-            },
-            "tags": {}
-        },
-
-        {
-            "type": "Microsoft.Storage/storageAccounts",
-            "apiVersion": "2023-05-01",
-            "name": "[parameters('storage_account_name')]",
-            "location": "[parameters('location')]",
-            "sku": {
-                "name": "Standard_LRS",
-                "tier": "Standard"
-            },
-            "kind": "StorageV2",
-            "properties": {
-                "dnsEndpointType": "Standard",
-                "defaultToOAuthAuthentication": false,
-                "publicNetworkAccess": "Enabled",
-                "allowCrossTenantReplication": false,
-                "minimumTlsVersion": "TLS1_2",
-                "allowBlobPublicAccess": false,
-                "allowSharedKeyAccess": true,
-                "networkAcls": {
-                    "bypass": "AzureServices",
-                    "virtualNetworkRules": [],
-                    "ipRules": [],
-                    "defaultAction": "Allow"
-                },
-                "supportsHttpsTrafficOnly": true,
-                "encryption": {
-                    "requireInfrastructureEncryption": false,
-                    "services": {
-                        "file": {
-                            "keyType": "Account",
-                            "enabled": true
-                        },
-                        "blob": {
-                            "keyType": "Account",
-                            "enabled": true
-                        }
-                    },
-                    "keySource": "Microsoft.Storage"
-                },
-                "accessTier": "Hot"
-            }
-        },
-
-        {
-            "name": "[parameters('acr_name')]",
-            "type": "Microsoft.ContainerRegistry/registries",
-            "location": "[parameters('location')]",
-            "apiVersion": "2022-02-01-preview",
-            "sku": {
-                "name": "Basic"
-            },
-            "dependsOn": [],
-            "properties": {
-                "adminUserEnabled": true,
-                "publicNetworkAccess": "Enabled",
-                "anonymousPullEnabled": false,
-                "zoneRedundancy": "Disabled"
-            }
-        },
-
-
-        {
-            "apiVersion": "2020-02-02-preview",
-            "name": "[parameters('workspace_analytics_name')]",
-            "type": "microsoft.insights/components",
-            "location": "[parameters('location')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('workspace_analytics_name'))]"
-
-            ],
-            "properties": {
-                "ApplicationId": "[parameters('workspace_analytics_name')]",
-                "WorkspaceResourceId": "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('workspace_analytics_name'))]",
-                "Application_Type": "web"
-            }
+          "name": "Database_Maintenance",
+          "url": "[uri(variables('scriptsLocation'), 'Database_Maintenance.ps1')]",
+          "version": "1.0.0.0",
+          "type": "PowerShell72",
+          "description": "[concat('Performs database (index and statistics) maintenance.', '\r\n\r\nDeployed: ', parameters('deploymentTime'))]"
         },
         {
-            "type": "Microsoft.OperationalInsights/workspaces",
-            "apiVersion": "2023-09-01",
-            "name": "[parameters('workspace_analytics_name')]",
-            "location": "[parameters('location')]",
-            "properties": {}
-        },
-
-
-
-        {
-            "type": "Microsoft.ServiceBus/namespaces",
-            "apiVersion": "2023-01-01-preview",
-            "name": "[parameters('servicebus_namespace_name')]",
-            "location": "[parameters('location')]",
-            "sku": {
-                "name": "Basic",
-                "tier": "Basic"
-            },
-            "properties": {
-                "geoDataReplication": {
-                    "maxReplicationLagDurationInSeconds": 0,
-                    "locations": [
-                        {
-                            "locationName": "[parameters('location')]",
-                            "roleType": "Primary"
-                        }
-                    ]
-                },
-                "premiumMessagingPartitions": 0,
-                "minimumTlsVersion": "1.2",
-                "publicNetworkAccess": "Enabled",
-                "disableLocalAuth": false,
-                "zoneRedundant": false
-            }
-        },
-        {
-            "type": "Microsoft.ServiceBus/namespaces/authorizationrules",
-            "apiVersion": "2023-01-01-preview",
-            "name": "[concat(parameters('servicebus_namespace_name'), '/ListenAndSend')]",
-            "location": "[parameters('location')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.ServiceBus/namespaces', parameters('servicebus_namespace_name'))]"
-            ],
-            "properties": {
-                "rights": [
-                    "Listen",
-                    "Send"
-                ]
-            }
-        },
-        {
-            "type": "Microsoft.ServiceBus/namespaces/networkrulesets",
-            "apiVersion": "2023-01-01-preview",
-            "name": "[concat(parameters('servicebus_namespace_name'), '/default')]",
-            "location": "[parameters('location')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.ServiceBus/namespaces', parameters('servicebus_namespace_name'))]"
-            ],
-            "properties": {
-                "publicNetworkAccess": "Enabled",
-                "defaultAction": "Allow",
-                "virtualNetworkRules": [],
-                "ipRules": [],
-                "trustedServiceAccessEnabled": false
-            }
+          "name": "Aggregation_Status",
+          "url": "[uri(variables('scriptsLocation'), 'Aggregation_Status.ps1')]",
+          "version": "1.0.0.0",
+          "type": "PowerShell72",
+          "description": "[concat('Returns statistics of the profiling tables.', '\r\n\r\nDeployed: ', parameters('deploymentTime'))]"
         }
-    ]
+      ],
+      "modules": [],
+      "schedules": [
+        {
+          "name": "Weekly Sunday 1pm",
+          "startTime": "[variables('schedule1pm')]",
+          "interval": 1,
+          "frequency": "Week",
+          "advancedSchedule": {
+            "weekDays": ["Sunday"]
+          }
+        },
+        {
+          "name": "Weekly Sunday 6pm",
+          "startTime": "[variables('schedule6pm')]",
+          "interval": 1,
+          "frequency": "Week",
+          "advancedSchedule": {
+            "weekDays": ["Sunday"]
+          }
+        },
+        {
+          "name": "Weekly Sunday 11pm",
+          "startTime": "[variables('schedule11pm')]",
+          "interval": 1,
+          "frequency": "Week",
+          "advancedSchedule": {
+            "weekDays": ["Sunday"]
+          }
+        }
+      ],
+      "variables": [
+        {
+          "name": "WeeksToKeep",
+          "value": "54",
+          "isEncrypted": false
+        },
+        {
+          "name": "SqlDatabase",
+          "value": "[concat('\"', parameters('sql_database_name'), '\"')]",
+          "isEncrypted": false
+        },
+        {
+          "name": "SqlServer",
+          "value": "[concat('\"', parameters('sql_server_name'), '.database.windows.net', '\"')]",
+          "isEncrypted": false
+        }
+      ],
+      "jobSchedules": [
+        {
+          "runbook": "Weekly_Update",
+          "schedule": "Weekly Sunday 6pm",
+          "parameters": {}
+        },
+        {
+          "runbook": "Database_Maintenance",
+          "schedule": "Weekly Sunday 1pm",
+          "parameters": {
+            "maintenanceType": "activitylog"
+          }
+        },
+        {
+          "runbook": "Database_Maintenance",
+          "schedule": "Weekly Sunday 11pm",
+          "parameters": {
+            "maintenanceType": "weekly"
+          }
+        }
+      ]
+    }
+  },
+
+  "resources": [
+    {
+      "type": "Microsoft.Sql/servers",
+      "apiVersion": "2023-08-01-preview",
+      "name": "[parameters('sql_server_name')]",
+      "location": "[parameters('location')]",
+      "kind": "v12.0",
+      "properties": {
+        "administratorLogin": "[parameters('sql_server_admin_login')]",
+        "administratorLoginPassword": "[parameters('sql_server_admin_login_password')]",
+        "version": "12.0",
+        "minimalTlsVersion": "None",
+        "publicNetworkAccess": "Enabled",
+        "administrators": {},
+        "restrictOutboundNetworkAccess": "Disabled"
+      },
+      "resources": [
+        {
+          "type": "firewallRules",
+          "apiVersion": "2021-11-01",
+          "name": "AllowAllWindowsAzureIps",
+          "location": "[parameters('location')]",
+          "dependsOn": [
+            "[resourceId('Microsoft.Sql/servers', parameters('sql_server_name'))]"
+          ],
+          "properties": {
+            "endIpAddress": "0.0.0.0",
+            "startIpAddress": "0.0.0.0"
+          }
+        }
+      ]
+    },
+    {
+      "type": "Microsoft.Sql/servers/databases",
+      "apiVersion": "2023-08-01-preview",
+      "name": "[concat(parameters('sql_server_name'), '/', parameters('sql_database_name'))]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', parameters('sql_server_name'))]"
+      ],
+      "sku": {
+        "name": "Basic",
+        "tier": "Basic",
+        "capacity": 5
+      },
+      "kind": "v12.0,user",
+      "properties": {
+        "collation": "SQL_Latin1_General_CP1_CI_AS",
+        "maxSizeBytes": 2147483648,
+        "catalogCollation": "SQL_Latin1_General_CP1_CI_AS",
+        "zoneRedundant": false,
+        "readScale": "Disabled",
+        "requestedBackupStorageRedundancy": "Local",
+        "isLedgerOn": false,
+        "availabilityZone": "NoPreference"
+      }
+    },
+
+    {
+      "name": "[parameters('redis_account_name')]",
+      "type": "Microsoft.Cache/redis",
+      "apiVersion": "2024-04-01-preview",
+      "location": "[parameters('location')]",
+      "dependsOn": [],
+      "properties": {
+        "sku": {
+          "name": "Basic",
+          "family": "C",
+          "capacity": 0
+        },
+        "redisConfiguration": {
+          "aad-enabled": "true"
+        },
+        "enableNonSslPort": false,
+        "redisVersion": "6",
+        "disableAccessKeyAuthentication": false
+      },
+      "tags": {}
+    },
+
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2023-05-01",
+      "name": "[parameters('storage_account_name')]",
+      "location": "[parameters('location')]",
+      "sku": {
+        "name": "Standard_LRS",
+        "tier": "Standard"
+      },
+      "kind": "StorageV2",
+      "properties": {
+        "dnsEndpointType": "Standard",
+        "defaultToOAuthAuthentication": false,
+        "publicNetworkAccess": "Enabled",
+        "allowCrossTenantReplication": false,
+        "minimumTlsVersion": "TLS1_2",
+        "allowBlobPublicAccess": false,
+        "allowSharedKeyAccess": true,
+        "networkAcls": {
+          "bypass": "AzureServices",
+          "virtualNetworkRules": [],
+          "ipRules": [],
+          "defaultAction": "Allow"
+        },
+        "supportsHttpsTrafficOnly": true,
+        "encryption": {
+          "requireInfrastructureEncryption": false,
+          "services": {
+            "file": {
+              "keyType": "Account",
+              "enabled": true
+            },
+            "blob": {
+              "keyType": "Account",
+              "enabled": true
+            }
+          },
+          "keySource": "Microsoft.Storage"
+        },
+        "accessTier": "Hot"
+      }
+    },
+
+    {
+      "name": "[parameters('acr_name')]",
+      "type": "Microsoft.ContainerRegistry/registries",
+      "location": "[parameters('location')]",
+      "apiVersion": "2022-02-01-preview",
+      "sku": {
+        "name": "Basic"
+      },
+      "dependsOn": [],
+      "properties": {
+        "adminUserEnabled": true,
+        "publicNetworkAccess": "Enabled",
+        "anonymousPullEnabled": false,
+        "zoneRedundancy": "Disabled"
+      }
+    },
+
+    {
+      "apiVersion": "2020-02-02-preview",
+      "name": "[parameters('workspace_analytics_name')]",
+      "type": "microsoft.insights/components",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('workspace_analytics_name'))]"
+      ],
+      "properties": {
+        "ApplicationId": "[parameters('workspace_analytics_name')]",
+        "WorkspaceResourceId": "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('workspace_analytics_name'))]",
+        "Application_Type": "web"
+      }
+    },
+    {
+      "type": "Microsoft.OperationalInsights/workspaces",
+      "apiVersion": "2023-09-01",
+      "name": "[parameters('workspace_analytics_name')]",
+      "location": "[parameters('location')]",
+      "properties": {}
+    },
+
+    {
+      "type": "Microsoft.ServiceBus/namespaces",
+      "apiVersion": "2023-01-01-preview",
+      "name": "[parameters('servicebus_namespace_name')]",
+      "location": "[parameters('location')]",
+      "sku": {
+        "name": "Basic",
+        "tier": "Basic"
+      },
+      "properties": {
+        "geoDataReplication": {
+          "maxReplicationLagDurationInSeconds": 0,
+          "locations": [
+            {
+              "locationName": "[parameters('location')]",
+              "roleType": "Primary"
+            }
+          ]
+        },
+        "premiumMessagingPartitions": 0,
+        "minimumTlsVersion": "1.2",
+        "publicNetworkAccess": "Enabled",
+        "disableLocalAuth": false,
+        "zoneRedundant": false
+      }
+    },
+    {
+      "type": "Microsoft.ServiceBus/namespaces/authorizationrules",
+      "apiVersion": "2023-01-01-preview",
+      "name": "[concat(parameters('servicebus_namespace_name'), '/ListenAndSend')]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('servicebus_namespace_name'))]"
+      ],
+      "properties": {
+        "rights": ["Listen", "Send"]
+      }
+    },
+    {
+      "type": "Microsoft.ServiceBus/namespaces/networkrulesets",
+      "apiVersion": "2023-01-01-preview",
+      "name": "[concat(parameters('servicebus_namespace_name'), '/default')]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('servicebus_namespace_name'))]"
+      ],
+      "properties": {
+        "publicNetworkAccess": "Enabled",
+        "defaultAction": "Allow",
+        "virtualNetworkRules": [],
+        "ipRules": [],
+        "trustedServiceAccessEnabled": false
+      }
+    },
+
+    {
+      "type": "Microsoft.Automation/automationAccounts",
+      "apiVersion": "2022-08-08",
+      "name": "[parameters('automation_account_name')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "publicNetworkAccess": true,
+        "disableLocalAuth": false,
+        "sku": {
+          "name": "Basic"
+        },
+        "encryption": {
+          "keySource": "Microsoft.Automation",
+          "identity": {}
+        }
+      },
+      "tags": "[parameters('tags')]"
+    },
+    {
+      "apiVersion": "2020-01-13-preview",
+      "type": "Microsoft.Automation/automationAccounts/modules",
+      "name": "[concat(parameters('automation_account_name'), '/', variables('scripts').modules[copyIndex()].name)]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Automation/automationAccounts/', parameters('automation_account_name'))]"
+      ],
+      "copy": {
+        "name": "modulesLoop",
+        "count": "[length(variables('scripts').modules)]"
+      },
+      "properties": {
+        "contentLink": {
+          "uri": "[variables('scripts').modules[copyIndex()].url]"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Automation/automationAccounts/runbooks",
+      "apiVersion": "2022-08-08",
+      "name": "[concat(parameters('automation_account_name'), '/', variables('scripts').runbooks[copyIndex()].name)]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Automation/automationAccounts', parameters('automation_account_name'))]"
+      ],
+      "copy": {
+        "name": "runbooksLoop",
+        "count": "[length(variables('scripts').runbooks)]"
+      },
+      "properties": {
+        "description": "[variables('scripts').runbooks[copyIndex()].description]",
+        "runbookType": "[variables('scripts').runbooks[copyIndex()].type]",
+        "logVerbose": false,
+        "logProgress": false,
+        "logActivityTrace": 0,
+        "publishContentLink": {
+          "uri": "[variables('scripts').runbooks[copyIndex()].url]",
+          "version": "[variables('scripts').runbooks[copyIndex()].version]"
+        }
+      },
+      "tags": "[parameters('tags')]"
+    },
+    {
+      "type": "Microsoft.Automation/automationAccounts/schedules",
+      "apiVersion": "2022-08-08",
+      "name": "[concat(parameters('automation_account_name'), '/', variables('scripts').schedules[copyIndex()].name)]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Automation/automationAccounts', parameters('automation_account_name'))]"
+      ],
+      "copy": {
+        "name": "schedulesLoop",
+        "count": "[length(variables('scripts').schedules)]"
+      },
+      "properties": {
+        "startTime": "[variables('scripts').schedules[copyIndex()].startTime]",
+        "interval": "[variables('scripts').schedules[copyIndex()].interval]",
+        "frequency": "[variables('scripts').schedules[copyIndex()].frequency]",
+        "expiryTime": "9999-12-31T23:59:59+00:00",
+        "timeZone": "[parameters('scheduleTimeZone')]",
+        "advancedSchedule": "[variables('scripts').schedules[copyIndex()].advancedSchedule]"
+      }
+    },
+    {
+      "type": "Microsoft.Automation/automationAccounts/credentials",
+      "apiVersion": "2022-08-08",
+      "name": "[concat(parameters('automation_account_name'), '/SQLCredential')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Automation/automationAccounts', parameters('automation_account_name'))]"
+      ],
+      "properties": {
+        "userName": "[parameters('sql_server_admin_login')]",
+        "password": "[parameters('sql_server_admin_login_password')]"
+      }
+    },
+    {
+      "type": "Microsoft.Automation/automationAccounts/variables",
+      "apiVersion": "2022-08-08",
+      "name": "[concat(parameters('automation_account_name'), '/', variables('scripts').variables[copyIndex()].name)]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Automation/automationAccounts', parameters('automation_account_name'))]"
+      ],
+      "copy": {
+        "name": "variablesLoop",
+        "count": "[length(variables('scripts').variables)]"
+      },
+      "properties": {
+        "isEncrypted": "[variables('scripts').variables[copyIndex()].isEncrypted]",
+        "value": "[variables('scripts').variables[copyIndex()].value]"
+      }
+    },
+    {
+      "condition": "[parameters('createJobSchedules')]",
+      "type": "Microsoft.Automation/automationAccounts/jobSchedules",
+      "apiVersion": "2022-08-08",
+      "name": "[concat(parameters('automation_account_name'), '/', guid(concat(resourceGroup().id, parameters('automation_account_name'), copyIndex())))]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Automation/automationAccounts/runbooks', parameters('automation_account_name'), variables('scripts').jobSchedules[copyIndex()].runbook)]",
+        "[resourceId('Microsoft.Automation/automationAccounts/schedules', parameters('automation_account_name'), variables('scripts').jobSchedules[copyIndex()].schedule)]"
+      ],
+      "copy": {
+        "name": "jobSchedulesLoop",
+        "count": "[length(variables('scripts').jobSchedules)]"
+      },
+      "properties": {
+        "runbook": {
+          "name": "[variables('scripts').jobSchedules[copyIndex()].runbook]"
+        },
+        "schedule": {
+          "name": "[variables('scripts').jobSchedules[copyIndex()].schedule]"
+        },
+        "parameters": "[variables('scripts').jobSchedules[copyIndex()].parameters]"
+      }
+    }
+  ]
 }

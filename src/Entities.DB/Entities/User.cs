@@ -12,6 +12,9 @@ public class User : AbstractEFEntity
     [Column("upn")]
     public string UserPrincipalName { get; set; } = null!;
 
+    [Column("mail")]
+    public string? Mail { get; set; } = string.Empty;
+
     [Column("last_updated")]
     public DateTime? LastUpdated { get; set; } = null;
 
@@ -27,6 +30,9 @@ public class User : AbstractEFEntity
     [MaxLength(50)]
     [Column("postalcode")]
     public string? PostalCode { get; set; } = string.Empty;
+
+
+    public List<UserLicenseTypeLookup> LicenseLookups { get; set; } = new List<UserLicenseTypeLookup>();
 
     #region Lookup Properties
 

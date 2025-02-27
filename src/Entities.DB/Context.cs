@@ -31,12 +31,18 @@ public class DataContext : DbContext
     public DbSet<Url> Urls { get; set; }
     public DbSet<UserDepartment> UserDepartments { get; set; }
 
+    public DbSet<StateOrProvince> StateOrProvinces { get; set; }
     public DbSet<OnlineMeeting> OnlineMeetings { get; set; }
 
     public DbSet<CountryOrRegion> CountryOrRegions { get; set; }
     public DbSet<CompanyName> CompanyNames { get; set; }
     public DbSet<UserOfficeLocation> UserOfficeLocations { get; set; }
     public DbSet<GlobalTeamsUserUsageLog> TeamUserActivityLogs { get; set; }
+    public DbSet<GlobalTeamsUserDeviceUsageLog> TeamsUserDeviceUsageLog { get; set; }
+    public DbSet<YammerUserActivityLog> YammerUserActivityLogs { get; set; }
+    public DbSet<YammerDeviceActivityLog> YammerDeviceActivityLogs { get; set; }
+
+    public DbSet<AppPlatformUserActivityLog> AppPlatformUserUsageLog { get; set; }
 
     public DbSet<OutlookUsageActivityLog> OutlookUsageActivityLogs { get; set; }
     public DbSet<OneDriveUserActivityLog> OneDriveUserActivityLogs { get; set; }
@@ -45,6 +51,9 @@ public class DataContext : DbContext
     public DbSet<CopilotChat> CopilotChats { get; set; }
     public DbSet<CopilotEventMetadataFile> CopilotEventMetadataFiles { get; set; }
     public DbSet<CopilotEventMetadataMeeting> CopilotEventMetadataMeetings { get; set; }
+
+    public DbSet<LicenseType> LicenseTypes { get; set; }
+    public DbSet<UserLicenseTypeLookup> UserLicenseTypeLookups { get; set; }
 
 
     public DbSet<UserSurveyResponseDB> SurveyResponses { get; set; }
@@ -108,6 +117,11 @@ public class DataContext : DbContext
 
         modelBuilder.Entity<User>()
          .HasIndex(t => new { t.UserPrincipalName })
+         .IsUnique();
+
+
+        modelBuilder.Entity<UserLicenseTypeLookup>()
+         .HasIndex(t => new { t.LicenseTypeId, t.UserId })
          .IsUnique();
 
         modelBuilder.Entity<SurveyQuestionDB>()

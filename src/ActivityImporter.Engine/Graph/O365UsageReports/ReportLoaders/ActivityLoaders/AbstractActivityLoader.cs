@@ -34,10 +34,9 @@ namespace ActivityImporter.Engine.Graph.O365UsageReports.ReportLoaders.ActivityL
 
         public ILogger Telemetry { get; set; }
 
-        public Dictionary<DateTime, List<TUserActivityUserRecord>> LoadedReportPages { get; set; } = new Dictionary<DateTime, List<TUserActivityUserRecord>>();
+        public Dictionary<DateTime, List<TUserActivityUserRecord>> LoadedReportPages { get; set; } = new();
 
         #endregion
-
 
         public async Task PopulateLoadedReportPagesFromGraph(int daysBackMax)
         {

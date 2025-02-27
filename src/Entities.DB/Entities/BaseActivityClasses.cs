@@ -25,7 +25,7 @@ public abstract class AbstractUsageActivityLog : UserRelatedEntity
 /// <summary>
 /// One of the activity reports in Graph
 /// </summary>
-public class UserRelatedAbstractUsageActivity : AbstractUsageActivityLog, IUserRelatedEntity
+public abstract class UserRelatedAbstractUsageActivity : AbstractUsageActivityLog, IUserRelatedEntity
 {
 
     public override int AssociatedLookupId { get => UserID; set => UserID = value; }

@@ -12,10 +12,12 @@
     <EmbeddedResource Include="ActivityAPI\Copilot\SQL\insert_chat_only_copilot_events_from_staging_table.sql" />
     <EmbeddedResource Include="ActivityAPI\Copilot\SQL\insert_sp_copilot_events_from_staging_table.sql" />
     <EmbeddedResource Include="ActivityAPI\Copilot\SQL\insert_teams_copilot_events_from_staging_table.sql" />
+    <EmbeddedResource Include="Graph\O365ProductIdentifiers.csv" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Azure.Messaging.ServiceBus" Version="7.18.1" />
+    <PackageReference Include="CsvHelper" Version="33.0.1" />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="8.0.1" />
     <PackageReference Include="Microsoft.Graph" Version="5.56.0" />
     <PackageReference Include="System.Formats.Asn1" Version="8.0.1" />

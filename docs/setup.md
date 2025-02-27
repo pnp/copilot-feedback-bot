@@ -85,6 +85,9 @@ To deploy the bot for production, we use docker to build a new bot image with th
 * Next, we need to push them to your ACR that was created with the backend components. 
 
 ## Deploy Docker Images to Azure Container Registry
+Run the ```deploy/TagAndPushImages.ps1``` script to perform these steps automatically. It'll work if your ACR name in parameters-backend.json match the ACR created in the create back-end step.
+
+Manual steps:
 * Push image to your created Azure Container Registry. First you need to connect to it with:
 
 ```PowerShell
@@ -116,15 +119,21 @@ Now with the backend created and the docker images pushed to an ACR, we can depl
 3. The script will deploy an app-service and functions app using the image names you've built and published. 
 4. Check the app-service deployment center logs to make sure everything deployed ok.
 
-## Add URLs to import_url_filter Table
-The last required step is to add at least one filter to import_url_filter in the SQL database. Without this the importer will fail with error:
+## Provision Database
+The last step requires some SQL scripts and data to be inserted.
+
+Run ```deploy/ProvisionDatabase.ps1``` to complete all SQL tasks and insert the URLs stored in your ```InstallConfig.json``` file into the import_url_filter table. 
+
+### Manual Setup: Add URLs to import_url_filter Table
+Without data in import_url_filter the importer will fail with error:
 
 ```
 FATAL ERROR: No import URLs found in database! This means everything would be ignored for SharePoint audit data. Add at least one URL to the import_url_filter table for this to work.
 ```
 This is a safety mechanism to make sure confidential activity does not accidentally end up in the SQL database. The system only reports on activity in general terms ("File X was edited by user Y"), and we recommend you add a broad a scope as possible, but this is a step you the customer must do yourself.
 
-Run ```deploy/ProvisionDatabase.ps1``` to insert the URLs stored in your ```InstallConfig.json``` file into this table. 
+### Manual Setup: Run SQL Scripts for Profiling Extensions
+If you can't run the PowerShell script above, you also need to execute all SQL scripts in ```deploy\profiling\CreateSchema```.
 
 ## Manual Setup - Create Back-end Azure Resources
 You can deploy the ARM template manually:
