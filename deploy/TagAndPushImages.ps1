@@ -49,8 +49,8 @@ if ($canInstall) {
 
 	WriteI -message "Tagging and pushing images to ACR $acrName..."
 	docker tag copilotbot-importer "$acrName.azurecr.io/copilotbot-importer"
-	docker tag copilotbot-importer "$acrName.azurecr.io/copilotbot-functions"
-	docker tag copilotbot-importer "$acrName.azurecr.io/copilotbot-web"
+	docker tag copilotbot-functions "$acrName.azurecr.io/copilotbot-functions"
+	docker tag copilotbot-web "$acrName.azurecr.io/copilotbot-web"
 
 	docker push "$acrName.azurecr.io/copilotbot-importer"
 	docker push "$acrName.azurecr.io/copilotbot-functions"

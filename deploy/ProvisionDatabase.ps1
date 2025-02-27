@@ -149,12 +149,16 @@ function AddClientPublicIpToSqlFirewall {
 	)
 	$ruleName = "SetupScript-$env:USERNAME-on-$env:COMPUTERNAME"
 	$server = Get-SqlServerNameArmTemplateValue $config
-
+	
 	# Check if the rule already exists
 	$existingRule = Get-AzSqlServerFirewallRule -ServerName $server -ResourceGroupName $config.ResourceGroupName | Where-Object { $_.FirewallRuleName -eq $ruleName }
+	
 	if ($null -ne $existingRule) {
 		WriteW -message "Your public IP is already added to the SQL server firewall (rule name '$ruleName'), so we won't detect & add it again."
 		return $true
+	}
+	else {
+		Writei -message "Your public IP is not yet added to the SQL server firewall (rule name '$ruleName'), so we will detect & add it now."
 	}
 
 	# Get your current IP address

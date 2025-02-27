@@ -72,7 +72,7 @@
     "schedule1pm": "[concat(parameters('scheduleStartTime'), 'T13:00:00+00:00')]",
     "schedule6pm": "[concat(parameters('scheduleStartTime'), 'T18:00:00+00:00')]",
     "schedule11pm": "[concat(parameters('scheduleStartTime'), 'T23:00:00+00:00')]",
-    "scriptsLocation": "https://raw.githubusercontent.com/pnp/copilot-feedback-bot/refs/heads/ProfilingExtension/deploy/profiling/ProfilingJobs/",
+    "scriptsLocation": "https://raw.githubusercontent.com/pnp/copilot-feedback-bot/refs/heads/main/deploy/profiling/ProfilingJobs/",
     "scripts": {
       "runbooks": [
         {

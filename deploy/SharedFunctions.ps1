@@ -19,6 +19,11 @@ function Get-ArmTemplateValue {
 
     $parametersContent = Get-Content ($scriptPath + "\" + $config.ARMParametersFileAppServices) -Raw -ErrorAction Stop | ConvertFrom-Json
 
+    $val = $parametersContent.parameters.$parameterName.value
+    if ($null -eq $val) {
+        WriteE "Error: $parameterName value is null."
+        return
+    }
     return $parametersContent.parameters.$parameterName.value
 }
 
