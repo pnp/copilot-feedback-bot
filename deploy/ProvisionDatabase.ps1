@@ -65,6 +65,7 @@ function ValidateAndInstall ($configFileName) {
 		ProvisionProfilingExtension $config
 
 		WriteS -message "Database provisioning completed successfully. All setup tasks have been completed."
+		WriteS -message "Please verify the solution is working as expected."
 	}
 	else {
 		WriteE -message "Error: Unable to add URL filters to the database. Please add manually to table 'import_url_filter'"
@@ -110,9 +111,8 @@ function ProvisionProfilingExtension {
 	param (
 		[Parameter(Mandatory = $true)] $config
 	)
-
 	
-	WriteI -message "Provisioning profiling extentions on database '$database' on server '$server' ..."
+	WriteI -message "Provisioning profiling extentions..."
 
 	$connectionString = GetConnectionString $config
 
@@ -131,8 +131,7 @@ function ProvisionProfilingExtension {
 	WriteS -message "Profiling extentions provisioned."
 }
 
-function GetConnectionString
-{
+function GetConnectionString {
 	param (
 		[Parameter(Mandatory = $true)] $config
 	)
@@ -152,7 +151,7 @@ function AddClientPublicIpToSqlFirewall {
 	$server = Get-SqlServerNameArmTemplateValue $config
 
 	# Check if the rule already exists
-	$existingRule = Get-AzSqlServerFirewallRule -ServerName $server -ResourceGroupName $config.ResourceGroupName | Where-Object { $_.FirewallRuleName -eq $ruleName}
+	$existingRule = Get-AzSqlServerFirewallRule -ServerName $server -ResourceGroupName $config.ResourceGroupName | Where-Object { $_.FirewallRuleName -eq $ruleName }
 	if ($null -ne $existingRule) {
 		WriteW -message "Your public IP is already added to the SQL server firewall (rule name '$ruleName'), so we won't detect & add it again."
 		return $true

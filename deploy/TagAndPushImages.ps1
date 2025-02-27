@@ -22,7 +22,7 @@ Invoke-Expression $scriptContent
 
 $canInstall = LoadAzModuleGetAzContext
 if ($canInstall) {
-    WriteI -message "Connecting to ACR..."
+	WriteI -message "Connecting to ACR..."
 
     
 	# Load config and sanity check
@@ -45,7 +45,7 @@ if ($canInstall) {
 	$acrName = Get-AcrNameArmTemplateValue $config
 
 	WriteI -message "Connecting to ACR $acrName..."
-    Connect-AzContainerRegistry -Name $acrName -erroraction Stop
+	Connect-AzContainerRegistry -Name $acrName -erroraction Stop
 
 	WriteI -message "Tagging and pushing images to ACR $acrName..."
 	docker tag copilotbot-importer "$acrName.azurecr.io/copilotbot-importer"
