@@ -1,6 +1,7 @@
 # Prerequisites
+To deploy this solution you need the following ready before. 
 
-Deployment PC:
+## Deployment PC
 * [Docker desktop](https://docs.docker.com/desktop/setup/install/windows-install/) + [firewall exceptions](https://docs.docker.com/desktop/setup/allow-list/)
 * PowerShell
   * [PowerShell 7.5](https://learn.microsoft.com/en-gb/powershell/scripting/install/installing-powershell-on-windows)
@@ -11,12 +12,15 @@ Deployment PC:
 * Firewall connectivity to your created Azure SQL Server port 1433, once back-end is created.
 * At least 50GB of free space. 
 
-Cloud:
+## Cloud Rights for Setup
 * Contributor rights to an Azure subscription.
 * Team admin right to publish new applications.
 * Global admin rights to create Teams bot and consent to bot/app API permissions.
 
-## Application Permissions
+## Cloud Rights for Runtime
+De-identified information on Office 365 needs to be disabled for activity tracking to work.	If "de-identified reports" setting is enabled, the import cannot match Teams or Activity usage reports. https://docs.microsoft.com/en-us/office365/troubleshoot/miscellaneous/reports-show-anonymous-user-name
+
+## Application Permissions for App ID
 Graph permissions needed (application):
 * User.Read.All - for looking up user metadata, allowing activity & survey slicing by demographics (job title, location etc)
 * Reports.Read.All - for reading activity data so we can cross-check who's active but not using copilot. 

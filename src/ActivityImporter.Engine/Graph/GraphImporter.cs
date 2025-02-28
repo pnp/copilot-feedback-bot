@@ -82,38 +82,22 @@ public class GraphImporter : AbstractApiLoader
 
     public async Task GetAndSaveActivityReportsMultiThreaded(int daysBackMax, ManualGraphCallClient client)
     {
-        _telemetry.LogInformation($"\nReading all activity reports from {daysBackMax} days back...");
+        _telemetry.LogInformation($"Reading all activity reports from {daysBackMax} days back...");
 
         // Parallel-load all, each one with own DB context
         var importTasks = new List<Task>();
 
         var lookupIdCache = new ConcurrentLookupDbIdsCache();
 
-        var teamsUserUsageLoader = new TeamsUserUsageLoader(client, _telemetry);
-        importTasks.Add(LoadAndSaveReportAsync(teamsUserUsageLoader, daysBackMax, "Teams user activity", _telemetry, lookupIdCache));
-
-
-        var outlookLoader = new OutlookUserActivityLoader(client, _telemetry);
-        importTasks.Add(LoadAndSaveReportAsync(outlookLoader, daysBackMax, "Outlook activity", _telemetry, lookupIdCache));
-
-        var oneDriveUserActivityLoader = new OneDriveUserActivityLoader(client, _telemetry);
-        importTasks.Add(LoadAndSaveReportAsync(oneDriveUserActivityLoader, daysBackMax, "OneDrive activity", _telemetry, lookupIdCache));
-
-        var sharePointUserActivityLoader = new SharePointUserActivityLoader(client, _telemetry);
-        importTasks.Add(LoadAndSaveReportAsync(sharePointUserActivityLoader, daysBackMax, "SharePoint user activity", _telemetry, lookupIdCache));
+        importTasks.Add(LoadAndSaveReportAsync(new TeamsUserUsageLoader(client, _telemetry), daysBackMax, "Teams user activity", _telemetry, lookupIdCache));
+        importTasks.Add(LoadAndSaveReportAsync(new OutlookUserActivityLoader(client, _telemetry), daysBackMax, "Outlook activity", _telemetry, lookupIdCache));
+        importTasks.Add(LoadAndSaveReportAsync(new OneDriveUserActivityLoader(client, _telemetry), daysBackMax, "OneDrive activity", _telemetry, lookupIdCache));
+        importTasks.Add(LoadAndSaveReportAsync(new SharePointUserActivityLoader(client, _telemetry), daysBackMax, "SharePoint user activity", _telemetry, lookupIdCache));
+        importTasks.Add(LoadAndSaveReportAsync(new TeamsUserDeviceLoader(client, _telemetry), daysBackMax, "Teams user activity", _telemetry, lookupIdCache));
 
         await Task.WhenAll(importTasks);
 
 
-        // Check for anonimised data
-        var allTeamsData = teamsUserUsageLoader.LoadedReportPages.SelectMany(r => r.Value).ToList();
-        if (allTeamsData.Count > 0)
-        {
-            if (!Common.DataUtils.CommonStringUtils.IsEmail(allTeamsData[0].UserPrincipalName))
-            {
-                _telemetry.LogInformation($"\nWARNING: Usage reports have associated user email concealed - we won't be able to link any activity back to users. See Office 365 Advanced Analytics Engine prerequisites.\n");
-            }
-        }
 
         _telemetry.LogInformation($"Activity reports imported.\n");
     }

@@ -3,6 +3,10 @@ using Microsoft.Extensions.Logging;
 
 namespace ActivityImporter.Engine.Graph.GraphUser;
 
+/// <summary>
+/// Loads users from Graph. Uses delta query to only get changes since last time if there is one.
+/// Built with manual HTTP client as Graph SDK doesn't/didn't support delta query for users previously.
+/// </summary>
 public class GraphUserLoader
 {
     private readonly string _tenantId;
@@ -24,7 +28,7 @@ public class GraphUserLoader
         var REDIS_USER_DELTA_KEY = GetRedisUserDeltaCacheKey(_tenantId);
         var usersQueryDelta = await _cacheConnectionManager.GetString(REDIS_USER_DELTA_KEY);
 
-        var initialDeltaUrl = $"https://graph.microsoft.com:443/v1.0/users/delta" +
+        var initialDeltaUrl = $"https://graph.microsoft.com/v1.0/users/delta" +
             "?$select=id,accountEnabled,officeLocation,usageLocation,jobTitle,department,mail,userPrincipalName,manager,companyName,postalCode,country,state" +
             "&$expand=manager";
         if (!string.IsNullOrEmpty(usersQueryDelta))

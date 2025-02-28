@@ -25,16 +25,16 @@ internal class ProgramTasks(AppConfig importConfig, ILogger logger)
         }
         catch (ODataError ex)
         {
-            logger.LogError(ex.ToString());
-
             // Don't make a drama if Graph permissions aren't assigned yet.
             if (ex.ResponseStatusCode == 403)
             {
-                logger.LogInformation("ERROR: Can't access Teams user data - are application permissions configured correctly?");
+                logger.LogWarning("ERROR: Can't access Teams user data - are application permissions configured correctly?");
                 return;
             }
             else
             {
+                logger.LogError(ex.ToString());
+
                 throw;
             }
         }
@@ -45,7 +45,7 @@ internal class ProgramTasks(AppConfig importConfig, ILogger logger)
     /// <summary>
     /// Activity API
     /// </summary>
-    internal async Task<bool> DownloadAndSaveActivityData()
+    internal async Task DownloadAndSaveActivityData()
     {
         // Remember start time
         var startTime = DateTime.Now;
@@ -59,10 +59,11 @@ internal class ProgramTasks(AppConfig importConfig, ILogger logger)
 
             if (spFilterList.OrgUrlConfigs.Count == 0)
             {
-                logger.LogError("FATAL ERROR: No import URLs found in database! " +
-                    "This means everything would be ignored for SharePoint audit data. Add at least one URL to the import_url_filter table for this to work.");
+                logger.LogCritical("FATAL ERROR: No import URLs found in database! " +
+                    "This means everything would be ignored for SharePoint audit data. " +
+                    "Add at least one URL to the import_url_filter table audit import to work.");
 
-                return false;
+                return;
             }
 
             logger.LogInformation("\nBeginning import. Filtering for SharePoint events below these URLs:");
@@ -90,6 +91,5 @@ internal class ProgramTasks(AppConfig importConfig, ILogger logger)
                 logger.LogError($"Got unexpected exception importing user usage activity: {ex.Message}");
             }
         }
-        return true;
     }
 }

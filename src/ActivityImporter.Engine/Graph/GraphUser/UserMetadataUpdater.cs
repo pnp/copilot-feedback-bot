@@ -76,7 +76,7 @@ public class UserMetadataUpdater : AbstractApiLoader, IDisposable
         {
             if ((System.Net.HttpStatusCode)ex.ResponseStatusCode == System.Net.HttpStatusCode.Forbidden)
             {
-                _telemetry.LogError($"User import - couldn't load SKUs for org - {ex.Message}. Ensure 'Organization.Read.All' in granted.");
+                _telemetry.LogWarning($"User import - couldn't load SKUs for org - {ex.Message}. Ensure 'Organization.Read.All' in granted.");
             }
             else
             {
