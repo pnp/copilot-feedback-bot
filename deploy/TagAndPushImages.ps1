@@ -9,11 +9,6 @@ function Get-ScriptDirectory {
 	$Invocation = (Get-Variable MyInvocation -Scope 1).Value
 	Split-Path $Invocation.MyCommand.Path
 }
-function Get-AcrNameArmTemplateValue {
-	param ( [parameter(mandatory = $true)] $config )
-	return Get-ArmTemplateValue $config "acr_name"
-}
-
 $scriptPath = Get-ScriptDirectory
 
 # Load common script functions
@@ -22,9 +17,7 @@ Invoke-Expression $scriptContent
 
 $canInstall = LoadAzModuleGetAzContext
 if ($canInstall) {
-	WriteI -message "Connecting to ACR..."
 
-    
 	# Load config and sanity check
 	try {
 		$config = Get-Content ($scriptPath + "\" + $configFileName) -Raw -ErrorAction Stop | ConvertFrom-Json
@@ -55,4 +48,14 @@ if ($canInstall) {
 	docker push "$acrName.azurecr.io/copilotbot-importer"
 	docker push "$acrName.azurecr.io/copilotbot-functions"
 	docker push "$acrName.azurecr.io/copilotbot-web"
+
+	WriteS -message "Published to your Azure Container Registry. Next steps:"
+	WriteS -message "1. Check for any errors above."
+	WriteS -message "2. Run the InstallAppService.ps1 script."
+
+	Write-Host ""
+	WriteS -message "Edit '$($config.ARMParametersFileAppServices)' and set these ARM template parameters in the JSON:"
+	WriteI -message "`"imageWebServer`": 	{ `"value`": `"$($acrName).azurecr.io/copilotbot-web:latest`"		},"
+	WriteI -message "`"imageFunctions`": 	{ `"value`": `"$($acrName).azurecr.io/copilotbot-functions:latest`"	},"
+	WriteI -message "`"imageImporter`": 	{ `"value`": `"$($acrName).azurecr.io/copilotbot-importer:latest`"	},"
 }

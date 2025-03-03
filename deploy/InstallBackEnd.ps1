@@ -15,23 +15,6 @@ function Get-ScriptDirectory {
 }
 
 
-function Get-SqlServerNameArmTemplateValue {
-	param ( [parameter(mandatory = $true)] $config )
-	return Get-ArmTemplateValue $config "sql_server_name"
-}
-function Get-SqlServerUserNameArmTemplateValue {
-	param ( [parameter(mandatory = $true)] $config )
-	return Get-ArmTemplateValue $config "sql_server_admin_login"
-}
-function Get-SqlServerPasswordArmTemplateValue {
-	param ( [parameter(mandatory = $true)] $config )
-	return Get-ArmTemplateValue $config "sql_server_admin_login_password"
-}
-function Get-SqlDbNameArmTemplateValue {
-	param ( [parameter(mandatory = $true)] $config )
-	return Get-ArmTemplateValue $config "sql_database_name"
-}
-
 
 # Install custom action in all sites listed in the config
 function ValidateAndInstall ($configFileName) {
@@ -56,7 +39,6 @@ function ValidateAndInstall ($configFileName) {
 		WriteE -message "Error: ARM parameters file not found or valid JSon." 
 		return
 	}
-
 	# Get the list of all subscriptions
 	$subscriptions = Get-AzSubscription
 
@@ -94,8 +76,24 @@ function ValidateAndInstall ($configFileName) {
 		
 		WriteS -message "Solution back-end install script finished. Next steps:"
 		WriteS -message "1. Check for any errors above."
-		WriteS -message "2. Build and publish docker image."
-		WriteS -message "3. Deploy app service using published docker image."
+		WriteS -message "2. Verify App registration URI + reply URLs."
+		WriteS -message "3. Configure arguments in 'docker-compose.override.yml' for your environment."
+		WriteS -message "4. Build docker images with 'docker-compose build' from the 'src' folder"
+		WriteS -message "5. Publish docker images (TagAndPushImages.ps1) + follow further instructions to deploy compute components."
+
+		$clientId = Get-ClientIdArmTemplateValue $config
+		$frontDoorDns = Get-FrontDoorNameArmTemplateValue $config
+		$rootHttps = "https://$($frontDoorDns).azurefd.net"
+		WriteW -message "Your public-facing URL will be https://$($frontDoorDns).azurefd.net/"
+		WriteW -message "Recommended app URI for client ID '$($clientId)' for Teams App SSO to work: api://$($frontDoorDns).azurefd.net/$($clientId)"
+
+		Write-Host ""
+		WriteS -message "Edit 'docker-compose.override.yml' with these arguments for building the JavaScript applications correctly:"
+		WriteI -message "VITE_MSAL_CLIENT_ID=$clientId"
+		writeI -message "VITE_MSAL_AUTHORITY=https://login.microsoftonline.com/organizations"
+		WriteI -message "VITE_API_ENDPOINT=$($rootHttps)"
+		WriteI -message "VITE_MSAL_SCOPES=api://$($frontDoorDns).azurefd.net/$clientId/access"
+		WriteI -message "VITE_TEAMSFX_START_LOGIN_PAGE_URL=$($rootHttps)/auth-start.html"
 	}
 }
 
@@ -177,6 +175,7 @@ $scriptPath = Get-ScriptDirectory
 # Load common script functions
 $scriptContent = Get-Content -Path ($scriptPath + "\SharedFunctions.ps1") -Raw
 Invoke-Expression $scriptContent
+
 
 # Install the Az module if it's not already installed
 $canInstall = LoadAzModuleGetAzContext

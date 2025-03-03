@@ -13,16 +13,6 @@ function Get-ScriptDirectory {
 	$Invocation = (Get-Variable MyInvocation -Scope 1).Value
 	Split-Path $Invocation.MyCommand.Path
 }
-
-function Get-AppServiceNameArmTemplateValue {
-	param ( [parameter(mandatory = $true)] $config )
-	return Get-ArmTemplateValue $config "app_service_name"
-}
-function Get-ClientIdArmTemplateValue {
-	param ( [parameter(mandatory = $true)] $config )
-	return Get-ArmTemplateValue $config "service_account_client_id"
-}
-
 # Install custom action in all sites listed in the config
 function ValidateAndInstall ($configFileName) {
 
@@ -96,8 +86,7 @@ function ValidateAndInstall ($configFileName) {
 		WriteI -message "App service container FQDN is: $($appContainerConfig.ingress.fqdn)"
 		WriteI -message "App service container URL is: https://$($appContainerConfig.ingress.fqdn)"
 
-		$clientId = Get-ClientIdArmTemplateValue($config)
-		WriteW -message "Make sure app ID $($clientId) has the right reply URLs etc for the app service container URL."
+		WriteW -message "Important: Update the Azure Front Door backend pool to be the new app service container URL above ^."
 
 	}
 }

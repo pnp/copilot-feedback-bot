@@ -25,7 +25,7 @@ Check the [prerequisites](prereqs.md) document before attempting setup.
 2. Create a new client secret for the bot application registration. Note down the client ID & the secret of the bot.
 3. Grant permissions (specified below) and have an admin grant consent.
 
-## PowerShell Setup for Cloud Components (Backend)
+## PowerShell Setup for Backend in Azure
 There is a script to deploy all the Azure components and configure them. Recommended you use PowerShell 7 or above. 
 
 1. Install Az PowerShell - https://learn.microsoft.com/en-us/powershell/azure/install-azure-powershell
@@ -38,28 +38,23 @@ Now we need to configure some parameters to create the backend, specifically the
    1. Fill out mandatory values and check the others. This is to install everything except the App Service. 
 5. In the project root folder, run: ```deploy/InstallBackEnd.ps1```
 6. Installation will take upto 45 mins if not run before.
-7. You can run multiple times; if a resources is already created, it'll be skipped. 
-
-## Test App Service Name Availability
-We need to check our app service name we want is available as we need the domain-name for a few configuration points below. For now, just check the name in the Azure portal in the "new app service" wizard - a more elegant solution will be found soon. 
-
-Remember the domain-name of your chose app service - we'll use it in ```[APP_SERVICE_DOMAIN]``` snippets below.
+7. You can run multiple times; if a resources is already created, it'll be skipped.
 
 ## Configure App Registration 
 There are a couple of extra configurations we need for the bot app.
 
 ### API Access + SSO for Teams
 Configure API access for app registration so the JavaScript app can access the backend. If you want Teams SSO to work, the URL of the JavaScript must match the App URI too. If you don't care, then you can pick any URI. 
-1. The application URI needs to be in format: api://[APP_SERVICE_DOMAIN]/[CLIENT_ID], with port if not standard. Examples:
-   1. ```api://contosobot.azurewebsites.net/5023a8dc-8448-4f41-b34c-131ee03def2f```
+1. The application URI needs to be in format: api://[PUBLIC_URL_DOMAIN]/[CLIENT_ID], with port if not standard. Examples:
+   1. ```api://contosobot.azurefd.net/5023a8dc-8448-4f41-b34c-131ee03def2f```
    2. ```api://localhost:5173/c8c85903-7e4a-4314-898b-08d01382e025```
       This value is needed for the ```AuthConfig__ApiAudience``` configuration.
 2. Add a scope for users/admins - ```access```.
 3. Copy the full scope name for the ARM template parameters ```api_scope``` value - 
-```api://[contosobot].azurewebsites.net/[5023a8dc-8448-4f41-b34c-131ee03def2f]/access```
+```api://[contosobot].azurefd.net/[5023a8dc-8448-4f41-b34c-131ee03def2f]/access```
 ### Reply URLs
 For the JavaScript app to work, the reply URLs must be configured. 
-1. Add reply URLs for a Single-page application - ```https://[APP_SERVICE_DOMAIN]/```
+1. Add reply URLs for a Single-page application - ```https://[PUBLIC_URL_DOMAIN]/```
 2. Enable access tokens and ID tokens. 
 
 ## Deploy User Teams App
@@ -87,7 +82,7 @@ To deploy the bot for production, we use docker to build a new bot image with th
 ## Deploy Docker Images to Azure Container Registry
 Run the ```deploy/TagAndPushImages.ps1``` script to perform these steps automatically. It'll work if your ACR name in parameters-backend.json match the ACR created in the create back-end step.
 
-Manual steps:
+### Manual Steps
 * Push image to your created Azure Container Registry. First you need to connect to it with:
 
 ```PowerShell
@@ -104,7 +99,7 @@ Connect-AzContainerRegistry -Name [myregistry]    # Change for your ACR name
   * ```docker push [myregistry].azurecr.io/copilotbot-web```
   * ```docker push [myregistry].azurecr.io/copilotbot-importer```
 
-## PowerShell Setup for Cloud Components (Compute)
+## PowerShell Deploy for Cloud Components (Compute)
 Now with the backend created and the docker images pushed to an ACR, we can deploy the compute components in Azure App Services.
 
 1. Copy ARM parameters file template ```deploy/ARM/parameters-appservices-template.json``` to ```deploy/ARM/parameters-appservices.json```
@@ -154,6 +149,8 @@ WebAppURL | Root URL of app service
 AuthConfig:ClientId | Service account 
 AuthConfig:ClientSecret | Service account 
 AuthConfig:TenantId | Service account 
+AuthConfig:ApiAudience | API URI
+AuthConfig:Authority | MSAL authority - usually https://login.microsoftonline.com/organizations
 ConnectionStrings:Redis | Redis connection string, used for caching delta tokens
 ConnectionStrings:ServiceBusRoot | Used for async processing of various things
 ConnectionStrings:SQL | The database connection string.
@@ -177,9 +174,9 @@ If you want to embed the admin app in Teams to leverage the single-sign-on:
 * Configure SSO for bot app registration - https://learn.microsoft.com/en-us/microsoftteams/platform/tabs/how-to/authentication/tab-sso-register-aad
 * Create Teams Admin app:
   * In ``Teams Apps/Admin`` copy ``manifest-template.json`` to ``manifest.json``.
-  * In ``manifest.json``, replace values: ``<<BOT_APP_ID>>``, ``<<WEB_APP_SERVICE_DOMAIN>>``, ``<<WEB_HTTPS_ROOT>>``
-    * Examples: ``5023a8dc-8448-4f41-b34c-131ee03def2f``, ``contosofeedbackbot.azurewebsites.net``, ``https://contosofeedbackbot.azurewebsites.net``
-    * Note: for localhost testing, the ``<<WEB_APP_SERVICE_DOMAIN>>`` value must include the port if non-standard. Example: ``localhost:5173``
+  * In ``manifest.json``, replace values: ``<<BOT_APP_ID>>``, ``<<WEB_PUBLIC_URL_DOMAIN>>``, ``<<WEB_HTTPS_ROOT>>``
+    * Examples: ``5023a8dc-8448-4f41-b34c-131ee03def2f``, ``contosofeedbackbot.azurefd.net``, ``https://contosofeedbackbot.azurefd.net``
+    * Note: for localhost testing, the ``<<WEB_PUBLIC_URL_DOMAIN>>`` value must include the port if non-standard. Example: ``localhost:5173``
   * Make zip-file of the folder with files: ``manifest.json``, ``color.png``, ``outline.png`` only. Make sure zip file has these files in the root. 
   * Upload zip-file to Teams admin centre and publish application to admin users/groups. _Careful who you give access!_
 

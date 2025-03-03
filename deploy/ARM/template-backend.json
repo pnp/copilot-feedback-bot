@@ -2,6 +2,9 @@
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
+    "front_door_name": {
+      "type": "String"
+    },
     "automation_account_name": {
       "type": "String"
     },
@@ -175,6 +178,7 @@
       "name": "[parameters('sql_server_name')]",
       "location": "[parameters('location')]",
       "kind": "v12.0",
+      "tags": "[parameters('tags')]",
       "properties": {
         "administratorLogin": "[parameters('sql_server_admin_login')]",
         "administratorLoginPassword": "[parameters('sql_server_admin_login_password')]",
@@ -208,6 +212,7 @@
       "dependsOn": [
         "[resourceId('Microsoft.Sql/servers', parameters('sql_server_name'))]"
       ],
+      "tags": "[parameters('tags')]",
       "sku": {
         "name": "Basic",
         "tier": "Basic",
@@ -245,7 +250,7 @@
         "redisVersion": "6",
         "disableAccessKeyAuthentication": false
       },
-      "tags": {}
+      "tags": "[parameters('tags')]"
     },
 
     {
@@ -257,6 +262,7 @@
         "name": "Standard_LRS",
         "tier": "Standard"
       },
+      "tags": "[parameters('tags')]",
       "kind": "StorageV2",
       "properties": {
         "dnsEndpointType": "Standard",
@@ -296,6 +302,7 @@
       "type": "Microsoft.ContainerRegistry/registries",
       "location": "[parameters('location')]",
       "apiVersion": "2022-02-01-preview",
+      "tags": "[parameters('tags')]",
       "sku": {
         "name": "Basic"
       },
@@ -515,6 +522,108 @@
           "name": "[variables('scripts').jobSchedules[copyIndex()].schedule]"
         },
         "parameters": "[variables('scripts').jobSchedules[copyIndex()].parameters]"
+      }
+    },
+
+    {
+      "apiVersion": "2020-05-01",
+      "type": "Microsoft.Network/frontdoors",
+      "name": "[parameters('front_door_name')]",
+      "location": "global",
+      "tags": {},
+      "properties": {
+        "friendlyName": "[parameters('front_door_name')]",
+        "enabledState": "Enabled",
+        "healthProbeSettings": [
+          {
+            "name": "healthProbeSettings-1",
+            "id": "[concat(resourceGroup().id, '/providers/Microsoft.Network/frontdoors/', parameters('front_door_name'), '/healthProbeSettings/healthProbeSettings-1')]",
+            "properties": {
+              "path": "/",
+              "protocol": "Https",
+              "intervalInSeconds": 30,
+              "healthProbeMethod": "Head",
+              "enabledState": "Enabled"
+            }
+          }
+        ],
+        "loadBalancingSettings": [
+          {
+            "id": "[concat(resourceGroup().id, '/providers/Microsoft.Network/frontdoors/', parameters('front_door_name'), '/loadBalancingSettings/loadBalancingSettings-1')]",
+            "name": "loadBalancingSettings-1",
+            "properties": {
+              "sampleSize": 4,
+              "successfulSamplesRequired": 2,
+              "additionalLatencyMilliseconds": 0
+            }
+          }
+        ],
+        "frontendEndpoints": [
+          {
+            "name": "[concat(parameters('front_door_name'), '-azurefd-net')]",
+            "properties": {
+              "hostName": "[concat(parameters('front_door_name'), '.azurefd.net')]",
+              "sessionAffinityEnabledState": "Disabled",
+              "sessionAffinityTtlSeconds": 0,
+              "customHttpsConfiguration": null
+            },
+            "id": "[concat(resourceGroup().id, '/providers/Microsoft.Network/frontdoors/', parameters('front_door_name'), '/frontendEndpoints/', concat(parameters('front_door_name'), '-azurefd-net'))]"
+          }
+        ],
+        "backendPools": [
+          {
+            "name": "web",
+            "id" : "[concat(resourceGroup().id, '/providers/Microsoft.Network/frontdoors/', parameters('front_door_name'), '/backendPools/web')]",
+            "properties": {
+              "backends": [
+                {
+                  "address": "tbd.northeurope.azurecontainerapps.io",
+                  "privateEndpointStatus": null,
+                  "enabledState": "Enabled",
+                  "httpPort": 80,
+                  "httpsPort": 443,
+                  "priority": 1,
+                  "weight": 50,
+                  "backendHostHeader": "tbd.northeurope.azurecontainerapps.io"
+                }
+              ],
+              "loadBalancingSettings": {
+                "id": "[concat(resourceGroup().id, '/providers/Microsoft.Network/frontdoors/', parameters('front_door_name'), '/loadBalancingSettings/loadBalancingSettings-1')]"
+              },
+              "healthProbeSettings": {
+                "id": "[concat(resourceGroup().id, '/providers/Microsoft.Network/frontdoors/', parameters('front_door_name'), '/healthProbeSettings/healthProbeSettings-1')]"
+              }
+            }
+          }
+        ],
+        "routingRules": [
+          {
+            "name": "All",
+            "properties": {
+              "frontendEndpoints": [
+                {
+                  "id": "[concat(resourceGroup().id, '/providers/Microsoft.Network/frontdoors/', parameters('front_door_name'), '/frontendEndpoints/', concat(parameters('front_door_name'), '-azurefd-net'))]"
+                }
+              ],
+              "acceptedProtocols": ["Https"],
+              "patternsToMatch": ["/*"],
+              "enabledState": "Enabled",
+              "routeConfiguration": {
+                "@odata.type": "#Microsoft.Azure.FrontDoor.Models.FrontdoorForwardingConfiguration",
+                "customForwardingPath": null,
+                "forwardingProtocol": "HttpsOnly",
+                "backendPool": {
+                  "id": "[concat(resourceGroup().id, '/providers/Microsoft.Network/frontdoors/', parameters('front_door_name'), '/backendPools/web')]"
+                },
+                "cacheConfiguration": null
+              }
+            }
+          }
+        ],
+        "backendPoolsSettings": {
+          "enforceCertificateNameCheck": "Enabled",
+          "sendRecvTimeoutSeconds": 30
+        }
       }
     }
   ]

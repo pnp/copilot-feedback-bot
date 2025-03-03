@@ -2,6 +2,9 @@
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
+    "api_audience": {
+      "type": "string"
+    },
     "acr_name": {
       "type": "string"
     },
@@ -15,9 +18,6 @@
       "type": "String"
     },
     "app_catalog_team_app_id": {
-      "type": "String"
-    },
-    "app_service_name": {
       "type": "String"
     },
     "sql_server_name": {
@@ -56,11 +56,20 @@
     "workspace_analytics_name": {
       "type": "String",
       "defaultValue": "CopilotFeedbackBotAnalytics"
+    },
+    "tags": {
+      "type": "object",
+      "defaultValue": {},
+      "metadata": {
+        "description": "Use {\"tagname\":\"tagvalue\"} to add tags. Use {} if no tags need to be created."
+      }
     }
   },
   "variables": {
-    "apiAudience": "[concat('api://', parameters('app_service_name'), '.azurewebsites.net', '/', parameters('service_account_client_id'))]",
-    "apiScope": "[concat(variables('apiAudience'), '/access')]",
+    "apiScope": "[concat(parameters('api_audience'), '/access')]",
+    "hiddenLinkTag": {
+      "hidden-link: /app-insights-resource-id": "[resourceId('microsoft.insights/components', parameters('workspace_analytics_name'))]"
+    },
     "sqlConnectionString": "[concat('Server=tcp:', parameters('sql_server_name'), '.database.windows.net,1433;Initial Catalog=', parameters('sql_database_name'), ';Persist Security Info=False;User ID=', parameters('sql_server_admin_login'), ';Password=', parameters('sql_server_admin_login_password'), ';MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;')]"
   },
 
@@ -93,11 +102,9 @@
       "type": "Microsoft.Web/sites",
       "kind": "functionapp,linux,container,azurecontainerapps",
       "location": "[parameters('location')]",
-      "tags": {
-        "hidden-link: /app-insights-resource-id": "[resourceId('microsoft.insights/components', parameters('workspace_analytics_name'))]"
-      },
+      "tags": "[union(parameters('tags'), variables('hiddenLinkTag'))]",
       "dependsOn": [
-        "[concat('Microsoft.Storage/storageAccounts/', parameters('storage_account_name'))]",
+        "[resourceId('Microsoft.Storage/storageAccounts/', parameters('storage_account_name'))]",
         "[concat('Microsoft.App/managedEnvironments/', parameters('environment_name'))]"
       ],
       "properties": {
@@ -141,10 +148,6 @@
               "value": "[parameters('service_account_client_id')]"
             },
             {
-              "name": "AuthConfig__ApiScope",
-              "value": "[variables('apiScope')]"
-            },
-            {
               "name": "AuthConfig__ClientSecret",
               "value": "[parameters('service_account_client_secret')]"
             },
@@ -158,7 +161,7 @@
             },
             {
               "name": "AuthConfig__ApiAudience",
-              "value": "[variables('apiAudience')]"
+              "value": "[parameters('api_audience')]"
             },
             {
               "name": "MicrosoftAppId",
@@ -204,13 +207,6 @@
       "location": "[parameters('location')]",
       "sku": {
         "name": "Standard_LRS"
-      },
-      "properties": {
-        "supportsHttpsTrafficOnly": true,
-        "minimumTlsVersion": "TLS1_2",
-        "defaultToOAuthAuthentication": true,
-        "allowBlobPublicAccess": false,
-        "publicNetworkAccess": "Enabled"
       }
     },
 
@@ -242,6 +238,7 @@
     {
       "apiVersion": "2024-10-02-preview",
       "name": "web",
+      "tags": "[parameters('tags')]",
       "type": "Microsoft.App/containerapps",
       "kind": "containerapps",
       "location": "[parameters('location')]",
@@ -331,7 +328,7 @@
                 },
                 {
                   "name": "AuthConfig__ApiAudience",
-                  "value": "[variables('apiAudience')]"
+                  "value": "[parameters('api_audience')]"
                 },
                 {
                   "name": "MicrosoftAppId",
@@ -369,6 +366,7 @@
       "apiVersion": "2024-10-02-preview",
       "name": "importer",
       "type": "Microsoft.App/jobs",
+      "tags": "[parameters('tags')]",
       "location": "[parameters('location')]",
       "dependsOn": [
         "[resourceId('Microsoft.App/managedEnvironments', parameters('environment_name'))]"
@@ -448,7 +446,7 @@
                 },
                 {
                   "name": "AuthConfig__ApiAudience",
-                  "value": "[variables('apiAudience')]"
+                  "value": "[parameters('api_audience')]"
                 },
                 {
                   "name": "MicrosoftAppId",

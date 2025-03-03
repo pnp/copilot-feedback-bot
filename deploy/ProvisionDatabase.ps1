@@ -14,23 +14,6 @@ function Get-ScriptDirectory {
 	Split-Path $Invocation.MyCommand.Path
 }
 
-function Get-SqlServerNameArmTemplateValue {
-	param ( [parameter(mandatory = $true)] $config )
-	return Get-ArmTemplateValue $config "sql_server_name"
-}
-function Get-SqlServerUserNameArmTemplateValue {
-	param ( [parameter(mandatory = $true)] $config )
-	return Get-ArmTemplateValue $config "sql_server_admin_login"
-}
-function Get-SqlServerPasswordArmTemplateValue {
-	param ( [parameter(mandatory = $true)] $config )
-	return Get-ArmTemplateValue $config "sql_server_admin_login_password"
-}
-function Get-SqlDbNameArmTemplateValue {
-	param ( [parameter(mandatory = $true)] $config )
-	return Get-ArmTemplateValue $config "sql_database_name"
-}
-
 
 # Install custom action in all sites listed in the config
 function ValidateAndInstall ($configFileName) {

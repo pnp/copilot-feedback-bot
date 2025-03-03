@@ -29,20 +29,11 @@
         "tenant_id": {
             "value": ""
         },
+        "api_audience" : {
+            "value": ""
+        },
         "app_catalog_team_app_id": {
             "value": ""
-        },
-        "app_service_name": {
-            "value": ""
-        },
-        "app_service_plan_name": {
-            "value": ""
-        },
-        "app_service_plan_sku": {
-            "value": "Standard"
-        },
-        "app_service_plan_skuCode": {
-            "value": "S1"
         },
         "sql_server_name": {
             "value": ""

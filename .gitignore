@@ -22,3 +22,4 @@ src/Functions/Properties/ServiceDependencies/copilotfeedback-function-ag - Zip D
 /src/docker-compose.override.dev.yml
 /deploy/ARM/parameters-backend.json
 /deploy/ARM/parameters-appservices.json
+/deploy/ARM/env

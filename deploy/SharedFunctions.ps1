@@ -1,6 +1,41 @@
 
 function Get-ArmTemplateValue {
     param (
+        [parameter(mandatory = $true)] $parametersContent,
+        [parameter(mandatory = $true)] $parameterName
+    )
+
+    $val = $parametersContent.parameters.$parameterName.value
+    if ($null -eq $val) {
+        WriteE "Error: '$parameterName' ARM parameter value is null."
+        return
+    }
+    return $parametersContent.parameters.$parameterName.value
+}
+
+function Get-ArmTemplateValueBackend {
+    param (
+        [parameter(mandatory = $true)] $config,
+        [parameter(mandatory = $true)] $parameterName
+    )
+
+    if ($null -eq $config) {
+        WriteE -message "Error: Configuration object is null." 
+        return
+    }
+    if ($null -eq $config.ARMParametersFileBackend) {
+        # Write contents of $config
+        Write-Host $config
+        
+        WriteE "Error: ARMParametersFileAppServices value is null."
+        return
+    }
+
+    $parametersContent = Get-Content ($scriptPath + "\" + $config.ARMParametersFileBackend) -Raw -ErrorAction Stop | ConvertFrom-Json
+    return Get-ArmTemplateValue $parametersContent $parameterName
+}
+function Get-ArmTemplateValueAppServices {
+    param (
         [parameter(mandatory = $true)] $config,
         [parameter(mandatory = $true)] $parameterName
     )
@@ -19,18 +54,38 @@ function Get-ArmTemplateValue {
 
     $parametersContent = Get-Content ($scriptPath + "\" + $config.ARMParametersFileAppServices) -Raw -ErrorAction Stop | ConvertFrom-Json
 
-    $val = $parametersContent.parameters.$parameterName.value
-    if ($null -eq $val) {
-        WriteE "Error: $parameterName value is null."
-        return
-    }
-    return $parametersContent.parameters.$parameterName.value
+    return Get-ArmTemplateValue $parametersContent $parameterName
 }
 
-
-function Get-AppServiceNameArmTemplateValue {
+function Get-ClientIdArmTemplateValue {
     param ( [parameter(mandatory = $true)] $config )
-    return Get-ArmTemplateValue $config "app_service_name"
+    return Get-ArmTemplateValueAppServices $config "service_account_client_id"
+}
+function Get-FrontDoorNameArmTemplateValue {
+    param ( [parameter(mandatory = $true)] $config )
+    return Get-ArmTemplateValueBackend $config "front_door_name"
+}
+
+function Get-AcrNameArmTemplateValue {
+	param ( [parameter(mandatory = $true)] $config )
+	return Get-ArmTemplateValueBackend $config "acr_name"
+}
+
+function Get-SqlServerNameArmTemplateValue {
+    param ( [parameter(mandatory = $true)] $config )
+    return Get-ArmTemplateValueBackend $config "sql_server_name"
+}
+function Get-SqlServerUserNameArmTemplateValue {
+    param ( [parameter(mandatory = $true)] $config )
+    return Get-ArmTemplateValueBackend $config "sql_server_admin_login"
+}
+function Get-SqlServerPasswordArmTemplateValue {
+    param ( [parameter(mandatory = $true)] $config )
+    return Get-ArmTemplateValueBackend $config "sql_server_admin_login_password"
+}
+function Get-SqlDbNameArmTemplateValue {
+    param ( [parameter(mandatory = $true)] $config )
+    return Get-ArmTemplateValueBackend $config "sql_database_name"
 }
 
 # write information
