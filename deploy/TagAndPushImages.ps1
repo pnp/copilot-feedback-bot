@@ -51,7 +51,7 @@ if ($canInstall) {
 
 	WriteS -message "Published to your Azure Container Registry. Next steps:"
 	WriteS -message "1. Check for any errors above."
-	WriteS -message "2. Run the InstallAppService.ps1 script."
+	WriteS -message "2. Run the InstallCompute.ps1 script."
 
 	Write-Host ""
 	WriteS -message "Edit '$($config.ARMParametersFileAppServices)' and set these ARM template parameters in the JSON:"

@@ -68,25 +68,22 @@ function ValidateAndInstall ($configFileName) {
 
 	$solutionDeploySuccess = InstallAzComponents($config)
 	if (-not $solutionDeploySuccess) {
-		WriteE -message "App services installation failed."
+		WriteE -message "Installation failed."
 	}
 	else {
 		$appContainer = Get-AzContainerApp -ResourceGroupName $config.ResourceGroupName -Name "web"
 		if ($null -eq $appContainer) {
-			WriteE -message "Error: App service container not found."
+			WriteE -message "Error: Web container container not found."
 			return
 		}
 		$appContainerConfig = $appContainer | select -ExpandProperty Configuration | ConvertFrom-Json
-		WriteS -message "App services install script finished. Next steps:"
+		WriteS -message "Compute install script finished. Next steps:"
 		WriteS -message "1. Check for any errors above."
-		WriteS -message "2. Check for any errors in the app service deployment center logs. IMPORTANT: The app service container URL is not yet accessible. It will be accessible after the deployment center finishes deploying the app service container."
-		WriteS -message "3. Configure the Entra ID app to include the above FQDN reply URL, and optionally the app URI if you want SSO for Teams."
-		WriteS -message "4. Run ProvisionDatabase.ps1 to ensure there is minimum data for filtering. Without records in table 'import_url_filter', the importer will abort."
+		WriteS -message "2. Run ProvisionDatabase.ps1 to ensure there is minimum data for filtering. Without records in table 'import_url_filter', the importer will abort."
+		
 		Write-Host ""
-		WriteI -message "App service container FQDN is: $($appContainerConfig.ingress.fqdn)"
-		WriteI -message "App service container URL is: https://$($appContainerConfig.ingress.fqdn)"
-
-		WriteW -message "Important: Update the Azure Front Door backend pool to be the new app service container URL above ^."
+		WriteI -message "Web container FQDN is: $($appContainerConfig.ingress.fqdn)"
+		WriteW -message "Important: Update the Azure Front Door backend pool to use the new container domain above ^."
 
 	}
 }
@@ -115,8 +112,8 @@ function DeployARMTemplate {
 	)
 
 	# Deploy the ARM template
-	WriteI -message "Deploying App Service ARM template..."
-	$templateLocation = "$scriptPath\ARM\template-appservices.json"
+	WriteI -message "Deploying Compute Components ARM template..."
+	$templateLocation = "$scriptPath\ARM\template-compute.json"
 	$paramsLocation = $scriptPath + "\" + $config.ARMParametersFileAppServices
 
 	$armDeploy = New-AzResourceGroupDeployment -ResourceGroupName $config.ResourceGroupName -TemplateFile $templateLocation -TemplateParameterFile $paramsLocation -Name "FeedbackBotAppServicesDeployment" -Verbose

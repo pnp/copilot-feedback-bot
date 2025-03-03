@@ -66,7 +66,13 @@ function AddUrlFiltersToDB {
 	$connection = New-Object System.Data.SqlClient.SqlConnection
 	$connection.ConnectionString = $connectionString
 
-	$connection.Open()
+	try {
+		$connection.Open()
+	}
+	catch {
+		Write-Error "Error: Unable to connect to the database. Please check the firewall settings and try again."
+		return
+	}
 
 	foreach ($site in $config.RecordAuditEventsOnSites) {
 		$siteUrl = $site.SiteUrl
@@ -101,7 +107,7 @@ function ProvisionProfilingExtension {
 
 	WriteI -Message "Profiling-01-CommandExecute..."
 	$query = Get-Content -Path ($scriptPath + "\profiling\CreateSchema\Profiling-01-CommandExecute.sql") -Raw
-	Invoke-Sqlcmd -Query $query -ConnectionString $connectionString | Out-Null
+	Invoke-Sqlcmd -Query $query -ConnectionString $connectionString -ErrorAction Stop | Out-Null
 
 	WriteI -Message "Profiling-02-IndexOptimize..."
 	$query = Get-Content -Path ($scriptPath + "\profiling\CreateSchema\Profiling-02-IndexOptimize.sql") -Raw

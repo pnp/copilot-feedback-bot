@@ -311,10 +311,6 @@
                   "value": "[parameters('service_account_client_id')]"
                 },
                 {
-                  "name": "AuthConfig__ApiScope",
-                  "value": "[variables('apiScope')]"
-                },
-                {
                   "name": "AuthConfig__ClientSecret",
                   "value": "[parameters('service_account_client_secret')]"
                 },
@@ -427,10 +423,6 @@
                 {
                   "name": "AuthConfig__ClientId",
                   "value": "[parameters('service_account_client_id')]"
-                },
-                {
-                  "name": "AuthConfig__ApiScope",
-                  "value": "[variables('apiScope')]"
                 },
                 {
                   "name": "AuthConfig__ClientSecret",
