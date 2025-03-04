@@ -8,12 +8,13 @@ You need Teams admin rights and rights to assign sensitive privileges for this s
 
 **High-level setup guide:**
 1. Create a bot + app ID. Configure secret + assign Graph access.
-2. Deploy user Teams app to Teams for bot - we need the installed app ID for configuring the bot later. 
-3. Deploy Azure back-end components.
-4. Build a docker images for bot + JavaScript application, and functions app. Requires configuration info from bot app.
-5. Push image to Azure container registry created in step 3.
-6. Deploy compute components to Container Apps Environment with published docker images.
-7. Verify deployment.
+2. Create a seperate application in Entra ID for the web-app. 
+3. Deploy user Teams app to Teams for bot - we need the installed app ID for configuring the bot later. 
+4. Deploy Azure back-end components.
+5. Build a docker images for bot + JavaScript application, and functions app. Requires configuration info from bot app.
+6. Push image to Azure container registry created in step 3.
+7. Deploy compute components to Container Apps Environment with published docker images.
+8. Verify deployment.
 
 Docker is used in this guide just because it gives a consistent build process, but is not essential. You could also build and publish with GitHub actions. 
 
@@ -54,17 +55,17 @@ Configure API access for app registration so the JavaScript app can access the b
 ``api://[contosobot].azurefd.net/[5023a8dc-8448-4f41-b34c-131ee03def2f]/access``
 
 ### Add Reply URLs
-For the JavaScript app to work, the reply URLs must be configured. 
+For the JavaScript app to work, the reply URLs must be configured for the web application. 
 1. Add reply URLs for a Single-page application - ``https://[PUBLIC_URL_DOMAIN]/``
 2. Enable access tokens and ID tokens. 
 
 ## Deploy User Teams App
 Next, create a Teams app from the template to enable the bot in your org:
-4. In ``Teams Apps`` root dir, copy file "manifest-template.json" to "manifest.json".
+4. In ``Teams Apps\User`` root dir, copy file ``manifest-template.json`` to ``manifest.json``.
 5. Edit ``manifest.json`` and update all instances of ``<<BOT_APP_ID>>`` with your app registration client ID. 
 6. Make zip-file of the folder with files: ``manifest.json``, ``color.png``, ``outline.png`` only. Make sure zip file has these files in the root.  
 7. Deploy that zip file to your apps catalog in Teams admin.
-8. Once deployed, copy the "App ID" generated. We'll need that ID for bot configuration so the bot can self-install to users that don't have it yet, and then send proactive messages.
+8. Once deployed, copy the "App ID" generated for the [AppCatalogTeamAppId] configuration value. We'll need that ID for bot configuration so the bot can self-install to users that don't have it yet, and then send proactive messages.
 
 ## Build Docker Images
 To deploy the bot for production, we use docker to build a new bot image with the ASP.Net + JavaScript application in a single image, and the functions app in another image.

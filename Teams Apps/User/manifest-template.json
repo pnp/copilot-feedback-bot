@@ -29,7 +29,7 @@
             "botId": "<<BOT_APP_ID>>",
             "scopes": [
                 "personal"
-              ],
+            ],
             "isNotificationOnly": false,
             "supportsFiles": false
         }
