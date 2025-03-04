@@ -1,5 +1,6 @@
 ﻿using Common.Engine;
 using Common.Engine.Bot;
+using Common.Engine.Bot.Cards;
 using Common.Engine.Config;
 using Common.Engine.Notifications;
 using Common.Engine.Surveys;
@@ -9,7 +10,6 @@ using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Builder.Dialogs.Choices;
 using Microsoft.Graph;
 using System.Text.Json;
-using Web.Server.Bots.Cards;
 using Web.Server.Bots.Dialogues.Abstract;
 
 namespace Web.Server.Bots.Dialogues;

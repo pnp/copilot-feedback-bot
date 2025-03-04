@@ -16,7 +16,6 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <Compile Remove="Bots\Cards\BotReactionCard.cs" />
 	  <Compile Remove="Bots\SurveyConversationResumeHandler.cs" />
 	</ItemGroup>
 
@@ -24,20 +23,6 @@
 		<ProjectReference Include="..\web.client\web.client.esproj">
 			<ReferenceOutputAssembly>false</ReferenceOutputAssembly>
 		</ProjectReference>
-	</ItemGroup>
-
-
-	<ItemGroup>
-		<EmbeddedResource Include="Bots\Cards\Templates\BotDiagFinished.json" />
-		<EmbeddedResource Include="Bots\Cards\Templates\SurveyCustomPageCommon.json" />
-		<EmbeddedResource Include="Bots\Cards\Templates\BotFirstIntro.json" />
-		<EmbeddedResource Include="Bots\Cards\Templates\BotReactionHappy.json" />
-		<EmbeddedResource Include="Bots\Cards\Templates\BotReactionMeh.json" />
-		<EmbeddedResource Include="Bots\Cards\Templates\BotResumeConversationIntro.json" />
-		<EmbeddedResource Include="Bots\Cards\Templates\SurveyCardFileAction.json" />
-		<EmbeddedResource Include="Bots\Cards\Templates\SurveyOverrallSatisfactionCommonBody.json" />
-		<EmbeddedResource Include="Bots\Cards\Templates\SurveyCardNoAction.json" />
-		<EmbeddedResource Include="Bots\Cards\Templates\SurveyCardTeamsAction.json" />
 	</ItemGroup>
 
 	<ItemGroup>

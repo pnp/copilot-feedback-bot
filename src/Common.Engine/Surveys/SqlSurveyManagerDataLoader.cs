@@ -62,12 +62,12 @@ public class SqlSurveyManagerDataLoader(DataContext db, ILogger<SqlSurveyManager
 
     public async Task<int> LogSurveyRequested(CommonAuditEvent @event)
     {
-        var survey = new UserSurveyResponseDB 
-        { 
-            RelatedEventId = @event.Id, 
-            Requested = DateTime.UtcNow, 
-            Responded = null, 
-            UserID = @event.UserId 
+        var survey = new UserSurveyResponseDB
+        {
+            RelatedEventId = @event.Id,
+            Requested = DateTime.UtcNow,
+            Responded = null,
+            UserID = @event.UserId
         };
         db.SurveyResponses.Add(survey);
         await db.SaveChangesAsync();
@@ -130,16 +130,16 @@ public class SqlSurveyManagerDataLoader(DataContext db, ILogger<SqlSurveyManager
 
     public async Task<List<SurveyAnswerDB>> SaveAnswers(User user, List<SurveyPageUserResponse.RawResponse> answers, int existingSurveyId)
     {
-        if (answers.Select(a=> a.QuestionId).Contains(0))
+        if (answers.Select(a => a.QuestionId).Contains(0))
         {
             throw new ArgumentOutOfRangeException("Cannot save answers for question ID 0");
         }
         var responses = answers
-            .Select(a => new SurveyAnswerDB 
-            { 
-                ForQuestionId = a.QuestionId, 
-                GivenAnswer = a.Response, 
-                User = user, 
+            .Select(a => new SurveyAnswerDB
+            {
+                ForQuestionId = a.QuestionId,
+                GivenAnswer = a.Response,
+                User = user,
                 TimestampUtc = DateTime.UtcNow,
                 ParentSurveyId = existingSurveyId
             }).ToList();
@@ -148,7 +148,7 @@ public class SqlSurveyManagerDataLoader(DataContext db, ILogger<SqlSurveyManager
 
         // Deep load questions
         var savedAnswers = await db.SurveyAnswers
-            .Include(a=> a.ForQuestion)
+            .Include(a => a.ForQuestion)
             .Where(a => responses.Select(r => r.ID).Contains(a.ID))
             .ToListAsync();
 

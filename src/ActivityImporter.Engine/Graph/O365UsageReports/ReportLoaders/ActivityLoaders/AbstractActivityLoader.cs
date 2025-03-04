@@ -3,7 +3,6 @@ using Common.DataUtils;
 using Entities.DB;
 using Entities.DB.Entities;
 using Entities.DB.LookupCaches.Discrete;
-using Microsoft.ApplicationInsights.Channel;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 

@@ -40,7 +40,7 @@ internal class StorageInfo
     public required string SharedAccessToken { get; set; }
 }
 
-internal class ServiceConfiguration 
+internal class ServiceConfiguration
 {
     public required StorageInfo StorageInfo { get; set; }
 }

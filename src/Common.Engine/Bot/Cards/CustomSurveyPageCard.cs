@@ -1,8 +1,7 @@
-﻿using Common.Engine.Bot;
-using Common.Engine.Surveys;
+﻿using Common.Engine.Surveys;
 using Newtonsoft.Json.Linq;
 
-namespace Web.Server.Bots.Cards;
+namespace Common.Engine.Bot.Cards;
 
 public class CustomSurveyPageCard : BaseAdaptiveCard
 {

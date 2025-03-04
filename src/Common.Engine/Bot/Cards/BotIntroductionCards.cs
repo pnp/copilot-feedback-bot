@@ -1,7 +1,6 @@
-﻿using Common.Engine.Bot;
-using Common.Engine.Surveys;
+﻿using Common.Engine.Surveys;
 
-namespace Web.Server.Bots.Cards;
+namespace Common.Engine.Bot.Cards;
 
 public abstract class BaseBotIntroductionCard : BaseAdaptiveCard
 {

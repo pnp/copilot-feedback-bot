@@ -1,7 +1,7 @@
 ﻿using Common.Engine.Bot;
+using Common.Engine.Bot.Cards;
 using Common.Engine.Config;
 using Microsoft.Bot.Builder;
-using Web.Server.Bots.Cards;
 
 namespace Web.Server.Bots;
 

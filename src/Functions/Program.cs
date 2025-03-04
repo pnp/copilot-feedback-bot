@@ -2,7 +2,6 @@ using Common.Engine;
 using Common.Engine.Notifications;
 using Common.Engine.Surveys;
 using Entities.DB;
-using Microsoft.Azure.Functions.Worker;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;

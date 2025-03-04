@@ -1,9 +1,9 @@
 ﻿using Common.DataUtils;
 using System.Reflection;
 
-namespace Web.Server;
+namespace Common.Engine;
 
-internal class Utils
+public class Utils
 {
     public static string ReadResource(string resourcePath)
     {

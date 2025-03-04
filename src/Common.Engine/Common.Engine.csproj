@@ -1,6 +1,19 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
+    <EmbeddedResource Include="Bot\Cards\Templates\BotDiagFinished.json" />
+    <EmbeddedResource Include="Bot\Cards\Templates\BotFirstIntro.json" />
+    <EmbeddedResource Include="Bot\Cards\Templates\BotReactionHappy.json" />
+    <EmbeddedResource Include="Bot\Cards\Templates\BotReactionMeh.json" />
+    <EmbeddedResource Include="Bot\Cards\Templates\BotResumeConversationIntro.json" />
+    <EmbeddedResource Include="Bot\Cards\Templates\SurveyCardFileAction.json" />
+    <EmbeddedResource Include="Bot\Cards\Templates\SurveyCardNoAction.json" />
+    <EmbeddedResource Include="Bot\Cards\Templates\SurveyCardTeamsAction.json" />
+    <EmbeddedResource Include="Bot\Cards\Templates\SurveyCustomPageCommon.json" />
+    <EmbeddedResource Include="Bot\Cards\Templates\SurveyOverrallSatisfactionCommonBody.json" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Azure.Data.Tables" Version="12.9.1" />
     <PackageReference Include="Microsoft.Bot.Builder.Integration.AspNet.Core" Version="4.22.7" />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="8.0.1" />

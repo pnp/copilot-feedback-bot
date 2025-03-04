@@ -118,7 +118,7 @@ internal class FakeSurveyManagerDataLoader : ISurveyManagerDataLoader
     public Task<List<SurveyPageDB>> GetSurveyPages(bool publishedOnly)
     {
         return Task.FromResult(new List<SurveyPageDB>()
-        { 
+        {
             new SurveyPageDB
             {
                 Questions = new List<SurveyQuestionDB>

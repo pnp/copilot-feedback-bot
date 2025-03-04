@@ -8,16 +8,16 @@ public static class BotConstants
     public static string FIELD_NAME_SURVEY_STOP => "${SurveyAnswerStop}";
     public static string BotName => "Copilot Feedback Bot";
 
-    public static string BotFirstIntroduction => "Web.Server.Bots.Cards.Templates.BotFirstIntro.json";
-    public static string BotDiagFinished => "Web.Server.Bots.Cards.Templates.BotDiagFinished.json";
-    public static string BotReactionHappy => "Web.Server.Bots.Cards.Templates.BotReactionHappy.json";
-    public static string BotReactionMeh => "Web.Server.Bots.Cards.Templates.BotReactionMeh.json";
-    public static string BotResumeConversationIntro => "Web.Server.Bots.Cards.Templates.BotResumeConversationIntro.json";
-    public static string CardFileNameCopilotTeamsActionSurvey => "Web.Server.Bots.Cards.Templates.SurveyCardTeamsAction.json";
-    public static string CardFileNameCopilotFileActionSurvey => "Web.Server.Bots.Cards.Templates.SurveyCardFileAction.json";
-    public static string CardFileNameSurveyNoActionCard => "Web.Server.Bots.Cards.Templates.SurveyCardNoAction.json";
-    public static string SurveyOverrallSatisfactionCommonBody => "Web.Server.Bots.Cards.Templates.SurveyOverrallSatisfactionCommonBody.json";
-    public static string SurveyCustomPageCommon => "Web.Server.Bots.Cards.Templates.SurveyCustomPageCommon.json";
+    public static string BotFirstIntroduction => "Common.Engine.Bot.Cards.Templates.BotFirstIntro.json";
+    public static string BotDiagFinished => "Common.Engine.Bot.Cards.Templates.BotDiagFinished.json";
+    public static string BotReactionHappy => "Common.Engine.Bot.Cards.Templates.BotReactionHappy.json";
+    public static string BotReactionMeh => "Common.Engine.Bot.Cards.Templates.BotReactionMeh.json";
+    public static string BotResumeConversationIntro => "Common.Engine.Bot.Cards.Templates.BotResumeConversationIntro.json";
+    public static string CardFileNameCopilotTeamsActionSurvey => "Common.Engine.Bot.Cards.Templates.SurveyCardTeamsAction.json";
+    public static string CardFileNameCopilotFileActionSurvey => "Common.Engine.Bot.Cards.Templates.SurveyCardFileAction.json";
+    public static string CardFileNameSurveyNoActionCard => "Common.Engine.Bot.Cards.Templates.SurveyCardNoAction.json";
+    public static string SurveyOverrallSatisfactionCommonBody => "Common.Engine.Bot.Cards.Templates.SurveyOverrallSatisfactionCommonBody.json";
+    public static string SurveyCustomPageCommon => "Common.Engine.Bot.Cards.Templates.SurveyCustomPageCommon.json";
 
 
     public static string SurveyAnswerRating1 => "Terrible";

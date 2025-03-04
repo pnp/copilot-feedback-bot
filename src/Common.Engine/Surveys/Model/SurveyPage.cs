@@ -36,7 +36,7 @@ public class SurveyPageDTO : BaseDTOWithName
     public SurveyPageDTO()
     {
     }
-    public SurveyPageDTO(SurveyPageDB page) :base(page)
+    public SurveyPageDTO(SurveyPageDB page) : base(page)
     {
         Questions = page.Questions.Select(q => new SurveyQuestionDTO(q)).ToList();
         PageIndex = page.PageIndex;

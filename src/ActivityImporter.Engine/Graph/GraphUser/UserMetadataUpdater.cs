@@ -107,7 +107,7 @@ public class UserMetadataUpdater : AbstractApiLoader, IDisposable
                 _telemetry.LogDebug($"User import - couldn't find existing user '{existingGraphUser.UserPrincipalName}' in DB");
                 continue;
             }
-            
+
             await UpdateDbUserWithGraphData(_db, existingGraphUser, allActiveGraphUsers, allDbUsers, dbUser, skus == null);
         }
 
@@ -176,7 +176,7 @@ public class UserMetadataUpdater : AbstractApiLoader, IDisposable
 
     }
 
-    private async Task AddSkuForUsers(List<Entities.DB.Entities.User> graphFoundDbUsers, List<Microsoft.Graph.Models.User> usersWithSku, 
+    private async Task AddSkuForUsers(List<Entities.DB.Entities.User> graphFoundDbUsers, List<Microsoft.Graph.Models.User> usersWithSku,
         SubscribedSku sku)
     {
         if (sku.SkuPartNumber == null)

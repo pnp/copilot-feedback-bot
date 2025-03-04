@@ -19,7 +19,7 @@ public class AppConfig : PropertyBoundConfig
     public AzureADAuthConfig AuthConfig { get; set; } = null!;
 
     [ConfigValue(true, "APPLICATIONINSIGHTS_CONNECTION_STRING")]
-    public string? AppInsightsConnectionString { get; set; } 
+    public string? AppInsightsConnectionString { get; set; }
 
     /// <summary>
     /// Hack for dev testing
