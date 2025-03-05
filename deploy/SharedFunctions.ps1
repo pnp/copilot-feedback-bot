@@ -57,7 +57,7 @@ function Get-ArmTemplateValueAppServices {
     return Get-ArmTemplateValue $parametersContent $parameterName
 }
 
-function Get-ClientIdArmTemplateValue {
+function Get-WebClientIdArmTemplateValue {
     param ( [parameter(mandatory = $true)] $config )
     return Get-ArmTemplateValueAppServices $config "service_account_client_id"
 }
@@ -65,7 +65,6 @@ function Get-FrontDoorNameArmTemplateValue {
     param ( [parameter(mandatory = $true)] $config )
     return Get-ArmTemplateValueBackend $config "front_door_name"
 }
-
 function Get-AcrNameArmTemplateValue {
 	param ( [parameter(mandatory = $true)] $config )
 	return Get-ArmTemplateValueBackend $config "acr_name"

@@ -38,13 +38,13 @@ public class Program
         builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddMicrosoftIdentityWebApi(ops =>
             {
-                ops.Audience = config.AuthConfig.ApiAudience;
+                ops.Audience = config.WebAuthConfig.ApiAudience;
             }, o =>
             {
-                o.ClientId = config.AuthConfig.ClientId;
-                o.TenantId = config.AuthConfig.TenantId;
-                o.ClientSecret = config.AuthConfig.ClientSecret;
-                o.Authority = config.AuthConfig.Authority;
+                o.ClientId = config.WebAuthConfig.ClientId;
+                o.TenantId = config.WebAuthConfig.TenantId;
+                o.ClientSecret = config.WebAuthConfig.ClientSecret;
+                o.Authority = config.WebAuthConfig.Authority;
                 o.Instance = "https://login.microsoftonline.com/";
             });
 

@@ -8,6 +8,7 @@
         "environment_name": {
             "value": "prodbotenvironment"
         },
+
         "imageWebServer": {
             "value": "contoso.azurecr.io/copilotbot-web:latest"
         },
@@ -20,18 +21,33 @@
         "dockerRegistryStartupCommand": {
             "value": ""
         },
+
         "service_account_client_id": {
             "value": ""
         },
         "service_account_client_secret": {
             "value": ""
         },
-        "tenant_id": {
+        "service_account_tenant_id": {
             "value": ""
         },
-        "api_audience" : {
+        "service_account_api_audience" : {
             "value": ""
         },
+
+        "web_account_api_audience" : {
+            "value": ""
+        },
+        "web_account_client_id": {
+            "value": ""
+        },
+        "web_account_client_secret": {
+            "value": ""
+        },
+        "web_account_tenant_id": {
+            "value": ""
+        },
+
         "app_catalog_team_app_id": {
             "value": ""
         },

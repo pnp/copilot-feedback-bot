@@ -10,11 +10,18 @@ services:
       - ConnectionStrings__SQL=
       - ConnectionStrings__ServiceBusRoot=
       - ConnectionStrings__Redis=
-      - AuthConfig__TenantId=
-      - AuthConfig__ClientSecret=
-      - AuthConfig__ClientId=
-      - AuthConfig__ApiAudience=
-      - AuthConfig__Authority=https://login.microsoftonline.com/organizations
+      
+      - ImportAuthConfig__TenantId=
+      - ImportAuthConfig__ClientSecret=
+      - ImportAuthConfig__ClientId=
+      - ImportAuthConfig__Authority=https://login.microsoftonline.com/organizations
+
+      - WebAuthConfig__TenantId=
+      - WebAuthConfig__ClientSecret=
+      - WebAuthConfig__ClientId=
+      - WebAuthConfig__ApiAudience=
+      - WebAuthConfig__Authority=https://login.microsoftonline.com/organizations
+
       - AppCatalogTeamAppId=
     build:
       args:
@@ -40,11 +47,10 @@ services:
       - ConnectionStrings__SQL=
       - ConnectionStrings__ServiceBusRoot=
       - ConnectionStrings__Redis=
-      - AuthConfig__TenantId=
-      - AuthConfig__ClientSecret=
-      - AuthConfig__ClientId=
-      - AuthConfig__ApiAudience=
-      - AuthConfig__Authority=https://login.microsoftonline.com/organizations
+      - ImportAuthConfig__TenantId=
+      - ImportAuthConfig__ClientSecret=
+      - ImportAuthConfig__ClientId=
+      - ImportAuthConfig__Authority=https://login.microsoftonline.com/organizations
       - AppCatalogTeamAppId=
     depends_on:
       sql:

@@ -76,7 +76,7 @@ function ValidateAndInstall ($configFileName) {
 			WriteE -message "Error: Web container container not found."
 			return
 		}
-		$appContainerConfig = $appContainer | select -ExpandProperty Configuration | ConvertFrom-Json
+		$appContainerConfig = $appContainer | Select-Object -ExpandProperty Configuration | ConvertFrom-Json
 		WriteS -message "Compute install script finished. Next steps:"
 		WriteS -message "1. Check for any errors above."
 		WriteS -message "2. Run ProvisionDatabase.ps1 to ensure there is minimum data for filtering. Without records in table 'import_url_filter', the importer will abort."

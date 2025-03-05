@@ -25,6 +25,6 @@ public class AzureADAuthConfig : PropertyBoundConfig
     [ConfigValue]
     public string Authority { get; set; } = null!;
 
-    [ConfigValue]
-    public string ApiAudience { get; set; } = null!;
+    [ConfigValue(true)]
+    public string? ApiAudience { get; set; } = null!;
 }

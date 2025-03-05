@@ -25,7 +25,7 @@ public class ActivityLogSaveSession
         _appConfig = appConfig;
         _logger = logger;
 
-        _authContext = new GraphAppIndentityOAuthContext(logger, appConfig.AuthConfig.ClientId, appConfig.AuthConfig.TenantId, appConfig.AuthConfig.ClientSecret, string.Empty, false);
+        _authContext = new GraphAppIndentityOAuthContext(logger, appConfig.ImportAuthConfig.ClientId, appConfig.ImportAuthConfig.TenantId, appConfig.ImportAuthConfig.ClientSecret, string.Empty, false);
         SiteCache = new SiteCache(db);
     }
     public SiteCache SiteCache { get; set; }

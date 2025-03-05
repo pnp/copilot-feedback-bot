@@ -188,7 +188,7 @@ public class CopilotTests : AbstractTest
     [TestMethod]
     public async Task GraphCopilotMetadataLoaderTests()
     {
-        var auth = new GraphAppIndentityOAuthContext(_logger, _config.AuthConfig.ClientId, _config.AuthConfig.TenantId, _config.AuthConfig.ClientSecret, string.Empty, false);
+        var auth = new GraphAppIndentityOAuthContext(_logger, _config.ImportAuthConfig.ClientId, _config.ImportAuthConfig.TenantId, _config.ImportAuthConfig.ClientSecret, string.Empty, false);
         await auth.InitClientCredential();
 
         var loader = new GraphFileMetadataLoader(new Microsoft.Graph.GraphServiceClient(auth.Creds), _logger);

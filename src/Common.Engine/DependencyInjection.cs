@@ -45,7 +45,7 @@ public class DependencyInjection
 
         var options = new TokenCredentialOptions { AuthorityHost = AzureAuthorityHosts.AzurePublicCloud };
         var scopes = new[] { "https://graph.microsoft.com/.default" };
-        var clientSecretCredential = new ClientSecretCredential(config.AuthConfig.TenantId, config.AuthConfig.ClientId, config.AuthConfig.ClientSecret, options);
+        var clientSecretCredential = new ClientSecretCredential(config.ImportAuthConfig.TenantId, config.ImportAuthConfig.ClientId, config.ImportAuthConfig.ClientSecret, options);
         services.AddSingleton(sp => new GraphServiceClient(clientSecretCredential, scopes));
 
         // Create the Bot Framework Authentication to be used with the Bot Adapter.

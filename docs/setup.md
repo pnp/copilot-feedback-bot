@@ -26,6 +26,9 @@ Check the [prerequisites](prereqs.md) document before attempting setup.
 2. Create a new client secret for the bot application registration. Note down the client ID & the secret of the bot.
 3. Grant permissions (specified below) and have an admin grant consent.
 
+## Create Web App Registration
+In Entra ID, create a new application registration for the JavaScript Teams admin app.
+
 ## PowerShell Setup for Backend in Azure
 There is a script to deploy all the Azure components and configure them. Recommended you use PowerShell 7 or above. 
 
@@ -41,21 +44,26 @@ Now we need to configure some parameters to create the backend, specifically the
 6. Installation will take upto 45 mins if not run before.
 7. You can run multiple times; if a resources is already created, it'll be skipped.
 
-## Configure App Registration 
+## Configure JS App Registration
 There are a couple of extra configurations we need for the bot app. We'll take [PUBLIC_URL_DOMAIN] from the FQDN from the Azure Front Door created in the backend setup.
 
-### API Access + SSO for Teams
-Configure API access for app registration so the JavaScript app can access the backend. If you want Teams SSO to work, the URL of the JavaScript must match the App URI too. If you don't care, then you can pick any URI. 
-1. The application URI needs to be in format: api://[PUBLIC_URL_DOMAIN]/[CLIENT_ID], with port if not standard. Examples:
+### API Access
+Configure API access for app registration so the JavaScript app can access the backend. 
+
+1. Set the App URI of the web app.
+2. Copy the full URI into the ARM template parameters ``parameters-compute.json`` file: ``web_account_api_audience`` value. This value is needed for the ``WebAuthConfig__ApiAudience`` configuration.
+3. Add a scope for users and admins - ``access``. This value is used for the JavaScript app ``VITE_MSAL_SCOPES`` argument/var.
+
+### Optional: SSO for Teams
+The URL of the website hosting the app must match the App URI if we want SSO to work (Azure Front Door in our case). 
+* The application URI needs to be in format: api://[PUBLIC_URL_DOMAIN]/[JS_APP_CLIENT_ID], with port if not standard. Examples:
    1. ``api://contosobot.azurefd.net/5023a8dc-8448-4f41-b34c-131ee03def2f``
    2. ``api://localhost:5173/c8c85903-7e4a-4314-898b-08d01382e025``
-      This value is needed for the ``AuthConfig__ApiAudience`` configuration.
-2. Add a scope for users/admins - ``access``.
-3. Copy the full scope name into the ARM template parameters ``parameters-compute.json`` file: ``api_audience`` value - 
-``api://[contosobot].azurefd.net/[5023a8dc-8448-4f41-b34c-131ee03def2f]/access``
+
+Next, add Teams apps as pre-authorised apps for the web-app as per [this guide](https://learn.microsoft.com/en-us/microsoftteams/platform/bots/how-to/authentication/bot-sso-register-aad?tabs=windows#to-configure-an-authorized-client-application).
 
 ### Add Reply URLs
-For the JavaScript app to work, the reply URLs must be configured for the web application. 
+For the JavaScript app to work with MSAL, the reply URLs must be configured for the web application. 
 1. Add reply URLs for a Single-page application - ``https://[PUBLIC_URL_DOMAIN]/``
 2. Enable access tokens and ID tokens. 
 
@@ -71,13 +79,16 @@ Next, create a Teams app from the template to enable the bot in your org:
 To deploy the bot for production, we use docker to build a new bot image with the ASP.Net + JavaScript application in a single image, and the functions app in another image.
 * Copy ``src\docker-compose.override - template.yml`` to ``src\docker-compose.override.yml``.
   * Fill out all the build args for the copilotbot-web service - environmental data will be handled by Azure. Config will include:
-    * Client ID of bot (VITE_MSAL_CLIENT_ID).
-    * Optional for Teams SSO - login page URL (VITE_TEAMSFX_START_LOGIN_PAGE_URL.) There is a certain chicken/egg game here; we assume an app-service URL before we know we have it.
-    * Created scope ID (VITE_MSAL_SCOPES), based on domain-name of app-service if Teams SSO is required, otherwise any ID.
+    * Client ID of JS app (VITE_MSAL_CLIENT_ID).
+    * Root URL for web (VITE_API_ENDPOINT). Example - https://contoso.azurefd.net
+    * VITE_MSAL_AUTHORITY should usually be left as the default: https://login.microsoftonline.com/organizations
+    * Optional for Teams SSO: 
+      * Login page URL (VITE_TEAMSFX_START_LOGIN_PAGE_URL). This will based on the Azure Front Door created. Example: https://contoso.azurefd.net/auth-start.html
+      * Created JS app scope ID (VITE_MSAL_SCOPES), based on domain-name of app-service if Teams SSO is required, otherwise any ID. Example: api://contoso.azurefd.net/e068a350-0000-0000-bfc0-cda3610dde72/access
 * Build images with ``docker-compose build`` from the ``src`` folder (change directory to ".\src" to run command).
 * You will end up with two images:
    1. ``copilotbot-functions`` - Azure functions app image.
-   2. ``copilotbot-web`` - this contains the ASP.Net + built JavaScript with your bot registration details compiled in via the docker-compose.override.yml changes you made earlier.
+   2. ``copilotbot-web`` - this contains the ASP.Net + built JavaScript with your app registration details compiled in via the docker-compose.override.yml changes you made earlier.
    3. ``copilotbot-importer`` - an importer task that looks for usage activity. 
 * Next, we need to push them to your ACR that was created with the backend components. 
 
@@ -141,12 +152,18 @@ Name | Description
 AppCatalogTeamAppId | Teams app ID once deployed to the internal catalog
 MicrosoftAppId | ID of bot Azure AD application
 MicrosoftAppPassword | Bot app secret
-WebAppURL | Root URL of app service
-AuthConfig:ClientId | Service account 
-AuthConfig:ClientSecret | Service account 
-AuthConfig:TenantId | Service account 
-AuthConfig:ApiAudience | API URI
-AuthConfig:Authority | MSAL authority - usually https://login.microsoftonline.com/organizations
+
+ImportAuthConfig:ClientId | Importer/bot service account 
+ImportAuthConfig:ClientSecret | Importer/bot service account 
+ImportAuthConfig:TenantId | Importer/bot service account tenant ID
+ImportAuthConfig:Authority | MSAL authority - usually https://login.microsoftonline.com/organizations
+
+WebAuthConfig:ClientId | Web service account 
+WebAuthConfig:ClientSecret | Web service account 
+WebAuthConfig:TenantId | Web service account tenant ID
+WebAuthConfig:ApiAudience | Web service API URI
+WebAuthConfig:Authority | MSAL authority - usually https://login.microsoftonline.com/organizations
+
 ConnectionStrings:Redis | Redis connection string, used for caching delta tokens
 ConnectionStrings:ServiceBusRoot | Used for async processing of various things
 ConnectionStrings:SQL | The database connection string.

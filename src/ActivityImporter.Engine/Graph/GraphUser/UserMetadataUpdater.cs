@@ -41,7 +41,7 @@ public class UserMetadataUpdater : AbstractApiLoader, IDisposable
 
         // Override default
         _httpClient = manualGraphCallClient;
-        _userLoader = new GraphUserLoader(settings.ConnectionStrings.Redis, settings.AuthConfig.TenantId, _httpClient, _telemetry);
+        _userLoader = new GraphUserLoader(settings.ConnectionStrings.Redis, settings.ImportAuthConfig.TenantId, _httpClient, _telemetry);
     }
 
     public GraphUserLoader GraphUserLoader => _userLoader;

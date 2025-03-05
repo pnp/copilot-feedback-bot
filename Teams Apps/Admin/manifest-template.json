@@ -2,13 +2,13 @@
   "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.16/MicrosoftTeams.schema.json",
   "version": "1.0.0",
   "manifestVersion": "1.16",
-  "id": "<<BOT_APP_ID>>",
+  "id": "<<WEB_APP_ID>>",
   "name": {
     "short": "Copilot Feedback Bot Admin",
     "full": "Administration site for Copilot Feedback Bot"
   },
   "developer": {
-    "name": "Sam Betts",
+    "name": "Sam Betts MSFT",
     "mpnId": "",
     "websiteUrl": "https://github.com/pnp/copilot-feedback-bot",
     "privacyUrl": "https://github.com/pnp/copilot-feedback-bot",
@@ -26,7 +26,7 @@
   "staticTabs": [
     {
       "entityId": "ead68565-43ac-47e9-9a99-1f8278bf26d0",
-      "name": "Tabby",
+      "name": "Admin",
       "contentUrl": "<<WEB_HTTPS_ROOT>>/tabhome",
       "websiteUrl": "<<WEB_HTTPS_ROOT>>/tabhome",
       "scopes": [
@@ -47,7 +47,7 @@
     "<<WEB_DOMAIN>>"
   ],
   "webApplicationInfo": {
-    "id": "<<BOT_APP_ID>>",
-    "resource": "<<api_audience>>"
+    "id": "<<WEB_APP_ID>>",
+    "resource": "<<web_account_api_audience>>"
   }
 }

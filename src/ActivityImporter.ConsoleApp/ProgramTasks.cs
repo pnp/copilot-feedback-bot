@@ -76,7 +76,7 @@ internal class ProgramTasks(AppConfig importConfig, ILogger logger)
 
             // Start new O365 activity download session
             const int MAX_IMPORTS_PER_BATCH = 100000;
-            var importer = new ActivityWebImporter(importConfig.AuthConfig, logger, MAX_IMPORTS_PER_BATCH);
+            var importer = new ActivityWebImporter(importConfig.ImportAuthConfig, logger, MAX_IMPORTS_PER_BATCH);
 
             var sqlAdaptor = new ActivityReportSqlPersistenceManager(db, importConfig, spFilterList, logger);
             try

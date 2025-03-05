@@ -81,7 +81,7 @@ function ValidateAndInstall ($configFileName) {
 		WriteS -message "4. Build docker images with 'docker-compose build' from the 'src' folder"
 		WriteS -message "5. Publish docker images (TagAndPushImages.ps1) + follow further instructions to deploy compute components."
 
-		$clientId = Get-ClientIdArmTemplateValue $config
+		$clientId = Get-WebClientIdArmTemplateValue $config
 		$frontDoorDns = Get-FrontDoorNameArmTemplateValue $config
 		$rootHttps = "https://$($frontDoorDns).azurefd.net"
 		WriteW -message "Your public-facing URL will be https://$($frontDoorDns).azurefd.net/"
@@ -94,11 +94,6 @@ function ValidateAndInstall ($configFileName) {
 		WriteI -message "VITE_API_ENDPOINT=$($rootHttps)"
 		WriteI -message "VITE_MSAL_SCOPES=api://$($frontDoorDns).azurefd.net/$clientId/access"
 		WriteI -message "VITE_TEAMSFX_START_LOGIN_PAGE_URL=$($rootHttps)/auth-start.html"
-
-		
-		Write-Host ""
-		WriteS -message "Edit '$($config.ARMParametersFileAppServices)' and set these ARM template parameters in the JSON:"
-		WriteI -message "`"api_audience`": 	{ `"value`": `"$(Get-AcrNameArmTemplateValue $config).azurecr.io/copilotbot-web:latest`"		},"
 	}
 }
 

@@ -2,10 +2,11 @@
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    "api_audience": {
+    "acr_name": {
       "type": "string"
     },
-    "acr_name": {
+
+    "service_account_api_audience": {
       "type": "string"
     },
     "service_account_client_id": {
@@ -14,9 +15,23 @@
     "service_account_client_secret": {
       "type": "SecureString"
     },
-    "tenant_id": {
+    "service_account_tenant_id": {
       "type": "String"
     },
+
+    "web_account_api_audience": {
+      "type": "string"
+    },
+    "web_account_client_id": {
+      "type": "String"
+    },
+    "web_account_client_secret": {
+      "type": "SecureString"
+    },
+    "web_account_tenant_id": {
+      "type": "String"
+    },
+
     "app_catalog_team_app_id": {
       "type": "String"
     },
@@ -66,7 +81,6 @@
     }
   },
   "variables": {
-    "apiScope": "[concat(parameters('api_audience'), '/access')]",
     "hiddenLinkTag": {
       "hidden-link: /app-insights-resource-id": "[resourceId('microsoft.insights/components', parameters('workspace_analytics_name'))]"
     },
@@ -144,24 +158,24 @@
               "value": "[parameters('app_catalog_team_app_id')]"
             },
             {
-              "name": "AuthConfig__ClientId",
+              "name": "ImportAuthConfig__ClientId",
               "value": "[parameters('service_account_client_id')]"
             },
             {
-              "name": "AuthConfig__ClientSecret",
+              "name": "ImportAuthConfig__ClientSecret",
               "value": "[parameters('service_account_client_secret')]"
             },
             {
-              "name": "AuthConfig__TenantId",
-              "value": "[parameters('tenant_id')]"
+              "name": "ImportAuthConfig__TenantId",
+              "value": "[parameters('service_account_tenant_id')]"
             },
             {
-              "name": "AuthConfig__Authority",
+              "name": "ImportAuthConfig__Authority",
               "value": "https://login.microsoftonline.com/organizations"
             },
             {
-              "name": "AuthConfig__ApiAudience",
-              "value": "[parameters('api_audience')]"
+              "name": "ImportAuthConfig__ApiAudience",
+              "value": "[parameters('service_account_api_audience')]"
             },
             {
               "name": "MicrosoftAppId",
@@ -306,26 +320,50 @@
                   "name": "AppCatalogTeamAppId",
                   "value": "[parameters('app_catalog_team_app_id')]"
                 },
+
                 {
-                  "name": "AuthConfig__ClientId",
+                  "name": "ImportAuthConfig__ClientId",
                   "value": "[parameters('service_account_client_id')]"
                 },
                 {
-                  "name": "AuthConfig__ClientSecret",
+                  "name": "ImportAuthConfig__ClientSecret",
                   "value": "[parameters('service_account_client_secret')]"
                 },
                 {
-                  "name": "AuthConfig__TenantId",
-                  "value": "[parameters('tenant_id')]"
+                  "name": "ImportAuthConfig__TenantId",
+                  "value": "[parameters('service_account_tenant_id')]"
                 },
                 {
-                  "name": "AuthConfig__Authority",
+                  "name": "ImportAuthConfig__Authority",
                   "value": "https://login.microsoftonline.com/organizations"
                 },
                 {
-                  "name": "AuthConfig__ApiAudience",
-                  "value": "[parameters('api_audience')]"
+                  "name": "ImportAuthConfig__ApiAudience",
+                  "value": "[parameters('service_account_api_audience')]"
                 },
+
+
+                {
+                  "name": "WebAuthConfig__ClientId",
+                  "value": "[parameters('web_account_client_id')]"
+                },
+                {
+                  "name": "WebAuthConfig__ClientSecret",
+                  "value": "[parameters('web_account_client_secret')]"
+                },
+                {
+                  "name": "WebAuthConfig__TenantId",
+                  "value": "[parameters('web_account_tenant_id')]"
+                },
+                {
+                  "name": "WebAuthConfig__Authority",
+                  "value": "https://login.microsoftonline.com/organizations"
+                },
+                {
+                  "name": "WebAuthConfig__ApiAudience",
+                  "value": "[parameters('web_account_api_audience')]"
+                },
+
                 {
                   "name": "MicrosoftAppId",
                   "value": "[parameters('service_account_client_id')]"
@@ -421,24 +459,24 @@
                   "value": "[parameters('app_catalog_team_app_id')]"
                 },
                 {
-                  "name": "AuthConfig__ClientId",
+                  "name": "ImportAuthConfig__ClientId",
                   "value": "[parameters('service_account_client_id')]"
                 },
                 {
-                  "name": "AuthConfig__ClientSecret",
+                  "name": "ImportAuthConfig__ClientSecret",
                   "value": "[parameters('service_account_client_secret')]"
                 },
                 {
-                  "name": "AuthConfig__TenantId",
-                  "value": "[parameters('tenant_id')]"
+                  "name": "ImportAuthConfig__TenantId",
+                  "value": "[parameters('service_account_tenant_id')]"
                 },
                 {
-                  "name": "AuthConfig__Authority",
+                  "name": "ImportAuthConfig__Authority",
                   "value": "https://login.microsoftonline.com/organizations"
                 },
                 {
-                  "name": "AuthConfig__ApiAudience",
-                  "value": "[parameters('api_audience')]"
+                  "name": "ImportAuthConfig__ApiAudience",
+                  "value": "[parameters('service_account_api_audience')]"
                 },
                 {
                   "name": "MicrosoftAppId",

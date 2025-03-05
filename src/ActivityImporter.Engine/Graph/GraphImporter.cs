@@ -24,7 +24,7 @@ public class GraphImporter : AbstractApiLoader
 
     public GraphImporter(AppConfig appConfig, ILogger telemetry) : base(telemetry)
     {
-        _graphAppIndentityOAuthContext = new GraphAppIndentityOAuthContext(telemetry, appConfig.AuthConfig.ClientId, appConfig.AuthConfig.TenantId, appConfig.AuthConfig.ClientSecret, string.Empty, false);
+        _graphAppIndentityOAuthContext = new GraphAppIndentityOAuthContext(telemetry, appConfig.ImportAuthConfig.ClientId, appConfig.ImportAuthConfig.TenantId, appConfig.ImportAuthConfig.ClientSecret, string.Empty, false);
         _appConfig = appConfig;
     }
 

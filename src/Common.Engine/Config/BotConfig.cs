@@ -11,6 +11,11 @@ public class TeamsAppConfig : AppConfig
     public TeamsAppConfig(IConfiguration config) : base(config)
     {
     }
+
+
+    [ConfigSection()]
+    public AzureADAuthConfig WebAuthConfig { get; set; } = null!;
+
     [ConfigValue(true)]
     public string? AppCatalogTeamAppId { get; set; } = null!;
 }

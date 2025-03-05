@@ -6,7 +6,7 @@ import { Button } from '@fluentui/react-components';
 export function LoginPopupMSAL() {
 
   const { instance, accounts } = useMsal();
-
+  const [error, setError] = React.useState<Error | null>(null);
 
   const login = React.useCallback(() => {
 
@@ -14,6 +14,7 @@ export function LoginPopupMSAL() {
     instance.loginPopup(loginRequest).then(response => {
       console.info(response);
     }).catch(error => {
+      setError(error);
       console.error(error);
     });
 
@@ -40,6 +41,8 @@ export function LoginPopupMSAL() {
 
           <p>For delegated access to scopes:</p>
           <pre>{JSON.stringify(loginRequest, null, 2)}</pre>
+
+          {error && <p>MSAL error: {error.message}</p>}
         </>
       }
 

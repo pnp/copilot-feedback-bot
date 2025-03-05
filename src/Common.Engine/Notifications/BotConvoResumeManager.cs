@@ -70,7 +70,7 @@ public class BotConvoResumeManager : IBotConvoResumeManager
                 var resumeActivity = MessageFactory.Attachment(surveyCard);
 
                 await ((CloudAdapter)_adapter)
-                    .ContinueConversationAsync(_config.AuthConfig.ClientId, previousConversationReference,
+                    .ContinueConversationAsync(_config.ImportAuthConfig.ClientId, previousConversationReference,
                     async (turnContext, cancellationToken) =>
                         await turnContext.SendActivityAsync(resumeActivity, cancellationToken), CancellationToken.None);
             }

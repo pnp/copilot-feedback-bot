@@ -8,7 +8,7 @@ public class AppConfig : PropertyBoundConfig
     public AppConfig() : base()
     {
         ConnectionStrings = new AppConnectionStrings();
-        AuthConfig = new AzureADAuthConfig();
+        ImportAuthConfig = new AzureADAuthConfig();
     }
 
     public AppConfig(IConfiguration config) : base(config)
@@ -16,7 +16,8 @@ public class AppConfig : PropertyBoundConfig
     }
 
     [ConfigSection()]
-    public AzureADAuthConfig AuthConfig { get; set; } = null!;
+    public AzureADAuthConfig ImportAuthConfig { get; set; } = null!;
+
 
     [ConfigValue(true, "APPLICATIONINSIGHTS_CONNECTION_STRING")]
     public string? AppInsightsConnectionString { get; set; }

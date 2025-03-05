@@ -84,8 +84,8 @@ echo Creating environment settings file
 echo off 
 (
     echo VITE_MSAL_AUTHORITY=https://login.microsoftonline.com/organizations
-    echo VITE_MSAL_CLIENT_ID=%AuthConfig:ClientId%
-    echo VITE_MSAL_SCOPES=%AuthConfig:ApiScope%
+    echo VITE_MSAL_CLIENT_ID=%ImportAuthConfig:ClientId%
+    echo VITE_MSAL_SCOPES=%ImportAuthConfig:ApiScope%
     echo VITE_TEAMSFX_START_LOGIN_PAGE_URL=%WebRoot%/auth-start.html
 ) > "%DEPLOYMENT_SOURCE%\src\Web\web.client\.env.production"
 
