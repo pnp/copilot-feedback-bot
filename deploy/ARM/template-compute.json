@@ -177,6 +177,28 @@
               "name": "ImportAuthConfig__ApiAudience",
               "value": "[parameters('service_account_api_audience')]"
             },
+
+            {
+              "name": "WebAuthConfig__ClientId",
+              "value": "[parameters('web_account_client_id')]"
+            },
+            {
+              "name": "WebAuthConfig__ClientSecret",
+              "value": "[parameters('web_account_client_secret')]"
+            },
+            {
+              "name": "WebAuthConfig__TenantId",
+              "value": "[parameters('web_account_tenant_id')]"
+            },
+            {
+              "name": "WebAuthConfig__Authority",
+              "value": "https://login.microsoftonline.com/organizations"
+            },
+            {
+              "name": "WebAuthConfig__ApiAudience",
+              "value": "[parameters('web_account_api_audience')]"
+            },
+
             {
               "name": "MicrosoftAppId",
               "value": "[parameters('service_account_client_id')]"
@@ -341,7 +363,6 @@
                   "name": "ImportAuthConfig__ApiAudience",
                   "value": "[parameters('service_account_api_audience')]"
                 },
-
 
                 {
                   "name": "WebAuthConfig__ClientId",
