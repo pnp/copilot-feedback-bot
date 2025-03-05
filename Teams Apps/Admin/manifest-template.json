@@ -27,8 +27,8 @@
     {
       "entityId": "ead68565-43ac-47e9-9a99-1f8278bf26d0",
       "name": "Admin",
-      "contentUrl": "<<WEB_HTTPS_ROOT>>/tabhome",
-      "websiteUrl": "<<WEB_HTTPS_ROOT>>/tabhome",
+      "contentUrl": "<<WEB_HTTPS_ROOT>>",
+      "websiteUrl": "<<WEB_HTTPS_ROOT>>",
       "scopes": [
         "personal"
       ],
