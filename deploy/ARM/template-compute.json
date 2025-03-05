@@ -6,9 +6,6 @@
       "type": "string"
     },
 
-    "service_account_api_audience": {
-      "type": "string"
-    },
     "service_account_client_id": {
       "type": "String"
     },
@@ -172,10 +169,6 @@
             {
               "name": "ImportAuthConfig__Authority",
               "value": "https://login.microsoftonline.com/organizations"
-            },
-            {
-              "name": "ImportAuthConfig__ApiAudience",
-              "value": "[parameters('service_account_api_audience')]"
             },
 
             {
@@ -359,10 +352,6 @@
                   "name": "ImportAuthConfig__Authority",
                   "value": "https://login.microsoftonline.com/organizations"
                 },
-                {
-                  "name": "ImportAuthConfig__ApiAudience",
-                  "value": "[parameters('service_account_api_audience')]"
-                },
 
                 {
                   "name": "WebAuthConfig__ClientId",
@@ -495,10 +484,7 @@
                   "name": "ImportAuthConfig__Authority",
                   "value": "https://login.microsoftonline.com/organizations"
                 },
-                {
-                  "name": "ImportAuthConfig__ApiAudience",
-                  "value": "[parameters('service_account_api_audience')]"
-                },
+                
                 {
                   "name": "MicrosoftAppId",
                   "value": "[parameters('service_account_client_id')]"
