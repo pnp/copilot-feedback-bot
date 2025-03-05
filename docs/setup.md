@@ -66,6 +66,7 @@ Next, add Teams apps as pre-authorised apps for the web-app as per [this guide](
 For the JavaScript app to work with MSAL, the reply URLs must be configured for the web application. 
 1. Add reply URLs for a Single-page application - ``https://[PUBLIC_URL_DOMAIN]/``
 2. Enable access tokens and ID tokens. 
+3. For Teams SSO: also add an extra redirect URL in the format: ``https://[PUBLIC_URL_DOMAIN]/auth-end.html?clientId=[JS_APP_CLIENT_ID]``
 
 ## Deploy User Teams App
 Next, create a Teams app from the template to enable the bot in your org:
