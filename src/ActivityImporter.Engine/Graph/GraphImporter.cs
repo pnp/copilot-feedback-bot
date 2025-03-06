@@ -62,21 +62,20 @@ public class GraphImporter : AbstractApiLoader
         // Track finished event 
         userMetadaTimer.TrackFinishedEventAndStopTimer(AnalyticsEvent.FinishedSectionImport);
 
-
         var optionsBuilder = new DbContextOptionsBuilder<DataContext>();
         optionsBuilder.UseSqlServer(_appConfig.ConnectionStrings.SQL);
 
+        const int DAYS_BACK = 6;
         using (var db = new DataContext(optionsBuilder.Options))
         {
             var usageActivityTimer = new JobTimer(_telemetry, "Usage reports");
             usageActivityTimer.Start();
 
             // Global user activity report. Each thread creates own context.
-            await GetAndSaveActivityReportsMultiThreaded(6, httpClient);
+            await GetAndSaveActivityReportsMultiThreaded(DAYS_BACK, httpClient);
 
             // Track finished event 
             usageActivityTimer.TrackFinishedEventAndStopTimer(AnalyticsEvent.FinishedSectionImport);
-
         }
     }
 
@@ -89,17 +88,26 @@ public class GraphImporter : AbstractApiLoader
 
         var lookupIdCache = new ConcurrentLookupDbIdsCache();
 
-        importTasks.Add(LoadAndSaveReportAsync(new TeamsUserUsageLoader(client, _telemetry), daysBackMax, "Teams user activity", _telemetry, lookupIdCache));
-        importTasks.Add(LoadAndSaveReportAsync(new OutlookUserActivityLoader(client, _telemetry), daysBackMax, "Outlook activity", _telemetry, lookupIdCache));
-        importTasks.Add(LoadAndSaveReportAsync(new OneDriveUserActivityLoader(client, _telemetry), daysBackMax, "OneDrive activity", _telemetry, lookupIdCache));
-        importTasks.Add(LoadAndSaveReportAsync(new SharePointUserActivityLoader(client, _telemetry), daysBackMax, "SharePoint user activity", _telemetry, lookupIdCache));
-        importTasks.Add(LoadAndSaveReportAsync(new TeamsUserDeviceLoader(client, _telemetry), daysBackMax, "Teams user activity", _telemetry, lookupIdCache));
+        importTasks.Add(LoadAndSaveReportAsync(new TeamsUserUsageLoader(client, _telemetry), daysBackMax, 
+            "Teams user activity", _telemetry, lookupIdCache));
+        importTasks.Add(LoadAndSaveReportAsync(new OutlookUserActivityLoader(client, _telemetry), daysBackMax, 
+            "Outlook activity", _telemetry, lookupIdCache));
+        importTasks.Add(LoadAndSaveReportAsync(new OneDriveUserActivityLoader(client, _telemetry), daysBackMax, 
+            "OneDrive activity", _telemetry, lookupIdCache));
+        importTasks.Add(LoadAndSaveReportAsync(new SharePointUserActivityLoader(client, _telemetry), daysBackMax, 
+            "SharePoint user activity", _telemetry, lookupIdCache));
+        importTasks.Add(LoadAndSaveReportAsync(new TeamsUserDeviceLoader(client, _telemetry), daysBackMax,
+            "Teams user device activity", _telemetry, lookupIdCache));
+        importTasks.Add(LoadAndSaveReportAsync(new AppPlatformUserActivityLoader(client, _telemetry), daysBackMax, 
+            "App platform activity", _telemetry, lookupIdCache));
+        importTasks.Add(LoadAndSaveReportAsync(new YammerUserUsageLoader(client, _telemetry), daysBackMax, 
+            "Yammer user activity", _telemetry, lookupIdCache));
+        importTasks.Add(LoadAndSaveReportAsync(new YammerDeviceUsageLoader(client, _telemetry), daysBackMax, 
+            "Yammer device activity", _telemetry, lookupIdCache));
 
         await Task.WhenAll(importTasks);
 
-
-
-        _telemetry.LogInformation($"Activity reports imported.\n");
+        _telemetry.LogInformation($"Activity reports imported.");
     }
 
     async Task<int> LoadAndSaveReportAsync<TReportDbType, TUserActivityUserDetail>

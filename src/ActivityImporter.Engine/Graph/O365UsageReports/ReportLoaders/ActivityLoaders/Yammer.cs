@@ -83,5 +83,4 @@ public class YammerDeviceUsageLoader : AbstractActivityLoader<YammerDeviceActivi
 
     public override string ReportGraphURL => "https://graph.microsoft.com/beta/reports/getYammerDeviceUsageUserDetail";
     public override DbSet<YammerDeviceActivityLog> GetTable(DataContext context) => context.YammerDeviceActivityLogs;
-
 }
