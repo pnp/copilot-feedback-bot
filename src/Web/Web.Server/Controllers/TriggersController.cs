@@ -36,7 +36,8 @@ public class TriggersController(SurveyManager surveyManager, IBotConvoResumeMana
     [HttpPost(nameof(GenerateFakeActivityFor))]
     public async Task<IActionResult> GenerateFakeActivityFor(string upn)
     {
-        await DbInitialiser.GenerateFakeCopilotFor(upn, _context, _logger);
+        await FakeDataGen.GenerateFakeCopilotFor(upn, _context, _logger);
+        await FakeDataGen.GenerateFakeActivityFor(upn, _context, _logger);
         await _context.SaveChangesAsync();
         return Ok($"Generated fake data for {upn}");
     }

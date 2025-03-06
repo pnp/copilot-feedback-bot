@@ -3,13 +3,15 @@ using Entities.DB.Entities.AuditLog;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
+using System.Data.Entity;
+using System.Threading.Tasks;
 
 namespace Entities.DB;
 
 public class DbInitialiser
 {
-    const string ACTIVITY_NAME_EDIT_DOC = "Edit Document";
-    const string ACTIVITY_NAME_GET_HIGHLIGHTS = "Get highlights";
+    public const string ACTIVITY_NAME_EDIT_DOC = "Edit Document";
+    public const string ACTIVITY_NAME_GET_HIGHLIGHTS = "Get highlights";
     /// <summary>
     /// Ensure created and with base data
     /// </summary>
@@ -63,7 +65,7 @@ public class DbInitialiser
                 DirtyTestDataHackInserts(context, logger, editDoc, getHighlights);
                 await context.SaveChangesAsync();
 
-                await GenerateFakeCopilotFor(defaultUserUPN, context, logger);
+                await FakeDataGen.GenerateFakeCopilotFor(defaultUserUPN, context, logger);
 #endif
                 await context.SaveChangesAsync();
             }
@@ -74,56 +76,8 @@ public class DbInitialiser
         }
     }
 
-    public static async Task GenerateFakeCopilotFor(string forUpn, DataContext context, ILogger logger)
-    {
-        var editDoc = context.CopilotActivities.FirstOrDefault(a => a.Name == ACTIVITY_NAME_EDIT_DOC)!;
-        var getHighlights = context.CopilotActivities.FirstOrDefault(a => a.Name == ACTIVITY_NAME_GET_HIGHLIGHTS)!;
 
-        var user = context.Users.FirstOrDefault(u => u.UserPrincipalName == forUpn);
-        if (user == null)
-        {
-            logger.LogWarning($"Creating new user with UPN {forUpn}");
-            user = new User { UserPrincipalName = forUpn };
-        }
-        context.Add(new CopilotEventMetadataMeeting
-        {
-            RelatedChat = new CopilotChat
-            {
-                AppHost = "DevBox",
-                AuditEvent = new CommonAuditEvent
-                {
-                    User = user,
-                    Id = Guid.NewGuid(),
-                    TimeStamp = DateTime.Now.AddDays(-1),
-                    Operation = new EventOperation { Name = "Meeting operation " + DateTime.Now.Ticks }
-                }
-            },
-            OnlineMeeting = new OnlineMeeting { Name = "Weekly Team Sync", MeetingId = "Join Link" }
-        });
-
-        var fileName = $"Test File {DateTime.Now.Ticks}.docx";
-        context.Add(new CopilotEventMetadataFile
-        {
-
-            RelatedChat = new CopilotChat
-            {
-                AppHost = "DevBox",
-                AuditEvent = new CommonAuditEvent
-                {
-                    User = user,
-                    Id = Guid.NewGuid(),
-                    TimeStamp = DateTime.Now.AddDays(-2),
-                    Operation = new EventOperation { Name = "File operation " + DateTime.Now.Ticks }
-                }
-            },
-            FileName = new SPEventFileName { Name = fileName },
-            FileExtension = await context.SharePointFileExtensions.SingleOrDefaultAsync(e => e.Name == "docx"),
-            Url = new Entities.SP.Url { FullUrl = $"https://devbox.sharepoint.com/Docs/{fileName}" },
-            Site = context.Sites.FirstOrDefault()!,
-        });
-    }
-
-    private static void DirtyTestDataHackInserts(DataContext context, ILogger logger, CopilotActivity editDocCopilotActivity, CopilotActivity getHighlightsCopilotActivity)
+    private static async Task DirtyTestDataHackInserts(DataContext context, ILogger logger, CopilotActivity editDocCopilotActivity, CopilotActivity getHighlightsCopilotActivity)
     {
         var rnd = new Random();
         logger.LogInformation("Adding debugging test data");
@@ -162,6 +116,10 @@ public class DbInitialiser
             allUsers.Add(testUser);
         }
         context.Users.AddRange(allUsers);
+        foreach (var u in allUsers)
+        {
+            await FakeDataGen.GenerateFakeActivityFor(u.UserPrincipalName, context, logger);
+        }
 
         // Add fake meetings
         var allEvents = new List<CommonAuditEvent>();

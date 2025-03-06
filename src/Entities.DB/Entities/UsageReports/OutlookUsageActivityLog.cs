@@ -22,10 +22,10 @@ namespace Entities.DB.Entities.UsageReports
         public long ReadCount { get; set; }
 
         [Column("meeting_created_count")]
-        public long MeetingCreated { get; set; }
+        public long MeetingsCreated { get; set; }
 
         [Column("meeting_interacted_count")]
-        public long MeetingInteracted { get; set; }
+        public long MeetingsInteracted { get; set; }
 
     }
 }

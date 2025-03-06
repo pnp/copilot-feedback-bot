@@ -8,7 +8,7 @@ public class SharePointEventMetadata : BaseOfficeEvent
 {
     [ForeignKey(nameof(FileExtension))]
     [Column("file_extension_id")]
-    public int? file_extensionId { get; set; } = 0;
+    public int? FileExtensionId { get; set; } = 0;
     public SPEventFileExtension? FileExtension { get; set; } = null!;
 
     [ForeignKey(nameof(FileName))]
@@ -25,7 +25,7 @@ public class SharePointEventMetadata : BaseOfficeEvent
 
     [ForeignKey(nameof(Site))]
     [Column("related_site_id")]
-    public int? Related_SiteId { get; set; } = 0;
+    public int? RelatedSiteId { get; set; } = 0;
     public Site? Site { get; set; } = null;
 
     [ForeignKey(nameof(ItemType))]

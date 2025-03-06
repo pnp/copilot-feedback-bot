@@ -17,11 +17,11 @@ public class OutlookUserActivityLoader : AbstractActivityLoader<OutlookUsageActi
 
     protected override void PopulateReportSpecificMetadata(OutlookUsageActivityLog todaysLog, OutlookUserActivityUserRecord userActivityReportPage)
     {
-        todaysLog.MeetingCreated = userActivityReportPage.MeetingCreated;
+        todaysLog.MeetingsCreated = userActivityReportPage.MeetingCreated;
         todaysLog.ReadCount = userActivityReportPage.ReadCount;
         todaysLog.ReceiveCount = userActivityReportPage.ReceiveCount;
         todaysLog.SendCount = userActivityReportPage.SendCount;
-        todaysLog.MeetingInteracted = userActivityReportPage.MeetingInteracted;
+        todaysLog.MeetingsInteracted = userActivityReportPage.MeetingInteracted;
 
     }
 

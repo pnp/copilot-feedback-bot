@@ -86,7 +86,7 @@ public class DataContext : DbContext
          .HasIndex(t => new { t.Name })
          .IsUnique();
         modelBuilder.Entity<SPEventType>()
-         .HasIndex(t => new { t.type_name })
+         .HasIndex(t => new { t.Name })
          .IsUnique();
         modelBuilder.Entity<SPEventFileExtension>()
          .HasIndex(t => new { t.Name })

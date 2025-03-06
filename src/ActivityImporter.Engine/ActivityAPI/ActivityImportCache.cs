@@ -53,7 +53,7 @@ public class ActivityImportCache
 
         // Build list of events to ignore
         // Get events from X time before
-        var ignoredEvents = db.IgnoredAuditEvents.Where(e => e.processed_timestamp >= cacheFrom && e.processed_timestamp <= cacheTo).ToList();
+        var ignoredEvents = db.IgnoredAuditEvents.Where(e => e.Processed >= cacheFrom && e.Processed <= cacheTo).ToList();
 
         var importedEventsQuery = db.AuditEventsCommon.Where(e => e.TimeStamp >= cacheFrom && e.TimeStamp <= cacheTo)
             .Select(e => new BasicEventDetails() { ID = e.Id, Time = e.TimeStamp });
@@ -63,7 +63,7 @@ public class ActivityImportCache
         // Processed means "ignored or saved"
         foreach (var ignoredEvent in ignoredEvents)
         {
-            c.AddProcessedID(ignoredEvent.event_id, ignoredEvent.processed_timestamp);
+            c.AddProcessedID(ignoredEvent.AuditEventId, ignoredEvent.Processed);
         }
         foreach (var e in importedEvents)
         {
@@ -266,7 +266,7 @@ public class ActivityImportCache
             {
                 foreach (var newIgnoredEvent in cache)
                 {
-                    ignoreList.Add(new IgnoredEvent() { event_id = newIgnoredEvent.Key, processed_timestamp = newIgnoredEvent.Value });
+                    ignoreList.Add(new IgnoredEvent() { AuditEventId = newIgnoredEvent.Key, Processed = newIgnoredEvent.Value });
                 }
             }
             // Events processes also added to ProcessedEvents. 
@@ -293,8 +293,8 @@ public class ActivityImportCache
 
     private async Task DeleteIgnoredEvents(List<IgnoredEvent> ignoreList, DataContext db)
     {
-        var ignoreGuids = ignoreList.Select(e => e.event_id).ToList();
-        var ignoreEventRecords = db.IgnoredAuditEvents.Where(e => ignoreGuids.Contains(e.event_id)).ToList();
+        var ignoreGuids = ignoreList.Select(e => e.AuditEventId).ToList();
+        var ignoreEventRecords = db.IgnoredAuditEvents.Where(e => ignoreGuids.Contains(e.AuditEventId)).ToList();
 
         db.IgnoredAuditEvents.RemoveRange(ignoreEventRecords);
 
