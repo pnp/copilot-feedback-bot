@@ -62,7 +62,7 @@ public class DbInitialiser
                 // Add some base survey pages
                 AddTestSurveyPages(context);
 #if DEBUG
-                DirtyTestDataHackInserts(context, logger, editDoc, getHighlights);
+                await DirtyTestDataHackInserts(context, logger, editDoc, getHighlights);
                 await context.SaveChangesAsync();
 
                 await FakeDataGen.GenerateFakeCopilotFor(defaultUserUPN, context, logger);
