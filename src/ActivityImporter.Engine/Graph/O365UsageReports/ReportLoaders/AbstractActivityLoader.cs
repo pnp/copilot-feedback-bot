@@ -35,11 +35,15 @@ public abstract class AbstractActivityLoader<TReportDbType, TAbstractActivityRec
         var pages = new Dictionary<DateTime, List<TAbstractActivityRecord>>();
 
         var daysBackMax = MAX_DAYS_BACK;       // Docs say 30, but in reality it's 28 https://learn.microsoft.com/en-us/graph/api/reportroot-getm365appuserdetail?view=graph-rest-1.0&tabs=http#function-parameters
-        var latestActivityAllUsers = await _usageReportPersistence.GetOldestActivityDateForAllUsers(this);
-        if (latestActivityAllUsers != null)
+        var oldestActivityDate = await _usageReportPersistence.GetOldestActivityDateForAllUsers(this);
+        if (oldestActivityDate != null)
         {
-            _telemetry.LogInformation($"Last activity for all users for {this.DataContextPropertyName}: {latestActivityAllUsers.Value.ToGraphDateString()}");
-            daysBackMax = (DateTime.Now - latestActivityAllUsers.Value).Days;
+            daysBackMax = (DateTime.Now - oldestActivityDate.Value).Days;
+            if (daysBackMax > MAX_DAYS_BACK)
+            {
+                daysBackMax = MAX_DAYS_BACK;
+            }
+            _telemetry.LogInformation($"Last activity for all users for {this.DataContextPropertyName}: {oldestActivityDate.Value.ToGraphDateString()}. Reading {daysBackMax} days back");
         }
         else
         {
