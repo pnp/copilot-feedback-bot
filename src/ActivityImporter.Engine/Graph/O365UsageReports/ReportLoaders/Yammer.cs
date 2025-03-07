@@ -4,7 +4,7 @@ using Entities.DB.Entities.UsageReports;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-namespace ActivityImporter.Engine.Graph.O365UsageReports.ReportLoaders.ActivityLoaders;
+namespace ActivityImporter.Engine.Graph.O365UsageReports.ReportLoaders;
 
 /// <summary>
 /// https://docs.microsoft.com/en-us/graph/api/reportroot-getyammeractivityuserdetail?view=graph-rest-beta

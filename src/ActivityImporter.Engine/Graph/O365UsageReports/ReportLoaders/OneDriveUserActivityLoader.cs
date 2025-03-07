@@ -4,17 +4,18 @@ using Entities.DB.Entities.UsageReports;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-namespace ActivityImporter.Engine.Graph.O365UsageReports.ReportLoaders.ActivityLoaders;
+namespace ActivityImporter.Engine.Graph.O365UsageReports.ReportLoaders;
 
 // https://docs.microsoft.com/en-us/graph/api/reportroot-getonedriveactivityuserdetail?view=graph-rest-beta
-public class SharePointUserActivityLoader : AbstractActivityLoader<SharePointUserActivityLog, SharePointUserActivityRecord>
+public class OneDriveUserActivityLoader : AbstractActivityLoader<OneDriveUserActivityLog, OneDriveUserActivityRecord>
 {
-    public SharePointUserActivityLoader(ManualGraphCallClient client, ILogger logger)
+    public OneDriveUserActivityLoader(ManualGraphCallClient client, ILogger logger)
         : base(client, logger)
     {
     }
 
-    protected override void PopulateReportSpecificMetadata(SharePointUserActivityLog todaysLog, SharePointUserActivityRecord userActivityReportPage)
+    public override string ReportGraphURL => "https://graph.microsoft.com/beta/reports/getOneDriveActivityUserDetail";
+    protected override void PopulateReportSpecificMetadata(OneDriveUserActivityLog todaysLog, OneDriveUserActivityRecord userActivityReportPage)
     {
         todaysLog.SharedInternally = userActivityReportPage.SharedInternally;
         todaysLog.SharedExternally = userActivityReportPage.SharedExternally;
@@ -23,7 +24,7 @@ public class SharePointUserActivityLoader : AbstractActivityLoader<SharePointUse
         todaysLog.LastActivityDate = userActivityReportPage.LastActivityDate;
     }
 
-    protected override long CountActivity(SharePointUserActivityRecord activityPage)
+    protected override long CountActivity(OneDriveUserActivityRecord activityPage)
     {
         if (activityPage is null)
         {
@@ -39,7 +40,5 @@ public class SharePointUserActivityLoader : AbstractActivityLoader<SharePointUse
 
         return count;
     }
-    public override string ReportGraphURL => "https://graph.microsoft.com/beta/reports/getSharePointActivityUserDetail";
-
-    public override DbSet<SharePointUserActivityLog> GetTable(DataContext context) => context.SharePointUserActivityLogs;
+    public override DbSet<OneDriveUserActivityLog> GetTable(DataContext context) => context.OneDriveUserActivityLogs;
 }

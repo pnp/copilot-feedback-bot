@@ -4,7 +4,7 @@ using Entities.DB.Entities.UsageReports;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-namespace ActivityImporter.Engine.Graph.O365UsageReports.ReportLoaders.ActivityLoaders;
+namespace ActivityImporter.Engine.Graph.O365UsageReports.ReportLoaders;
 
 public class TeamsUserUsageLoader : AbstractActivityLoader<GlobalTeamsUserUsageLog, TeamsUserActivityUserRecord>
 {

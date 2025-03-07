@@ -1,6 +1,6 @@
 ﻿using ActivityImporter.Engine.Graph.GraphUser;
 using ActivityImporter.Engine.Graph.O365UsageReports.Models;
-using ActivityImporter.Engine.Graph.O365UsageReports.ReportLoaders.ActivityLoaders;
+using ActivityImporter.Engine.Graph.O365UsageReports.ReportLoaders;
 using Common.DataUtils;
 using Common.Engine.Config;
 using Entities.DB;

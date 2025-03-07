@@ -6,7 +6,7 @@ using Entities.DB.LookupCaches.Discrete;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-namespace ActivityImporter.Engine.Graph.O365UsageReports.ReportLoaders.ActivityLoaders;
+namespace ActivityImporter.Engine.Graph.O365UsageReports.ReportLoaders;
 
 
 /// <summary>
@@ -23,8 +23,8 @@ public abstract class AbstractActivityLoader<TReportDbType, TAbstractActivityRec
 
     internal AbstractActivityLoader(ManualGraphCallClient client, ILogger telemetry)
     {
-        this._client = client;
-        this.Telemetry = telemetry ?? throw new ArgumentNullException(nameof(telemetry));
+        _client = client;
+        Telemetry = telemetry ?? throw new ArgumentNullException(nameof(telemetry));
     }
 
     #region Props
@@ -52,7 +52,7 @@ public abstract class AbstractActivityLoader<TReportDbType, TAbstractActivityRec
             var daysBack = (daysBackIdx + 1) * -1;
             var dt = DateTime.Now.AddDays(daysBack);
 
-            Telemetry.LogInformation($"Loading {this.GetType().Name} for date {dt.ToString("dd-MM-yyyy")}");
+            Telemetry.LogInformation($"Loading {GetType().Name} for date {dt.ToString("dd-MM-yyyy")}");
 
             var requestUrl = $"{ReportGraphURL}(date={dt.ToString("yyyy-MM-dd")})?$format=application/json";
             var dayReports = await _client.LoadAllPagesWithThrottleRetries<TAbstractActivityRecord>(requestUrl, Telemetry);
@@ -127,7 +127,7 @@ public abstract class AbstractActivityLoader<TReportDbType, TAbstractActivityRec
                 // Output progress every 1000 imports
                 if (i > 0 && i % 1000 == 0)
                 {
-                    Console.WriteLine($"{this.GetType().Name}: Saved {i} / {LoadedReportPages.SelectMany(r => r.Value).Count()}");
+                    Console.WriteLine($"{GetType().Name}: Saved {i} / {LoadedReportPages.SelectMany(r => r.Value).Count()}");
                 }
 
                 // Create new log if necesary

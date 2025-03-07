@@ -4,7 +4,7 @@ using Entities.DB.Entities.UsageReports;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-namespace ActivityImporter.Engine.Graph.O365UsageReports.ReportLoaders.ActivityLoaders;
+namespace ActivityImporter.Engine.Graph.O365UsageReports.ReportLoaders;
 
 
 // https://learn.microsoft.com/en-us/graph/api/reportroot-getm365appuserdetail?view=graph-rest-beta
@@ -15,7 +15,7 @@ public class AppPlatformUserActivityLoader : AbstractActivityLoader<AppPlatformU
     {
     }
 
-    public override string ReportGraphURL => "https://graph.microsoft.com/beta/reports/getM365AppUserDetail";
+    public override string ReportGraphURL => "https://graph.microsoft.com/v1.0/reports/getM365AppUserDetail";
 
     protected override void PopulateReportSpecificMetadata(AppPlatformUserActivityLog dateRequestedLog, AppPlatformUserActivityDetail reportPage)
     {
