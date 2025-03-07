@@ -41,6 +41,6 @@ public class OutlookUserActivityLoader : AbstractActivityLoader<OutlookUsageActi
 
         return count;
     }
-    public override DbSet<OutlookUsageActivityLog> GetTable(DataContext context) => context.OutlookUsageActivityLogs;
+    public override string DataContextPropertyName => nameof(DataContext.OutlookUsageActivityLogs);
 
 }

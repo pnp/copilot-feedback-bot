@@ -1,4 +1,5 @@
-﻿using ActivityImporter.Engine.Graph.O365UsageReports.Models;
+﻿using ActivityImporter.Engine.ActivityAPI.Models;
+using ActivityImporter.Engine.Graph.O365UsageReports.Models;
 using Entities.DB;
 using Entities.DB.Entities.UsageReports;
 using Microsoft.EntityFrameworkCore;
@@ -20,7 +21,6 @@ public class SharePointUserActivityLoader : AbstractActivityLoader<SharePointUse
         todaysLog.SharedExternally = userActivityReportPage.SharedExternally;
         todaysLog.Synced = userActivityReportPage.Synced;
         todaysLog.ViewedOrEdited = userActivityReportPage.ViewedOrEdited;
-        todaysLog.LastActivityDate = userActivityReportPage.LastActivityDate;
     }
 
     protected override long CountActivity(SharePointUserActivityRecord activityPage)
@@ -41,5 +41,6 @@ public class SharePointUserActivityLoader : AbstractActivityLoader<SharePointUse
     }
     public override string ReportGraphURL => "https://graph.microsoft.com/beta/reports/getSharePointActivityUserDetail";
 
-    public override DbSet<SharePointUserActivityLog> GetTable(DataContext context) => context.SharePointUserActivityLogs;
+    public override string DataContextPropertyName => nameof(DataContext.SharePointUserActivityLogs);
+
 }

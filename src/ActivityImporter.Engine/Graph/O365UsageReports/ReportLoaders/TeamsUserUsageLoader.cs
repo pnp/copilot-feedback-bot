@@ -67,6 +67,6 @@ public class TeamsUserUsageLoader : AbstractActivityLoader<GlobalTeamsUserUsageL
 
         return count;
     }
+    public override string DataContextPropertyName => nameof(DataContext.TeamUserActivityLogs);
 
-    public override DbSet<GlobalTeamsUserUsageLog> GetTable(DataContext context) => context.TeamUserActivityLogs;
 }

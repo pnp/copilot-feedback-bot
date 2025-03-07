@@ -86,8 +86,7 @@ public class FakeDataGen
         context.OutlookUsageActivityLogs.Add(new Entities.UsageReports.OutlookUsageActivityLog
         {
             User = user,
-            Date = DateTime.Now,
-            LastActivityDate = DateTime.Now,
+            DateOfActivity = DateTime.Now,
             MeetingsCreated = 1,
             MeetingsInteracted = 1,
             ReadCount = 1,
@@ -97,8 +96,7 @@ public class FakeDataGen
         context.AppPlatformUserUsageLog.Add(new Entities.UsageReports.AppPlatformUserActivityLog
         {
             User = user,
-            LastActivityDate = DateTime.Now,
-            Date = DateTime.Now,
+            DateOfActivity = DateTime.Now,
             Excel = true,
             ExcelMobile= true,
             ExcelWindows = true,
@@ -136,9 +134,8 @@ public class FakeDataGen
         });
 
         context.SharePointUserActivityLogs.Add(new Entities.UsageReports.SharePointUserActivityLog {
-            Date = DateTime.Now,
+            DateOfActivity = DateTime.Now,
             User = user,
-            LastActivityDate = DateTime.Now,
 
             SharedExternally = 1,
             SharedInternally = 1,
@@ -148,9 +145,8 @@ public class FakeDataGen
 
         context.OneDriveUserActivityLogs.Add(new Entities.UsageReports.OneDriveUserActivityLog
         {
-            Date = DateTime.Now,
+            DateOfActivity = DateTime.Now,
             User = user,
-            LastActivityDate = DateTime.Now,
             SharedExternally = 1,
             SharedInternally = 1,
             Synced = 1,
@@ -159,9 +155,8 @@ public class FakeDataGen
 
         context.YammerUserActivityLogs.Add(new Entities.UsageReports.YammerUserActivityLog
         {
-            Date = DateTime.Now,
+            DateOfActivity = DateTime.Now,
             User = user,
-            LastActivityDate = DateTime.Now,
             LikedCount = 1,
             PostedCount = 1,
             ReadCount = 1,
@@ -169,9 +164,8 @@ public class FakeDataGen
 
         context.YammerDeviceActivityLogs.Add(new Entities.UsageReports.YammerDeviceActivityLog
         {
-            Date = DateTime.Now,
+            DateOfActivity = DateTime.Now,
             User = user,
-            LastActivityDate = DateTime.Now,
             UsedAndroidPhone = true,
             UsedIpad = true,
             UsedIphone = true,
@@ -182,9 +176,8 @@ public class FakeDataGen
 
         context.TeamUserActivityLogs.Add(new Entities.UsageReports.GlobalTeamsUserUsageLog
         {
-            Date = DateTime.Now,
+            DateOfActivity = DateTime.Now,
             User = user,
-            LastActivityDate = DateTime.Now,
             AdHocMeetingsAttendedCount = 1,
             AdHocMeetingsOrganizedCount = 1,
             CallCount = 1,
@@ -207,9 +200,8 @@ public class FakeDataGen
 
         context.TeamsUserDeviceUsageLog.Add(new Entities.UsageReports.GlobalTeamsUserDeviceUsageLog
         {
-            Date = DateTime.Now,
+            DateOfActivity = DateTime.Now,
             User = user,
-            LastActivityDate = DateTime.Now,
             UsedAndroidPhone = true,
             UsedChromeOS = true,
             UsedIOS = true,

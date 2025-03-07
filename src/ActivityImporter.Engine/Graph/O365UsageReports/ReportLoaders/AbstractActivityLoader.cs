@@ -2,9 +2,10 @@
 using Common.DataUtils;
 using Entities.DB;
 using Entities.DB.Entities;
-using Entities.DB.LookupCaches.Discrete;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using System.Globalization;
 
 namespace ActivityImporter.Engine.Graph.O365UsageReports.ReportLoaders;
 
@@ -54,7 +55,7 @@ public abstract class AbstractActivityLoader<TReportDbType, TAbstractActivityRec
             var daysBack = (daysBackIdx + 1) * -1;
             var dt = DateTime.Now.AddDays(daysBack);
 
-            Telemetry.LogInformation($"Loading {GetType().Name} for date {dt.ToString("dd-MM-yyyy")}");
+            Telemetry.LogInformation($"Loading {GetType().Name} for date {dt.ToGraphDateString()}");
 
             var dayReports = await _graphActivityLoader.LoadReport<TAbstractActivityRecord>(dt, ReportGraphURL);
 
@@ -64,6 +65,8 @@ public abstract class AbstractActivityLoader<TReportDbType, TAbstractActivityRec
                 foreach (var reportPage in dayReports)
                 {
                     var userRecord = reportPage as AbstractUserActivityUserRecord;
+
+                    // Check if UPN is anonymous due to Office 365 settings
                     if (userRecord != null && !CommonStringUtils.IsEmail(userRecord.UPNFieldVal))
                     {
                         Telemetry.LogError($"Config Error: Usage reports have associated user email concealed - " +
@@ -73,20 +76,41 @@ public abstract class AbstractActivityLoader<TReportDbType, TAbstractActivityRec
                         // Don't save data
                         return;
                     }
+
+                    var dtLastActivityDateString = CommonStringUtils.FromGraphDateString(reportPage.LastActivityDateString);
+
+
                 }
             }
             LoadedReportPages.Add(dt, dayReports);
         }
     }
 
-
-    public async Task SaveLoadedReportsToSql(ConcurrentLookupDbIdsCache userEmailToDbIdCache, DataContext db, UserCache userCache)
+    private Dictionary<string, DateTime?> _userLastActivityCache = new();
+    async Task<DateTime?> GetUserLastActivity(string upn)
     {
+        if (!_userLastActivityCache.ContainsKey(upn))
+        {
+            _userLastActivityCache.Add(upn, null);
+        }
+
+        return _userLastActivityCache[upn];
+    }
+
+
+    public async Task SaveLoadedReports()
+    {
+        Telemetry.LogInformation($"Saving {GetType().Name} reports to DB");
         await _usageReportPersistence.SaveLoadedReports(LoadedReportPages, this);
     }
 
     protected abstract long CountActivity(TAbstractActivityRecord activityPage);
-    public abstract DbSet<TReportDbType> GetTable(DataContext context);
+
+    /// <summary>
+    /// Usually the name of the property table in the EF context
+    /// </summary>
+    public abstract string DataContextPropertyName { get; }
+
     public abstract void PopulateReportSpecificMetadata(TReportDbType newRecord, TAbstractActivityRecord activityPage);
 
     protected int GetOptionalInt(int? i)

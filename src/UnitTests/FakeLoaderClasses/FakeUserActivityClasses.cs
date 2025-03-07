@@ -26,10 +26,19 @@ public class FakeUserActivityLoader : IUserActivityLoader
 
 public class FakeUsageReportPersistence : IUsageReportPersistence
 {
-    public Task SaveLoadedReports<TReportDbType, TAbstractActivityRecord>(Dictionary<DateTime, List<TAbstractActivityRecord>> reportPages, AbstractActivityLoader<TReportDbType, TAbstractActivityRecord> loader)
+    public Task<DateTime?> GetLastActivity<TReportDbType, TAbstractActivityRecord>(AbstractActivityLoader<TReportDbType, TAbstractActivityRecord> loader, string forUPN)
         where TReportDbType : AbstractUsageActivityLog, new()
         where TAbstractActivityRecord : AbstractActivityRecord
     {
         throw new NotImplementedException();
+    }
+
+    public Task SaveLoadedReports<TReportDbType, TAbstractActivityRecord>(Dictionary<DateTime, List<TAbstractActivityRecord>> reportPages, 
+        AbstractActivityLoader<TReportDbType, TAbstractActivityRecord> loader)
+        where TReportDbType : AbstractUsageActivityLog, new()
+        where TAbstractActivityRecord : AbstractActivityRecord
+    {
+        Console.WriteLine("FakeUsageReportPersistence.SaveLoadedReports");
+        return Task.CompletedTask;
     }
 }

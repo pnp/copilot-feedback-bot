@@ -8,17 +8,14 @@ namespace Entities.DB.Entities;
 public abstract class AbstractUsageActivityLog : UserRelatedEntity
 {
     [Column("date")]
-    public DateTime Date { get; set; }
-
-    [Column("last_activity_date")]
-    public DateTime? LastActivityDate { get; set; }
+    public DateTime DateOfActivity { get; set; }
 
     [NotMapped]
     public abstract int AssociatedLookupId { get; set; }
 
     public override string ToString()
     {
-        return $"{GetType().Name} - {Date}";
+        return $"{GetType().Name} - {DateOfActivity}";
     }
 }
 

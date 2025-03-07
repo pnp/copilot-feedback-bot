@@ -122,5 +122,5 @@ public class AppPlatformUserActivityLoader : AbstractActivityLoader<AppPlatformU
 
         return count;
     }
-    public override DbSet<AppPlatformUserActivityLog> GetTable(DataContext context) => context.AppPlatformUserUsageLog;
+    public override string DataContextPropertyName => nameof(DataContext.AppPlatformUserUsageLog);
 }

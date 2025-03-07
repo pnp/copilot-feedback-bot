@@ -24,6 +24,31 @@ public class SqlUsageReportPersistence : IUsageReportPersistence
         _logger = logger;
     }
 
+    public Task<DateTime?> GetLastActivity<TReportDbType, TAbstractActivityRecord>(AbstractActivityLoader<TReportDbType, TAbstractActivityRecord> loader, string forUPN)
+        where TReportDbType : AbstractUsageActivityLog, new()
+        where TAbstractActivityRecord : AbstractActivityRecord
+    {
+        var table = GetReportDbTypes(loader);
+        var latest = table.Where(t => t.User.UserPrincipalName == forUPN).OrderByDescending(r=> r.DateOfActivity).Take(1);
+        if (latest.Count() == 0)
+        {
+            return Task.FromResult<DateTime?>(null);
+        }
+        return Task.FromResult<DateTime?>(latest.First().DateOfActivity);
+    }
+
+    DbSet<TReportDbType> GetReportDbTypes<TReportDbType, TAbstractActivityRecord>(AbstractActivityLoader<TReportDbType, TAbstractActivityRecord> loader)
+            where TReportDbType : AbstractUsageActivityLog, new()
+            where TAbstractActivityRecord : AbstractActivityRecord
+    {
+        var tableObj = _db.GetType().GetProperty(loader.DataContextPropertyName)?.GetValue(_db);
+        if (tableObj == null)
+        {
+            throw new InvalidOperationException($"Table {typeof(TReportDbType).Name} not found in DataContext");
+        }
+        return (DbSet<TReportDbType>)tableObj;
+    }
+
     /// <summary>
     /// Save to SQL. Needs a shared ConcurrentLookupDbIdsCache if running in parallel with other imports.
     /// </summary>
@@ -32,6 +57,8 @@ public class SqlUsageReportPersistence : IUsageReportPersistence
             where TReportDbType : AbstractUsageActivityLog, new()
             where TAbstractActivityRecord : AbstractActivityRecord
     {
+        var table = GetReportDbTypes(loader);
+
         int i = 0; var enUS = new System.Globalization.CultureInfo("en-US");
         var allInserts = new List<TReportDbType>();
         // For each day in dataset (Key)
@@ -39,10 +66,13 @@ public class SqlUsageReportPersistence : IUsageReportPersistence
         {
             // Pre-cache all reports on that date
             _logger.LogDebug($"Saving {typeof(TReportDbType).Name} for date {dateTime.ToString("dd-MM-yyyy")}");
-            var allReportsOnDate = await loader.GetTable(_db).Where(t =>
-                                            t.Date.Year == dateTime.Year &&
-                                            t.Date.Month == dateTime.Month &&
-                                            t.Date.Day == dateTime.Day
+
+
+
+            var allReportsOnDate = await table.Where(t =>
+                                            t.DateOfActivity.Year == dateTime.Year &&
+                                            t.DateOfActivity.Month == dateTime.Month &&
+                                            t.DateOfActivity.Day == dateTime.Day
                                         ).ToListAsync();
 
             // Look through Graph results & compare with already saved reports for this date
@@ -92,22 +122,8 @@ public class SqlUsageReportPersistence : IUsageReportPersistence
                 }
 
                 // Set log stats
-                dateRequestedLog.Date = dateTime.Date;
+                dateRequestedLog.DateOfActivity = dateTime.Date;
 
-                // Example: "2017-08-30"
-                var activityDate = DateTime.MinValue;
-                if (!string.IsNullOrEmpty(reportPage.LastActivityDateString))
-                {
-                    if (DateTime.TryParseExact(reportPage.LastActivityDateString, "yyyy-MM-dd", enUS, System.Globalization.DateTimeStyles.None, out activityDate))
-                    {
-                        dateRequestedLog.LastActivityDate = activityDate;
-                    }
-                    else
-                    {
-                        _logger.LogWarning($"Invalid LastActivity value: '{reportPage.LastActivityDateString}'");
-                        dateRequestedLog.LastActivityDate = null;
-                    }
-                }
                 loader.PopulateReportSpecificMetadata(dateRequestedLog, reportPage);
 
                 i++;
@@ -115,7 +131,7 @@ public class SqlUsageReportPersistence : IUsageReportPersistence
         }
 
         // All inserts at once
-        loader.GetTable(_db).AddRange(allInserts);
+        table.AddRange(allInserts);
 
         await _db.SaveChangesAsync();
     }

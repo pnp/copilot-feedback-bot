@@ -19,6 +19,8 @@ public class TeamsUserDeviceLoader : AbstractActivityLoader<GlobalTeamsUserDevic
 
     public override string ReportGraphURL => "https://graph.microsoft.com/beta/reports/getTeamsDeviceUsageUserDetail";
 
+    public override string DataContextPropertyName => nameof(DataContext.TeamsUserDeviceUsageLog);
+
     public override void PopulateReportSpecificMetadata(GlobalTeamsUserDeviceUsageLog dateRequestedLog, TeamsDeviceUsageUserDetail reportPage)
     {
         dateRequestedLog.UsedAndroidPhone = reportPage.UsedAndroidPhone;
@@ -50,5 +52,4 @@ public class TeamsUserDeviceLoader : AbstractActivityLoader<GlobalTeamsUserDevic
 
         return count;
     }
-    public override DbSet<GlobalTeamsUserDeviceUsageLog> GetTable(DataContext context) => context.TeamsUserDeviceUsageLog;
 }

@@ -21,7 +21,6 @@ public class OneDriveUserActivityLoader : AbstractActivityLoader<OneDriveUserAct
         todaysLog.SharedExternally = userActivityReportPage.SharedExternally;
         todaysLog.Synced = userActivityReportPage.Synced;
         todaysLog.ViewedOrEdited = userActivityReportPage.ViewedOrEdited;
-        todaysLog.LastActivityDate = userActivityReportPage.LastActivityDate;
     }
 
     protected override long CountActivity(OneDriveUserActivityRecord activityPage)
@@ -40,5 +39,5 @@ public class OneDriveUserActivityLoader : AbstractActivityLoader<OneDriveUserAct
 
         return count;
     }
-    public override DbSet<OneDriveUserActivityLog> GetTable(DataContext context) => context.OneDriveUserActivityLogs;
+    public override string DataContextPropertyName => nameof(DataContext.OneDriveUserActivityLogs);
 }

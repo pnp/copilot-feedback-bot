@@ -1,4 +1,6 @@
-﻿namespace Common.DataUtils;
+﻿using System.Globalization;
+
+namespace Common.DataUtils;
 
 public static class CommonStringUtils
 {
@@ -55,6 +57,19 @@ public static class CommonStringUtils
     public static string ToGraphDateString(this DateTime dateTime)
     {
         return dateTime.ToString("yyyy-MM-dd");
+    }
+
+    public static DateTime? FromGraphDateString(string s)
+    {
+        DateTime dt;
+        if (DateTime.TryParseExact(s, "dd-MM-yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out dt))
+        {
+            return dt;
+        }
+        else
+        {
+            return null;
+        }
     }
 
     public static string EnsureMaxLength(string? potentiallyLongString, int maxLength)

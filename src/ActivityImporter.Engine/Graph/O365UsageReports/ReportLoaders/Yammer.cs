@@ -40,7 +40,7 @@ public class YammerUserUsageLoader : AbstractActivityLoader<YammerUserActivityLo
     }
 
     public override string ReportGraphURL => "https://graph.microsoft.com/beta/reports/getYammerActivityUserDetail";
-    public override DbSet<YammerUserActivityLog> GetTable(DataContext context) => context.YammerUserActivityLogs;
+    public override string DataContextPropertyName => nameof(DataContext.YammerUserActivityLogs);
 
 }
 
@@ -83,5 +83,5 @@ public class YammerDeviceUsageLoader : AbstractActivityLoader<YammerDeviceActivi
     }
 
     public override string ReportGraphURL => "https://graph.microsoft.com/beta/reports/getYammerDeviceUsageUserDetail";
-    public override DbSet<YammerDeviceActivityLog> GetTable(DataContext context) => context.YammerDeviceActivityLogs;
+    public override string DataContextPropertyName => nameof(DataContext.YammerDeviceActivityLogs);
 }
