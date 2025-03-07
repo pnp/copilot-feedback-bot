@@ -9,12 +9,12 @@ namespace ActivityImporter.Engine.Graph.O365UsageReports.ReportLoaders;
 // https://docs.microsoft.com/en-us/graph/api/reportroot-getonedriveactivityuserdetail?view=graph-rest-beta
 public class SharePointUserActivityLoader : AbstractActivityLoader<SharePointUserActivityLog, SharePointUserActivityRecord>
 {
-    public SharePointUserActivityLoader(ManualGraphCallClient client, ILogger logger)
-        : base(client, logger)
+    public SharePointUserActivityLoader(IUserActivityLoader activityLoader, IUsageReportPersistence usageReportPersistence, ILogger logger)
+        : base(activityLoader, usageReportPersistence, logger)
     {
     }
 
-    protected override void PopulateReportSpecificMetadata(SharePointUserActivityLog todaysLog, SharePointUserActivityRecord userActivityReportPage)
+    public override void PopulateReportSpecificMetadata(SharePointUserActivityLog todaysLog, SharePointUserActivityRecord userActivityReportPage)
     {
         todaysLog.SharedInternally = userActivityReportPage.SharedInternally;
         todaysLog.SharedExternally = userActivityReportPage.SharedExternally;

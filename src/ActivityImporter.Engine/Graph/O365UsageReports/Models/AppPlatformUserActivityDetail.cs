@@ -9,7 +9,7 @@ namespace ActivityImporter.Engine.Graph.O365UsageReports.Models;
 public class AppPlatformUserActivityDetail : AbstractUserActivityUserRecordWithUpn
 {
     [JsonProperty("details")]
-    public List<AppPlatformUserActivityDetailItems> Details { get; set; }
+    public List<AppPlatformUserActivityDetailItems> Details { get; set; } = new();
 }
 
 public class AppPlatformUserActivityDetailItems

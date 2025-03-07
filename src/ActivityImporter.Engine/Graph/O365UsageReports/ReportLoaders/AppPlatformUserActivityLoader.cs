@@ -10,14 +10,14 @@ namespace ActivityImporter.Engine.Graph.O365UsageReports.ReportLoaders;
 // https://learn.microsoft.com/en-us/graph/api/reportroot-getm365appuserdetail?view=graph-rest-beta
 public class AppPlatformUserActivityLoader : AbstractActivityLoader<AppPlatformUserActivityLog, AppPlatformUserActivityDetail>
 {
-    public AppPlatformUserActivityLoader(ManualGraphCallClient client, ILogger telemetry)
-        : base(client, telemetry)
+    public AppPlatformUserActivityLoader(IUserActivityLoader activityLoader, IUsageReportPersistence usageReportPersistence, ILogger telemetry)
+        : base(activityLoader, usageReportPersistence, telemetry)
     {
     }
 
-    public override string ReportGraphURL => "https://graph.microsoft.com/v1.0/reports/getM365AppUserDetail";
+    public override string ReportGraphURL => "https://graph.microsoft.com/beta/reports/getM365AppUserDetail";
 
-    protected override void PopulateReportSpecificMetadata(AppPlatformUserActivityLog dateRequestedLog, AppPlatformUserActivityDetail reportPage)
+    public override void PopulateReportSpecificMetadata(AppPlatformUserActivityLog dateRequestedLog, AppPlatformUserActivityDetail reportPage)
     {
         if (reportPage.Details.Count != 1)
         {

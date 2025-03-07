@@ -11,11 +11,12 @@ namespace ActivityImporter.Engine.Graph.O365UsageReports.ReportLoaders;
 /// </summary>
 public class YammerUserUsageLoader : AbstractActivityLoader<YammerUserActivityLog, YammerUserActivityUserDetail>
 {
-    public YammerUserUsageLoader(ManualGraphCallClient client, ILogger telemetry)
-        : base(client, telemetry)
+    public YammerUserUsageLoader(IUserActivityLoader activityLoader, IUsageReportPersistence usageReportPersistence, ILogger telemetry)
+        : base(activityLoader, usageReportPersistence, telemetry)
     {
     }
-    protected override void PopulateReportSpecificMetadata(YammerUserActivityLog todaysLog, YammerUserActivityUserDetail userActivityReportPage)
+
+    public override void PopulateReportSpecificMetadata(YammerUserActivityLog todaysLog, YammerUserActivityUserDetail userActivityReportPage)
     {
         // Convert serialised object to DB object
         todaysLog.ReadCount = GetOptionalInt(userActivityReportPage.ReadCount);
@@ -48,11 +49,11 @@ public class YammerUserUsageLoader : AbstractActivityLoader<YammerUserActivityLo
 /// </summary>
 public class YammerDeviceUsageLoader : AbstractActivityLoader<YammerDeviceActivityLog, YammerDeviceActivityDetail>
 {
-    public YammerDeviceUsageLoader(ManualGraphCallClient client, ILogger telemetry)
-        : base(client, telemetry)
+    public YammerDeviceUsageLoader(IUserActivityLoader activityLoader, IUsageReportPersistence usageReportPersistence, ILogger telemetry)
+        : base(activityLoader, usageReportPersistence, telemetry)
     {
     }
-    protected override void PopulateReportSpecificMetadata(YammerDeviceActivityLog todaysLog, YammerDeviceActivityDetail userActivityReportPage)
+    public override void PopulateReportSpecificMetadata(YammerDeviceActivityLog todaysLog, YammerDeviceActivityDetail userActivityReportPage)
     {
         // Convert serialised object to DB object
         todaysLog.UsedWeb = userActivityReportPage.UsedWeb;

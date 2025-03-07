@@ -9,13 +9,13 @@ namespace ActivityImporter.Engine.Graph.O365UsageReports.ReportLoaders;
 // https://docs.microsoft.com/en-us/graph/api/reportroot-getonedriveactivityuserdetail?view=graph-rest-beta
 public class OneDriveUserActivityLoader : AbstractActivityLoader<OneDriveUserActivityLog, OneDriveUserActivityRecord>
 {
-    public OneDriveUserActivityLoader(ManualGraphCallClient client, ILogger logger)
-        : base(client, logger)
+    public OneDriveUserActivityLoader(IUserActivityLoader activityLoader, IUsageReportPersistence usageReportPersistence, ILogger logger)
+        : base(activityLoader, usageReportPersistence, logger)
     {
     }
 
     public override string ReportGraphURL => "https://graph.microsoft.com/beta/reports/getOneDriveActivityUserDetail";
-    protected override void PopulateReportSpecificMetadata(OneDriveUserActivityLog todaysLog, OneDriveUserActivityRecord userActivityReportPage)
+    public override void PopulateReportSpecificMetadata(OneDriveUserActivityLog todaysLog, OneDriveUserActivityRecord userActivityReportPage)
     {
         todaysLog.SharedInternally = userActivityReportPage.SharedInternally;
         todaysLog.SharedExternally = userActivityReportPage.SharedExternally;

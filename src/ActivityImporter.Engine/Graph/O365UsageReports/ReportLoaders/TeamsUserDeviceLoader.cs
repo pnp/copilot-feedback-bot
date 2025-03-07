@@ -12,14 +12,14 @@ namespace ActivityImporter.Engine.Graph.O365UsageReports.ReportLoaders;
 /// </summary>
 public class TeamsUserDeviceLoader : AbstractActivityLoader<GlobalTeamsUserDeviceUsageLog, TeamsDeviceUsageUserDetail>
 {
-    public TeamsUserDeviceLoader(ManualGraphCallClient client, ILogger telemetry)
-        : base(client, telemetry)
+    public TeamsUserDeviceLoader(IUserActivityLoader activityLoader, IUsageReportPersistence usageReportPersistence, ILogger telemetry)
+        : base(activityLoader, usageReportPersistence, telemetry)
     {
     }
 
     public override string ReportGraphURL => "https://graph.microsoft.com/beta/reports/getTeamsDeviceUsageUserDetail";
 
-    protected override void PopulateReportSpecificMetadata(GlobalTeamsUserDeviceUsageLog dateRequestedLog, TeamsDeviceUsageUserDetail reportPage)
+    public override void PopulateReportSpecificMetadata(GlobalTeamsUserDeviceUsageLog dateRequestedLog, TeamsDeviceUsageUserDetail reportPage)
     {
         dateRequestedLog.UsedAndroidPhone = reportPage.UsedAndroidPhone;
         dateRequestedLog.UsedIOS = reportPage.UsediOS;

@@ -9,7 +9,7 @@ public class LicenseTypeCache : DBLookupCache<LicenseType>
 
     public override DbSet<LicenseType> EntityStore => this.DB.LicenseTypes;
 
-    public async override Task<LicenseType> Load(string searchName)
+    public async override Task<LicenseType?> Load(string searchName)
     {
         return await EntityStore.SingleOrDefaultAsync(t => t.Name == searchName);
     }

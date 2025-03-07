@@ -8,15 +8,15 @@ namespace ActivityImporter.Engine.Graph.O365UsageReports.ReportLoaders;
 
 public class TeamsUserUsageLoader : AbstractActivityLoader<GlobalTeamsUserUsageLog, TeamsUserActivityUserRecord>
 {
-    public TeamsUserUsageLoader(ManualGraphCallClient client, ILogger logger)
-        : base(client, logger)
+    public TeamsUserUsageLoader(IUserActivityLoader activityLoader, IUsageReportPersistence usageReportPersistence, ILogger logger)
+        : base(activityLoader, usageReportPersistence, logger)
     {
     }
 
     public override string ReportGraphURL => "https://graph.microsoft.com/beta/reports/getTeamsUserActivityUserDetail";
 
 
-    protected override void PopulateReportSpecificMetadata(GlobalTeamsUserUsageLog todaysLog, TeamsUserActivityUserRecord userActivityReportPage)
+    public override void PopulateReportSpecificMetadata(GlobalTeamsUserUsageLog todaysLog, TeamsUserActivityUserRecord userActivityReportPage)
     {
         // Convert serialised object to DB object
         todaysLog.CallCount = userActivityReportPage.CallCount;

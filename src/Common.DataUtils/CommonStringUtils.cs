@@ -52,6 +52,11 @@ public static class CommonStringUtils
 
     }
 
+    public static string ToGraphDateString(this DateTime dateTime)
+    {
+        return dateTime.ToString("yyyy-MM-dd");
+    }
+
     public static string EnsureMaxLength(string? potentiallyLongString, int maxLength)
     {
         if (string.IsNullOrEmpty(potentiallyLongString))

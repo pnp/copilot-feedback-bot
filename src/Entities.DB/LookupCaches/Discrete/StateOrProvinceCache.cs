@@ -10,7 +10,7 @@ public class StateOrProvinceCache : DBLookupCache<StateOrProvince>
 
     public override DbSet<StateOrProvince> EntityStore => this.DB.StateOrProvinces;
 
-    public async override Task<StateOrProvince> Load(string searchName)
+    public async override Task<StateOrProvince?> Load(string searchName)
     {
         return await EntityStore.SingleOrDefaultAsync(t => t.Name == searchName);
     }

@@ -19,11 +19,13 @@ public abstract class AbstractActivityLoader<TReportDbType, TAbstractActivityRec
     where TReportDbType : AbstractUsageActivityLog, new()
     where TAbstractActivityRecord : AbstractActivityRecord
 {
-    private readonly ManualGraphCallClient _client;
+    private readonly IUserActivityLoader _graphActivityLoader;
+    private readonly IUsageReportPersistence _usageReportPersistence;
 
-    internal AbstractActivityLoader(ManualGraphCallClient client, ILogger telemetry)
+    internal AbstractActivityLoader(IUserActivityLoader graphActivityLoader, IUsageReportPersistence usageReportPersistence, ILogger telemetry)
     {
-        _client = client;
+        _graphActivityLoader = graphActivityLoader;
+        _usageReportPersistence = usageReportPersistence;
         Telemetry = telemetry ?? throw new ArgumentNullException(nameof(telemetry));
     }
 
@@ -54,8 +56,7 @@ public abstract class AbstractActivityLoader<TReportDbType, TAbstractActivityRec
 
             Telemetry.LogInformation($"Loading {GetType().Name} for date {dt.ToString("dd-MM-yyyy")}");
 
-            var requestUrl = $"{ReportGraphURL}(date={dt.ToString("yyyy-MM-dd")})?$format=application/json";
-            var dayReports = await _client.LoadAllPagesWithThrottleRetries<TAbstractActivityRecord>(requestUrl, Telemetry);
+            var dayReports = await _graphActivityLoader.LoadReport<TAbstractActivityRecord>(dt, ReportGraphURL);
 
             if (dayReports.Count > 0 && dayReports[0] is AbstractUserActivityUserRecord)
             {
@@ -79,101 +80,14 @@ public abstract class AbstractActivityLoader<TReportDbType, TAbstractActivityRec
     }
 
 
-    /// <summary>
-    /// Save to SQL. Needs a shared ConcurrentLookupDbIdsCache if running in parallel with other imports.
-    /// </summary>
     public async Task SaveLoadedReportsToSql(ConcurrentLookupDbIdsCache userEmailToDbIdCache, DataContext db, UserCache userCache)
     {
-        int i = 0; var enUS = new System.Globalization.CultureInfo("en-US");
-        var allInserts = new List<TReportDbType>();
-        // For each day in dataset (Key)
-        foreach (var dateTime in LoadedReportPages.Keys)
-        {
-            // Pre-cache all reports on that date
-            var allReportsOnDate = await GetTable(db).Where(t =>
-                                            t.Date.Year == dateTime.Year &&
-                                            t.Date.Month == dateTime.Month &&
-                                            t.Date.Day == dateTime.Day
-                                        ).ToListAsync();
-
-            // Look through Graph results & compare with already saved reports for this date
-            foreach (var reportPage in LoadedReportPages[dateTime])
-            {
-                // Do we have a cached ID for the lookup?
-                int? lookupId = null;
-                lookupId = userEmailToDbIdCache.GetCachedIdForName<TReportDbType>(reportPage.LookupFieldValue);
-
-                if (lookupId == null)
-                {
-                    // See if there's already a log defined for this date + lookup (usually "user")
-                    var lookup = await reportPage.GetOrCreateLookup(userCache);
-
-                    // Sanity
-                    if (!lookup.IsSavedToDB)
-                    {
-                        throw new InvalidOperationException("Cannot use unsaved lookups for activity records");
-                    }
-
-                    // Cache lookup
-                    lookupId = lookup.ID;
-                    userEmailToDbIdCache.AddOrUpdateForName<TReportDbType>(reportPage.LookupFieldValue, lookupId.Value);
-                }
-
-
-                var dateRequestedLog = allReportsOnDate.FirstOrDefault(t =>
-                        t.AssociatedLookupId == lookupId.Value
-                    );
-
-                // Output progress every 1000 imports
-                if (i > 0 && i % 1000 == 0)
-                {
-                    Console.WriteLine($"{GetType().Name}: Saved {i} / {LoadedReportPages.SelectMany(r => r.Value).Count()}");
-                }
-
-                // Create new log if necesary
-                if (dateRequestedLog == null)
-                {
-                    dateRequestedLog = new TReportDbType()
-                    {
-                        AssociatedLookupId = lookupId.Value   // date set below
-                    };
-
-                    // Add new logs to list to insert
-                    allInserts.Add(dateRequestedLog);
-                }
-
-                // Set log stats
-                dateRequestedLog.Date = dateTime.Date;
-
-                // Example: "2017-08-30"
-                var activityDate = DateTime.MinValue;
-                if (!string.IsNullOrEmpty(reportPage.LastActivityDateString))
-                {
-                    if (DateTime.TryParseExact(reportPage.LastActivityDateString, "yyyy-MM-dd", enUS, System.Globalization.DateTimeStyles.None, out activityDate))
-                    {
-                        dateRequestedLog.LastActivityDate = activityDate;
-                    }
-                    else
-                    {
-                        Telemetry.LogWarning($"Invalid LastActivity value: '{reportPage.LastActivityDateString}'");
-                        dateRequestedLog.LastActivityDate = null;
-                    }
-                }
-                PopulateReportSpecificMetadata(dateRequestedLog, reportPage);
-
-                i++;
-            }
-        }
-
-        // All inserts at once
-        GetTable(db).AddRange(allInserts);
-
-        await db.SaveChangesAsync();
+        await _usageReportPersistence.SaveLoadedReports(LoadedReportPages, this);
     }
 
     protected abstract long CountActivity(TAbstractActivityRecord activityPage);
     public abstract DbSet<TReportDbType> GetTable(DataContext context);
-    protected abstract void PopulateReportSpecificMetadata(TReportDbType newRecord, TAbstractActivityRecord activityPage);
+    public abstract void PopulateReportSpecificMetadata(TReportDbType newRecord, TAbstractActivityRecord activityPage);
 
     protected int GetOptionalInt(int? i)
     {
