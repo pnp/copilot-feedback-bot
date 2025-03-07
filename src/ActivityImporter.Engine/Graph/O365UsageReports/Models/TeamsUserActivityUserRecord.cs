@@ -4,12 +4,6 @@ namespace ActivityImporter.Engine.Graph.O365UsageReports.Models;
 
 public class TeamsUserActivityUserRecord : AbstractUserActivityUserRecordWithUpn
 {
-    [JsonProperty("deletedDate")]
-    public string DeletedDate { get; set; } = null!;
-
-    [JsonProperty("assignedProducts")]
-    public string[] AssignedProducts { get; set; } = new string[] { };
-
     [JsonProperty("teamChatMessageCount")]
     public int TeamChatMessageCount { get; set; }
 

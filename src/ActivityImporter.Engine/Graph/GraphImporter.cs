@@ -66,23 +66,22 @@ public class GraphImporter : AbstractApiLoader
         var optionsBuilder = new DbContextOptionsBuilder<DataContext>();
         optionsBuilder.UseSqlServer(_appConfig.ConnectionStrings.SQL);
 
-        const int DAYS_BACK = 6;
         using (var db = new DataContext(optionsBuilder.Options))
         {
             var usageActivityTimer = new JobTimer(_telemetry, "Usage reports");
             usageActivityTimer.Start();
 
             // Global user activity report. Each thread creates own context.
-            await GetAndSaveActivityReportsMultiThreaded(DAYS_BACK, new GraphActivityLoader(httpClient, _telemetry));
+            await GetAndSaveActivityReportsMultiThreaded(new GraphActivityLoader(httpClient, _telemetry));
 
             // Track finished event 
             usageActivityTimer.TrackFinishedEventAndStopTimer(AnalyticsEvent.FinishedSectionImport);
         }
     }
 
-    public async Task GetAndSaveActivityReportsMultiThreaded(int daysBackMax, IUserActivityLoader loader)
+    public async Task GetAndSaveActivityReportsMultiThreaded(IUserActivityLoader loader)
     {
-        _telemetry.LogInformation($"Reading all activity reports from {daysBackMax} days back...");
+        _telemetry.LogInformation($"Reading all activity reports...");
 
         // Parallel-load all, each one with own DB context
         var importTasks = new List<Task>();
@@ -91,47 +90,43 @@ public class GraphImporter : AbstractApiLoader
 
         using var dbTeamsUserUsageLoader = GetDB();
         var sqlAdaptorTeamsUserUsageLoader = new SqlUsageReportPersistence(lookupIdCache, dbTeamsUserUsageLoader, new Entities.DB.LookupCaches.Discrete.UserCache(dbTeamsUserUsageLoader), _telemetry);
-        importTasks.Add(LoadAndSaveReportAsync(new TeamsUserUsageLoader(loader, sqlAdaptorTeamsUserUsageLoader, _telemetry), daysBackMax,
+        importTasks.Add(LoadAndSaveReportAsync(new TeamsUserUsageLoader(loader, sqlAdaptorTeamsUserUsageLoader, _telemetry),
             "Teams user activity"));
 
         using var dbOutlookUserActivityLoader = GetDB();
         var sqlAdaptorOutlookUserActivityLoader = new SqlUsageReportPersistence(lookupIdCache, dbOutlookUserActivityLoader, new Entities.DB.LookupCaches.Discrete.UserCache(dbOutlookUserActivityLoader), _telemetry);
-        importTasks.Add(LoadAndSaveReportAsync(new OutlookUserActivityLoader(loader, sqlAdaptorOutlookUserActivityLoader, _telemetry), daysBackMax,
+        importTasks.Add(LoadAndSaveReportAsync(new OutlookUserActivityLoader(loader, sqlAdaptorOutlookUserActivityLoader, _telemetry),
             "Outlook activity"));
-
 
         using var dbOneDriveUserActivityLoader = GetDB();
         var sqlAdaptorOneDriveUserActivityLoader = new SqlUsageReportPersistence(lookupIdCache, dbOneDriveUserActivityLoader, new Entities.DB.LookupCaches.Discrete.UserCache(dbOneDriveUserActivityLoader), _telemetry);
-        importTasks.Add(LoadAndSaveReportAsync(new TeamsUserUsageLoader(loader, sqlAdaptorOneDriveUserActivityLoader, _telemetry), daysBackMax,
+        importTasks.Add(LoadAndSaveReportAsync(new TeamsUserUsageLoader(loader, sqlAdaptorOneDriveUserActivityLoader, _telemetry),
             "OneDrive activity"));
 
         using var dbSharePointUserActivityLoader = GetDB();
         var sqlAdaptorSharePointUserActivityLoader = new SqlUsageReportPersistence(lookupIdCache, dbSharePointUserActivityLoader, new Entities.DB.LookupCaches.Discrete.UserCache(dbSharePointUserActivityLoader), _telemetry);
-        importTasks.Add(LoadAndSaveReportAsync(new SharePointUserActivityLoader(loader, sqlAdaptorSharePointUserActivityLoader, _telemetry), daysBackMax,
+        importTasks.Add(LoadAndSaveReportAsync(new SharePointUserActivityLoader(loader, sqlAdaptorSharePointUserActivityLoader, _telemetry),
             "SharePoint user activity"));
-
 
         using var dbTeamsUserDeviceLoader = GetDB();
         var sqlAdaptorTeamsUserDeviceLoader = new SqlUsageReportPersistence(lookupIdCache, dbTeamsUserDeviceLoader, new Entities.DB.LookupCaches.Discrete.UserCache(dbTeamsUserDeviceLoader), _telemetry);
-        importTasks.Add(LoadAndSaveReportAsync(new TeamsUserDeviceLoader(loader, sqlAdaptorTeamsUserDeviceLoader, _telemetry), daysBackMax,
+        importTasks.Add(LoadAndSaveReportAsync(new TeamsUserDeviceLoader(loader, sqlAdaptorTeamsUserDeviceLoader, _telemetry),
             "Teams user device activity"));
-
 
         using var dbAppPlatformUserActivityLoader = GetDB();
         var sqlAdaptorAppPlatformUserActivityLoader = new SqlUsageReportPersistence(lookupIdCache, dbAppPlatformUserActivityLoader, new Entities.DB.LookupCaches.Discrete.UserCache(dbAppPlatformUserActivityLoader), _telemetry);
-        importTasks.Add(LoadAndSaveReportAsync(new AppPlatformUserActivityLoader(loader, sqlAdaptorAppPlatformUserActivityLoader, _telemetry), daysBackMax,
+        importTasks.Add(LoadAndSaveReportAsync(new AppPlatformUserActivityLoader(loader, sqlAdaptorAppPlatformUserActivityLoader, _telemetry),
             "App platform activity"));
 
         using var dbYammerUserUsageLoader = GetDB();
         var sqlAdaptorYammerUserUsageLoader = new SqlUsageReportPersistence(lookupIdCache, dbYammerUserUsageLoader, new Entities.DB.LookupCaches.Discrete.UserCache(dbYammerUserUsageLoader), _telemetry);
-        importTasks.Add(LoadAndSaveReportAsync(new YammerUserUsageLoader(loader, sqlAdaptorYammerUserUsageLoader, _telemetry), daysBackMax,
+        importTasks.Add(LoadAndSaveReportAsync(new YammerUserUsageLoader(loader, sqlAdaptorYammerUserUsageLoader, _telemetry),
             "Yammer user activity"));
 
         using var dbYammerDeviceUsageLoader = GetDB();
         var sqlAdaptor = new SqlUsageReportPersistence(lookupIdCache, dbYammerDeviceUsageLoader, new Entities.DB.LookupCaches.Discrete.UserCache(dbYammerDeviceUsageLoader), _telemetry);
-        importTasks.Add(LoadAndSaveReportAsync(new YammerDeviceUsageLoader(loader, sqlAdaptor, _telemetry), daysBackMax,
+        importTasks.Add(LoadAndSaveReportAsync(new YammerDeviceUsageLoader(loader, sqlAdaptor, _telemetry),
             "Yammer device activity"));
-
 
         await Task.WhenAll(importTasks);
 
@@ -148,27 +143,16 @@ public class GraphImporter : AbstractApiLoader
 
     }
 
-    async Task<int> LoadAndSaveReportAsync<TReportDbType, TUserActivityUserDetail>
-        (AbstractActivityLoader<TReportDbType, TUserActivityUserDetail> abstractActivityLoader,
-        int daysBackMax, string thingWeAreImporting
-        )
+    async Task<int> LoadAndSaveReportAsync<TReportDbType, TUserActivityUserDetail>(AbstractActivityLoader<TReportDbType, TUserActivityUserDetail> abstractActivityLoader,
+        string thingWeAreImporting)
             where TReportDbType : AbstractUsageActivityLog, new()
-    where TUserActivityUserDetail : AbstractActivityRecord
+            where TUserActivityUserDetail : AbstractActivityRecord
     {
         _telemetry.LogInformation($"Importing {thingWeAreImporting} reports...");
 
-        await abstractActivityLoader.PopulateLoadedReportPagesFromGraph(daysBackMax);
+        var pagesSaved = await abstractActivityLoader.LoadAndSaveUsagePages();
 
-        var optionsBuilder = new DbContextOptionsBuilder<DataContext>();
-        optionsBuilder.UseSqlServer(_appConfig.ConnectionStrings.SQL);
-
-        using (var db = new DataContext(optionsBuilder.Options))
-        {
-            _telemetry.LogInformation($"Read {abstractActivityLoader.LoadedReportPages.SelectMany(p => p.Value).Count().ToString("N0")} {thingWeAreImporting} records from Graph API");
-            await abstractActivityLoader.SaveLoadedReports();
-        }
-
-        var total = abstractActivityLoader.LoadedReportPages.SelectMany(r => r.Value).Count();
+        var total = pagesSaved.SelectMany(r => r.Value).Count();
         _telemetry.LogInformation($"Imported {total.ToString("N0")} {thingWeAreImporting} reports.");
 
         return total;

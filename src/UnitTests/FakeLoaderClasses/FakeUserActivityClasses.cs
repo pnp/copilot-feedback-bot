@@ -8,17 +8,21 @@ namespace UnitTests.FakeLoaderClasses;
 
 public class FakeUserActivityLoader : IUserActivityLoader
 {
+    public int ResultsPerPage { get; set; } = 1;
     public Task<List<TAbstractActivityRecord>> LoadReport<TAbstractActivityRecord>(DateTime dt, string reportGraphURL) 
         where TAbstractActivityRecord : AbstractActivityRecord
     {
-        var datoir = new List<TeamsDeviceUsageUserDetail>
+        var datoir = new List<TeamsDeviceUsageUserDetail>();
+        for (int i = 0; i < ResultsPerPage; i++)
         {
-            new TeamsDeviceUsageUserDetail
+            datoir.Add(new TeamsDeviceUsageUserDetail
             {
-                LastActivityDateString = DateTime.UtcNow.AddDays(-1).ToGraphDateString(),
-                UserPrincipalName = "user@org.local"
-            }
-        };
+                LastActivityDateString = DateTime.UtcNow.AddDays(i * -1).ToGraphDateString(),
+                UserPrincipalName = "user@org.local",
+                UsedAndroidPhone = false,
+                // etc
+            });
+        }
 
         return Task.FromResult(datoir.Cast<TAbstractActivityRecord>().ToList());
     }
@@ -26,7 +30,7 @@ public class FakeUserActivityLoader : IUserActivityLoader
 
 public class FakeUsageReportPersistence : IUsageReportPersistence
 {
-    public Task<DateTime?> GetLastActivity<TReportDbType, TAbstractActivityRecord>(AbstractActivityLoader<TReportDbType, TAbstractActivityRecord> loader, string forUPN)
+    public Task<DateTime?> GetLastActivityForAllUsers<TReportDbType, TAbstractActivityRecord>(AbstractActivityLoader<TReportDbType, TAbstractActivityRecord> loader)
         where TReportDbType : AbstractUsageActivityLog, new()
         where TAbstractActivityRecord : AbstractActivityRecord
     {

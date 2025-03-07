@@ -16,6 +16,9 @@ public class SqlUsageReportPersistence : IUsageReportPersistence
     private readonly UserCache _userCache;
     private readonly ILogger _logger;
 
+    public SqlUsageReportPersistence(DataContext db, ILogger logger) : this(new ConcurrentLookupDbIdsCache(), db, new UserCache(db), logger)
+    {
+    }
     public SqlUsageReportPersistence(ConcurrentLookupDbIdsCache userEmailToDbIdCache, DataContext db, UserCache userCache, ILogger logger)
     {
         _userEmailToDbIdCache = userEmailToDbIdCache;
@@ -24,17 +27,17 @@ public class SqlUsageReportPersistence : IUsageReportPersistence
         _logger = logger;
     }
 
-    public Task<DateTime?> GetLastActivity<TReportDbType, TAbstractActivityRecord>(AbstractActivityLoader<TReportDbType, TAbstractActivityRecord> loader, string forUPN)
+    public async Task<DateTime?> GetLastActivityForAllUsers<TReportDbType, TAbstractActivityRecord>(AbstractActivityLoader<TReportDbType, TAbstractActivityRecord> loader)
         where TReportDbType : AbstractUsageActivityLog, new()
         where TAbstractActivityRecord : AbstractActivityRecord
     {
         var table = GetReportDbTypes(loader);
-        var latest = table.Where(t => t.User.UserPrincipalName == forUPN).OrderByDescending(r=> r.DateOfActivity).Take(1);
+        var latest = await table.OrderByDescending(r=> r.DateOfActivity).Take(1).ToListAsync();
         if (latest.Count() == 0)
         {
-            return Task.FromResult<DateTime?>(null);
+            return null;
         }
-        return Task.FromResult<DateTime?>(latest.First().DateOfActivity);
+        return latest.First().DateOfActivity;
     }
 
     DbSet<TReportDbType> GetReportDbTypes<TReportDbType, TAbstractActivityRecord>(AbstractActivityLoader<TReportDbType, TAbstractActivityRecord> loader)
@@ -52,31 +55,29 @@ public class SqlUsageReportPersistence : IUsageReportPersistence
     /// <summary>
     /// Save to SQL. Needs a shared ConcurrentLookupDbIdsCache if running in parallel with other imports.
     /// </summary>
-    public async Task SaveLoadedReports<TReportDbType, TAbstractActivityRecord>(Dictionary<DateTime, List<TAbstractActivityRecord>> LoadedReportPages,
+    public async Task SaveLoadedReports<TReportDbType, TAbstractActivityRecord>(Dictionary<DateTime, List<TAbstractActivityRecord>> reportPages,
         AbstractActivityLoader<TReportDbType, TAbstractActivityRecord> loader)
             where TReportDbType : AbstractUsageActivityLog, new()
             where TAbstractActivityRecord : AbstractActivityRecord
     {
         var table = GetReportDbTypes(loader);
 
-        int i = 0; var enUS = new System.Globalization.CultureInfo("en-US");
+        int i = 0;
         var allInserts = new List<TReportDbType>();
         // For each day in dataset (Key)
-        foreach (var dateTime in LoadedReportPages.Keys)
+        foreach (var resultsDate in reportPages.Keys)
         {
             // Pre-cache all reports on that date
-            _logger.LogDebug($"Saving {typeof(TReportDbType).Name} for date {dateTime.ToString("dd-MM-yyyy")}");
-
-
+            _logger.LogDebug($"Saving {typeof(TReportDbType).Name} for date {resultsDate.ToGraphDateString()}");
 
             var allReportsOnDate = await table.Where(t =>
-                                            t.DateOfActivity.Year == dateTime.Year &&
-                                            t.DateOfActivity.Month == dateTime.Month &&
-                                            t.DateOfActivity.Day == dateTime.Day
+                                            t.DateOfActivity.Year == resultsDate.Year &&
+                                            t.DateOfActivity.Month == resultsDate.Month &&
+                                            t.DateOfActivity.Day == resultsDate.Day
                                         ).ToListAsync();
 
             // Look through Graph results & compare with already saved reports for this date
-            foreach (var reportPage in LoadedReportPages[dateTime])
+            foreach (var reportPage in reportPages[resultsDate])
             {
                 // Do we have a cached ID for the lookup?
                 int? lookupId = null;
@@ -106,7 +107,7 @@ public class SqlUsageReportPersistence : IUsageReportPersistence
                 // Output progress every 1000 imports
                 if (i > 0 && i % 1000 == 0)
                 {
-                    Console.WriteLine($"{GetType().Name}: Saved {i} / {LoadedReportPages.SelectMany(r => r.Value).Count()}");
+                    _logger.LogDebug($"{GetType().Name}: Saved {i} / {reportPages.SelectMany(r => r.Value).Count()}");
                 }
 
                 // Create new log if necesary
@@ -122,7 +123,7 @@ public class SqlUsageReportPersistence : IUsageReportPersistence
                 }
 
                 // Set log stats
-                dateRequestedLog.DateOfActivity = dateTime.Date;
+                dateRequestedLog.DateOfActivity = resultsDate.Date;
 
                 loader.PopulateReportSpecificMetadata(dateRequestedLog, reportPage);
 

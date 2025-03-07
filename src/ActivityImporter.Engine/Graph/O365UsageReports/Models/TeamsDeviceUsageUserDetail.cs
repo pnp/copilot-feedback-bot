@@ -8,12 +8,6 @@ namespace ActivityImporter.Engine.Graph.O365UsageReports.Models;
 /// </summary>
 public class TeamsDeviceUsageUserDetail : AbstractUserActivityUserRecordWithUpn
 {
-    [JsonProperty("isLicensed")]
-    public bool? IsLicensed { get; set; }
-
-
-    [JsonProperty("isDeleted")]
-    public bool? IsDeleted { get; set; }
 
     [JsonProperty("usedWeb")]
     public bool? UsedWeb { get; set; }

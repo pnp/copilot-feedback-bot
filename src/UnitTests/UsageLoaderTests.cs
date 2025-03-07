@@ -1,4 +1,5 @@
-﻿using ActivityImporter.Engine.Graph.O365UsageReports.ReportLoaders;
+﻿using ActivityImporter.Engine.Graph.O365UsageReports;
+using ActivityImporter.Engine.Graph.O365UsageReports.ReportLoaders;
 using UnitTests.FakeLoaderClasses;
 
 namespace UnitTests;
@@ -11,9 +12,9 @@ public class UsageLoaderTests : AbstractTest
     public async Task FakeTeamsActivity()
     {
         var activityLoader = new FakeUserActivityLoader();
-        var loader = new TeamsUserDeviceLoader(activityLoader, new FakeUsageReportPersistence(), _logger);
-        await loader.PopulateLoadedReportPagesFromGraph(3);
-        Assert.AreEqual(3, loader.LoadedReportPages.Count);
+        var loader = new TeamsUserDeviceLoader(activityLoader, new SqlUsageReportPersistence(_db, _logger), _logger);
+        var p = await loader.LoadAndSaveUsagePages();
+        Assert.AreEqual(3, p.Count);
 
     }
 }

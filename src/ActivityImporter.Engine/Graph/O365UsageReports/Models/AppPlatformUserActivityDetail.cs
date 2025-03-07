@@ -5,6 +5,7 @@ namespace ActivityImporter.Engine.Graph.O365UsageReports.Models;
 
 /// <summary>
 /// https://learn.microsoft.com/en-us/graph/api/reportroot-getm365appuserdetail?view=graph-rest-beta
+/// For some reason this report has a different structure than the others.
 /// </summary>
 public class AppPlatformUserActivityDetail : AbstractUserActivityUserRecordWithUpn
 {
