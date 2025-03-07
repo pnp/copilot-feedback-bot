@@ -4,18 +4,18 @@ using Entities.DB.Entities.UsageReports;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-namespace ActivityImporter.Engine.Graph.O365UsageReports.ReportLoaders.ActivityLoaders;
+namespace ActivityImporter.Engine.Graph.O365UsageReports.ReportLoaders;
 
 public class OutlookUserActivityLoader : AbstractActivityLoader<OutlookUsageActivityLog, OutlookUserActivityUserRecord>
 {
-    public OutlookUserActivityLoader(ManualGraphCallClient client, ILogger logger)
-        : base(client, logger)
+    public OutlookUserActivityLoader(IUserActivityLoader activityLoader, IUsageReportPersistence usageReportPersistence, ILogger logger)
+        : base(activityLoader, usageReportPersistence, logger)
     {
     }
 
     public override string ReportGraphURL => "https://graph.microsoft.com/beta/reports/getEmailActivityUserDetail";
 
-    protected override void PopulateReportSpecificMetadata(OutlookUsageActivityLog todaysLog, OutlookUserActivityUserRecord userActivityReportPage)
+    public override void PopulateReportSpecificMetadata(OutlookUsageActivityLog todaysLog, OutlookUserActivityUserRecord userActivityReportPage)
     {
         todaysLog.MeetingsCreated = userActivityReportPage.MeetingCreated;
         todaysLog.ReadCount = userActivityReportPage.ReadCount;
@@ -41,6 +41,6 @@ public class OutlookUserActivityLoader : AbstractActivityLoader<OutlookUsageActi
 
         return count;
     }
-    public override DbSet<OutlookUsageActivityLog> GetTable(DataContext context) => context.OutlookUsageActivityLogs;
+    public override string DataContextPropertyName => nameof(DataContext.OutlookUsageActivityLogs);
 
 }

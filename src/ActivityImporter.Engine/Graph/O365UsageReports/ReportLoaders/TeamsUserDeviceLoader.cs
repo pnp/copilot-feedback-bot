@@ -1,10 +1,9 @@
 ﻿using ActivityImporter.Engine.Graph.O365UsageReports.Models;
 using Entities.DB;
 using Entities.DB.Entities.UsageReports;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-namespace ActivityImporter.Engine.Graph.O365UsageReports.ReportLoaders.ActivityLoaders;
+namespace ActivityImporter.Engine.Graph.O365UsageReports.ReportLoaders;
 
 
 /// <summary>
@@ -12,14 +11,16 @@ namespace ActivityImporter.Engine.Graph.O365UsageReports.ReportLoaders.ActivityL
 /// </summary>
 public class TeamsUserDeviceLoader : AbstractActivityLoader<GlobalTeamsUserDeviceUsageLog, TeamsDeviceUsageUserDetail>
 {
-    public TeamsUserDeviceLoader(ManualGraphCallClient client, ILogger telemetry)
-        : base(client, telemetry)
+    public TeamsUserDeviceLoader(IUserActivityLoader activityLoader, IUsageReportPersistence usageReportPersistence, ILogger telemetry)
+        : base(activityLoader, usageReportPersistence, telemetry)
     {
     }
 
     public override string ReportGraphURL => "https://graph.microsoft.com/beta/reports/getTeamsDeviceUsageUserDetail";
 
-    protected override void PopulateReportSpecificMetadata(GlobalTeamsUserDeviceUsageLog dateRequestedLog, TeamsDeviceUsageUserDetail reportPage)
+    public override string DataContextPropertyName => nameof(DataContext.TeamsUserDeviceUsageLog);
+
+    public override void PopulateReportSpecificMetadata(GlobalTeamsUserDeviceUsageLog dateRequestedLog, TeamsDeviceUsageUserDetail reportPage)
     {
         dateRequestedLog.UsedAndroidPhone = reportPage.UsedAndroidPhone;
         dateRequestedLog.UsedIOS = reportPage.UsediOS;
@@ -50,5 +51,4 @@ public class TeamsUserDeviceLoader : AbstractActivityLoader<GlobalTeamsUserDevic
 
         return count;
     }
-    public override DbSet<GlobalTeamsUserDeviceUsageLog> GetTable(DataContext context) => context.TeamsUserDeviceUsageLog;
 }

@@ -4,18 +4,19 @@ using Entities.DB.Entities.UsageReports;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-namespace ActivityImporter.Engine.Graph.O365UsageReports.ReportLoaders.ActivityLoaders;
+namespace ActivityImporter.Engine.Graph.O365UsageReports.ReportLoaders;
 
 /// <summary>
 /// https://docs.microsoft.com/en-us/graph/api/reportroot-getyammeractivityuserdetail?view=graph-rest-beta
 /// </summary>
 public class YammerUserUsageLoader : AbstractActivityLoader<YammerUserActivityLog, YammerUserActivityUserDetail>
 {
-    public YammerUserUsageLoader(ManualGraphCallClient client, ILogger telemetry)
-        : base(client, telemetry)
+    public YammerUserUsageLoader(IUserActivityLoader activityLoader, IUsageReportPersistence usageReportPersistence, ILogger telemetry)
+        : base(activityLoader, usageReportPersistence, telemetry)
     {
     }
-    protected override void PopulateReportSpecificMetadata(YammerUserActivityLog todaysLog, YammerUserActivityUserDetail userActivityReportPage)
+
+    public override void PopulateReportSpecificMetadata(YammerUserActivityLog todaysLog, YammerUserActivityUserDetail userActivityReportPage)
     {
         // Convert serialised object to DB object
         todaysLog.ReadCount = GetOptionalInt(userActivityReportPage.ReadCount);
@@ -39,7 +40,7 @@ public class YammerUserUsageLoader : AbstractActivityLoader<YammerUserActivityLo
     }
 
     public override string ReportGraphURL => "https://graph.microsoft.com/beta/reports/getYammerActivityUserDetail";
-    public override DbSet<YammerUserActivityLog> GetTable(DataContext context) => context.YammerUserActivityLogs;
+    public override string DataContextPropertyName => nameof(DataContext.YammerUserActivityLogs);
 
 }
 
@@ -48,11 +49,11 @@ public class YammerUserUsageLoader : AbstractActivityLoader<YammerUserActivityLo
 /// </summary>
 public class YammerDeviceUsageLoader : AbstractActivityLoader<YammerDeviceActivityLog, YammerDeviceActivityDetail>
 {
-    public YammerDeviceUsageLoader(ManualGraphCallClient client, ILogger telemetry)
-        : base(client, telemetry)
+    public YammerDeviceUsageLoader(IUserActivityLoader activityLoader, IUsageReportPersistence usageReportPersistence, ILogger telemetry)
+        : base(activityLoader, usageReportPersistence, telemetry)
     {
     }
-    protected override void PopulateReportSpecificMetadata(YammerDeviceActivityLog todaysLog, YammerDeviceActivityDetail userActivityReportPage)
+    public override void PopulateReportSpecificMetadata(YammerDeviceActivityLog todaysLog, YammerDeviceActivityDetail userActivityReportPage)
     {
         // Convert serialised object to DB object
         todaysLog.UsedWeb = userActivityReportPage.UsedWeb;
@@ -82,5 +83,5 @@ public class YammerDeviceUsageLoader : AbstractActivityLoader<YammerDeviceActivi
     }
 
     public override string ReportGraphURL => "https://graph.microsoft.com/beta/reports/getYammerDeviceUsageUserDetail";
-    public override DbSet<YammerDeviceActivityLog> GetTable(DataContext context) => context.YammerDeviceActivityLogs;
+    public override string DataContextPropertyName => nameof(DataContext.YammerDeviceActivityLogs);
 }

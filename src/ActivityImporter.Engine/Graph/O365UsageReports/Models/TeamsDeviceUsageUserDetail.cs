@@ -8,21 +8,6 @@ namespace ActivityImporter.Engine.Graph.O365UsageReports.Models;
 /// </summary>
 public class TeamsDeviceUsageUserDetail : AbstractUserActivityUserRecordWithUpn
 {
-    [JsonProperty("reportRefreshDate")]
-    public string ReportRefreshDate { get; set; }
-
-
-    [JsonProperty("isLicensed")]
-    public bool? IsLicensed { get; set; }
-
-    [JsonProperty("lastActivityDate")]
-    public string LastActivityDate { get; set; }
-
-    [JsonProperty("isDeleted")]
-    public bool? IsDeleted { get; set; }
-
-    [JsonProperty("deletedDate")]
-    public string DeletedDate { get; set; }
 
     [JsonProperty("usedWeb")]
     public bool? UsedWeb { get; set; }
@@ -48,6 +33,4 @@ public class TeamsDeviceUsageUserDetail : AbstractUserActivityUserRecordWithUpn
     [JsonProperty("usedLinux")]
     public bool? UsedLinux { get; set; }
 
-    [JsonProperty("reportPeriod")]
-    public string ReportPeriod { get; set; }
 }

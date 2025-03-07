@@ -10,13 +10,13 @@ public class UserLicenseTypeLookup : AbstractEFEntity
     [Column("user_id")]
     public int UserId { get; set; }
 
-    public User User { get; set; }
+    public User User { get; set; } = null!;
 
     [ForeignKey(nameof(License))]
     [Column("license_type_id")]
     public int LicenseTypeId { get; set; }
 
-    public LicenseType License { get; set; }
+    public LicenseType License { get; set; } = null!;
 
 }
 
@@ -24,5 +24,5 @@ public class UserLicenseTypeLookup : AbstractEFEntity
 public class LicenseType : AbstractEFEntityWithName
 {
     [Column("sku_id")]
-    public string SKUID { get; set; }
+    public string SKUID { get; set; } = null!;
 }
