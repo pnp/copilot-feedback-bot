@@ -30,7 +30,7 @@ public class FakeUserActivityLoader : IUserActivityLoader
 
 public class FakeUsageReportPersistence : IUsageReportPersistence
 {
-    public Task<DateTime?> GetLastActivityForAllUsers<TReportDbType, TAbstractActivityRecord>(AbstractActivityLoader<TReportDbType, TAbstractActivityRecord> loader)
+    public Task<DateTime?> GetOldestActivityDateForAllUsers<TReportDbType, TAbstractActivityRecord>(AbstractActivityLoader<TReportDbType, TAbstractActivityRecord> loader)
         where TReportDbType : AbstractUsageActivityLog, new()
         where TAbstractActivityRecord : AbstractActivityRecord
     {

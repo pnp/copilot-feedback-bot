@@ -27,17 +27,18 @@ public class SqlUsageReportPersistence : IUsageReportPersistence
         _logger = logger;
     }
 
-    public async Task<DateTime?> GetLastActivityForAllUsers<TReportDbType, TAbstractActivityRecord>(AbstractActivityLoader<TReportDbType, TAbstractActivityRecord> loader)
+    public async Task<DateTime?> GetOldestActivityDateForAllUsers<TReportDbType, TAbstractActivityRecord>(AbstractActivityLoader<TReportDbType, TAbstractActivityRecord> loader)
         where TReportDbType : AbstractUsageActivityLog, new()
         where TAbstractActivityRecord : AbstractActivityRecord
     {
         var table = GetReportDbTypes(loader);
-        var latest = await table.OrderByDescending(r=> r.DateOfActivity).Take(1).ToListAsync();
-        if (latest.Count() == 0)
+        var oldest = await table.OrderBy(r=> r.DateOfActivity).Take(1).ToListAsync();
+        if (oldest.Count() == 0)
         {
             return null;
         }
-        return latest.First().DateOfActivity;
+
+        return oldest.First().DateOfActivity;
     }
 
     DbSet<TReportDbType> GetReportDbTypes<TReportDbType, TAbstractActivityRecord>(AbstractActivityLoader<TReportDbType, TAbstractActivityRecord> loader)
