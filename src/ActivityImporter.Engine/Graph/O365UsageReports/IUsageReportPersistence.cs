@@ -6,7 +6,7 @@ namespace ActivityImporter.Engine.Graph.O365UsageReports;
 
 public interface IUsageReportPersistence
 {
-    Task<DateTime?> GetOldestActivityDateForAllUsers<TReportDbType, TAbstractActivityRecord>(AbstractActivityLoader<TReportDbType, TAbstractActivityRecord> loader)
+    Task<DateTime?> GetNewestActivityDateForAllUsers<TReportDbType, TAbstractActivityRecord>(AbstractActivityLoader<TReportDbType, TAbstractActivityRecord> loader)
         where TReportDbType : AbstractUsageActivityLog, new()
         where TAbstractActivityRecord : AbstractActivityRecord;
     Task SaveLoadedReports<TReportDbType, TAbstractActivityRecord>(Dictionary<DateTime, List<TAbstractActivityRecord>> reportPages, AbstractActivityLoader<TReportDbType, TAbstractActivityRecord> loader)

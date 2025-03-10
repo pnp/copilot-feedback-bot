@@ -27,17 +27,14 @@ public class SqlUsageReportPersistence : IUsageReportPersistence
         _logger = logger;
     }
 
-    public async Task<DateTime?> GetOldestActivityDateForAllUsers<TReportDbType, TAbstractActivityRecord>(AbstractActivityLoader<TReportDbType, TAbstractActivityRecord> loader)
+    public async Task<DateTime?> GetNewestActivityDateForAllUsers<TReportDbType, TAbstractActivityRecord>(AbstractActivityLoader<TReportDbType, TAbstractActivityRecord> loader)
         where TReportDbType : AbstractUsageActivityLog, new()
         where TAbstractActivityRecord : AbstractActivityRecord
     {
         var table = GetReportDbTypes(loader);
-        var oldest = await table.OrderBy(r=> r.DateOfActivity).Take(1).ToListAsync();
-        if (oldest.Count() == 0)
-        {
-            return null;
-        }
-
+        var oldest = await table.OrderByDescending(r=> r.DateOfActivity).Take(1).ToListAsync();
+        if (oldest.Count() == 0) return null;
+        
         return oldest.First().DateOfActivity;
     }
 
@@ -100,10 +97,7 @@ public class SqlUsageReportPersistence : IUsageReportPersistence
                     _userEmailToDbIdCache.AddOrUpdateForName<TReportDbType>(reportPage.LookupFieldValue, lookupId.Value);
                 }
 
-
-                var dateRequestedLog = allReportsOnDate.FirstOrDefault(t =>
-                        t.AssociatedLookupId == lookupId.Value
-                    );
+                var dateRequestedLog = allReportsOnDate.FirstOrDefault(t => t.AssociatedLookupId == lookupId.Value);
 
                 // Output progress every 1000 imports
                 if (i > 0 && i % 1000 == 0)
