@@ -15,7 +15,7 @@ public abstract class ActivityImporter<SUMMARYTYPE> : AbstractApiLoader where SU
     private int _reportSummariesProcessed = 0;
     private int _lastReportedPercentDone = 0;
 
-    public const int MAX_DAYS_TO_DOWNLOAD = 3;
+    public const int MAX_DAYS_TO_DOWNLOAD = 7;
 
     public ActivityImporter(ILogger telemetry, int maxSavesPerBatch) : base(telemetry)
     {
