@@ -1,5 +1,4 @@
 ﻿using Entities.DB;
-using Entities.DB.Entities;
 using Entities.DB.Entities.Profiling;
 using Entities.DB.Models;
 using Microsoft.EntityFrameworkCore;

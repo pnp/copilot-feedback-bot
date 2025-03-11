@@ -1,4 +1,5 @@
-﻿using Entities.DB;
+﻿using Common.Engine.UsageStats;
+using Entities.DB;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -12,7 +13,7 @@ namespace Web.Server.Controllers;
 [Authorize]
 [Route("api/[controller]")]
 [ApiController]
-public class StatsController(ILogger<SurveyQuestionsController> logger, DataContext context) : ControllerBase
+public class StatsController(ILogger<SurveyQuestionsController> logger, DataContext context, ReportManager reportManager) : ControllerBase
 {
     // GET: api/Stats/GetBasicStats
     [HttpGet(nameof(GetBasicStats))]
@@ -42,6 +43,13 @@ public class StatsController(ILogger<SurveyQuestionsController> logger, DataCont
             UsersNotResponded = usersNotResponded,
             UsersFound = usersFound
         };
+    }
+
+    // POST: api/Stats/GetUsageStatsReport
+    [HttpPost(nameof(GetUsageStatsReport))]
+    public async Task<UsageStatsReport> GetUsageStatsReport([FromBody] LoaderUsageStatsReportFilter filter)
+    {
+        return await reportManager.GetReport(filter);
     }
 }
 

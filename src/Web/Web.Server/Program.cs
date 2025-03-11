@@ -1,6 +1,7 @@
 using Common.Engine;
 using Common.Engine.Notifications;
 using Common.Engine.Surveys;
+using Common.Engine.UsageStats;
 using Entities.DB;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Bot.Builder;
@@ -48,6 +49,14 @@ public class Program
                 o.Instance = "https://login.microsoftonline.com/";
             });
 
+        // UsageStatsReport
+        builder.Services.AddDbContext<DataContext>(options =>
+            options.UseSqlServer(config.ConnectionStrings.SQL));
+        builder.Services.AddDbContext<ProfilingContext>(options =>
+            options.UseSqlServer(config.ConnectionStrings.SQL));
+        builder.Services.AddScoped<ReportManager>();
+        builder.Services.AddScoped<IUsageDataLoader, SqlUsageDataLoader>();
+
         // Bot services --->
         // Create the Bot Framework Adapter with error handling enabled.
 
@@ -86,8 +95,8 @@ public class Program
 
         // Ensure DB
         var optionsBuilder = new DbContextOptionsBuilder<DataContext>();
-
         optionsBuilder.UseSqlServer(config.ConnectionStrings.SQL);
+
         using (var db = new DataContext(optionsBuilder.Options))
         {
             var logger = LoggerFactory.Create(c =>
