@@ -1,5 +1,4 @@
 ﻿using Entities.DB.Models;
-using System.Linq;
 
 namespace Common.Engine.UsageStats;
 

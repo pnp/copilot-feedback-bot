@@ -1,8 +1,11 @@
 ﻿using ActivityImporter.Engine.Graph.O365UsageReports;
 using ActivityImporter.Engine.Graph.O365UsageReports.ReportLoaders;
 using Common.Engine.UsageStats;
+using Entities.DB;
 using Entities.DB.Entities;
+using Entities.DB.Entities.Profiling;
 using Entities.DB.Models;
+using Microsoft.EntityFrameworkCore;
 using UnitTests.FakeLoaderClasses;
 
 namespace UnitTests;
@@ -32,6 +35,55 @@ public class UsageTests : AbstractTest
         Department = "Engineering",
         JobTitle = "Developer",
     };
+
+    [TestMethod]
+    public async Task ReportManagerTests()
+    {
+        var filter = new LoaderUsageStatsReportFilter
+        {
+            From = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-7)),
+            To = DateOnly.FromDateTime(DateTime.UtcNow)
+        };
+
+
+        var optionsBuilder = new DbContextOptionsBuilder<ProfilingContext>();
+        optionsBuilder.UseSqlServer(_config.ConnectionStrings.SQL);
+
+        var db = new ProfilingContext(optionsBuilder.Options);
+
+        var testUSName = "US-" + DateTime.Now.Ticks;
+        db.ActivitiesWeekly.RemoveRange(db.ActivitiesWeekly);
+        db.ActivitiesWeekly.Add(new ActivitiesWeekly
+        {
+            Metric = "Teams Meetings Attended",
+            MetricDate = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-2)),
+            Sum = 1,
+            User = new User 
+            { 
+                UserPrincipalName = "user1-" + DateTime.Now.Ticks,
+                UserCountry = new CountryOrRegion { Name = testUSName }
+            }
+        });
+        db.ActivitiesWeekly.Add(new ActivitiesWeekly
+        {
+            Metric = "Teams Meetings Attended",
+            MetricDate = DateOnly.FromDateTime(DateTime.UtcNow),
+            Sum = 1,
+            User = new User { UserPrincipalName = "user2-" + DateTime.Now.Ticks }
+        });
+        await db.SaveChangesAsync();
+
+        var reportManager = new ReportManager(new SqlUsageDataLoader(db), GetLogger<ReportManager>());
+        var report = await reportManager.GetReport(filter);
+        Assert.IsNotNull(report);
+
+        Assert.AreEqual(2, report.Users.Count);
+
+        filter.From = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-1));
+        var reportWithNewDateFilter = await reportManager.GetReport(filter);
+        Assert.IsNotNull(reportWithNewDateFilter);
+        Assert.AreEqual(1, reportWithNewDateFilter.Users.Count);
+    }
 
     [TestMethod]
     public void UsageStatsReportTests()

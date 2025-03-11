@@ -32,12 +32,6 @@ public abstract class AbstractTest
         _db = new DataContext(optionsBuilder.Options);
     }
 
-    [TestInitialize]
-    public void TestInitialize()
-    {
-        _db.Database.EnsureDeleted();
-        _db.Database.EnsureCreated();
-    }
 
     protected ILogger<T> GetLogger<T>()
     {

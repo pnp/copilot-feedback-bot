@@ -1,8 +1,9 @@
 ﻿using Entities.DB.Models;
+using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Entities.DB.Entities.Profiling;
-
 
 
 /// <summary>
@@ -10,30 +11,19 @@ namespace Entities.DB.Entities.Profiling;
 /// </summary>
 public class ActivitiesWeekly : IActivitiesWeeklyRecord
 {
+    [Key]
     public string Metric { get; set; } = string.Empty;
     public int Sum { get; set; } = 0;
 
+    [Key]
     public DateOnly MetricDate { get; set; }
 
     public User User { get; set; } = null!;
 
     [ForeignKey(nameof(User))]
     [Column("user_id")]
+    [Key]
     public int UserID { get; set; }
 
     ITrackedUser IActivitiesWeeklyRecord.User { get => User; }
-}
-
-/// <summary>
-/// ActivitiesWeekly, but each activity is a column
-/// </summary>
-public class ActivitiesWeeklyColumns
-{
-}
-
-/// <summary>
-/// Per user, per week, each app they used
-/// </summary>
-public class UsageWeekly
-{
 }
