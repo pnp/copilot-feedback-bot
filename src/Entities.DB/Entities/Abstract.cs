@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Entities.DB.Models;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Entities.DB.Entities;
@@ -26,7 +27,7 @@ public abstract class AbstractEFEntity
 /// <summary>
 /// Base implementation for all EF classes with name field
 /// </summary>
-public abstract class AbstractEFEntityWithName : AbstractEFEntity
+public abstract class AbstractEFEntityWithName : AbstractEFEntity, ILookupEntity
 {
     [Column("name")]
     [MaxLength(100)]

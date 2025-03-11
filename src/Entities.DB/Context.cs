@@ -1,9 +1,12 @@
 ﻿using Entities.DB.Entities;
 using Entities.DB.Entities.AuditLog;
+using Entities.DB.Entities.Profiling;
 using Entities.DB.Entities.SP;
 using Entities.DB.Entities.UsageReports;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Xml;
 
 namespace Entities.DB;
 
@@ -159,7 +162,7 @@ public class DataContext : DbContext
 }
 
 
-public class ServiceSqlDbContextFactory : IDesignTimeDbContextFactory<DataContext>
+public class DataContextFactory : IDesignTimeDbContextFactory<DataContext>
 {
     public DataContext CreateDbContext(string[] args)
     {
@@ -167,5 +170,18 @@ public class ServiceSqlDbContextFactory : IDesignTimeDbContextFactory<DataContex
         optionsBuilder.UseSqlServer("Server=(localdb)\\mssqllocaldb;Database=CopilotFeedbackDev;Trusted_Connection=True;MultipleActiveResultSets=true");
 
         return new DataContext(optionsBuilder.Options);
+    }
+}
+
+public class ProfilingContext : DbContext
+{
+    public DbSet<User> Users { get; set; }
+    public DbSet<ActivitiesWeekly> ActivitiesWeekly { get; set; }
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<User>()
+            .ToTable("users", "dbo");
+
+        modelBuilder.HasDefaultSchema("profiling");
     }
 }
