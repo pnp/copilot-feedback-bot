@@ -2,9 +2,9 @@ import { Bar } from 'react-chartjs-2';
 
 import React from 'react';
 import { ChartData } from 'chart.js';
-import { EntityWithScore } from '../../apimodels/Models';
+import { EntityWithScore, ITrackedUser } from '../../apimodels/Models';
 
-export const LookupLeagueChart: React.FC<{ propName: string, data: EntityWithScore<string>[] }> = (props) => {
+export const UsersLeagueChart: React.FC<{ data: EntityWithScore<ITrackedUser>[] }> = (props) => {
 
   const [chartData, setChartData] = React.useState<ChartData<"bar", number[], string>>({ datasets: [], labels: [] });
 
@@ -13,18 +13,18 @@ export const LookupLeagueChart: React.FC<{ propName: string, data: EntityWithSco
     const d: ChartData<"bar", number[], string> =
     {
       datasets: [],
-      labels: props.data.map(d => d.entity),
+      labels: props.data.map(d => d.entity.userPrincipalName),
     };
 
     d.datasets.push({
-      label: props.propName,
+      label: "Users League",
       type: 'bar' as const,
       data: props.data.map(s => s.score),
       borderColor: "#002050",
       backgroundColor: "#002050",
     });
     setChartData(d);
-  }, [props.data, props.propName]);
+  }, [props.data]);
 
   const chartOptions = {
     responsive: true,
@@ -46,7 +46,6 @@ export const LookupLeagueChart: React.FC<{ propName: string, data: EntityWithSco
       {chartData &&
         <>
           <Bar options={chartOptions} data={chartData} width={"700px"} height={"500px"} />
-
         </>
       }
 
