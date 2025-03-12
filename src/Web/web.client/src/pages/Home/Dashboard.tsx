@@ -69,7 +69,7 @@ export const Dashboard: React.FC<{ loader?: BaseAxiosApiLoader }> = (props) => {
     <div>
       <section className="page--header">
         <div className="page-title">
-          <h1>Copilot Feedback Bot - Admin Home</h1>
+          <h1>Copilot Feedback Bot</h1>
 
           <p>Welcome to the copilot feedback bot control panel app.</p>
 
@@ -135,8 +135,6 @@ export const Dashboard: React.FC<{ loader?: BaseAxiosApiLoader }> = (props) => {
               }
             </>
           }
-
-
 
         </div >
       </section >

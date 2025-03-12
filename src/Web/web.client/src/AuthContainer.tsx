@@ -10,6 +10,7 @@ import { useTeamsUserCredential } from '@microsoft/teamsfx-react';
 import { BaseAxiosApiLoader, MsalAxiosApiLoader, TeamsSsoAxiosApiLoader } from './api/AxiosApiLoader';
 import { getBasicStats } from './api/ApiCalls';
 import { getRootUrl } from './utils/DataUtils';
+import { Spinner, teamsDarkTheme, teamsHighContrastTheme, teamsLightTheme, Theme } from '@fluentui/react-components';
 
 export const AuthContainer: React.FC<PropsWithChildren<AuthContainerProps>> = (props) => {
 
@@ -26,6 +27,20 @@ export const AuthContainer: React.FC<PropsWithChildren<AuthContainerProps>> = (p
         clientId: msalConfig.auth.clientId,
     });
 
+    React.useEffect(() => {
+        const style: Theme = themeString === "dark"
+            ? teamsDarkTheme
+            : themeString === "contrast"
+                ? teamsHighContrastTheme
+                : {
+                    ...teamsLightTheme,
+                    colorNeutralBackground3: "#eeeeee",
+                };
+        console.debug("Theme change:")
+        console.debug(style);
+        props.teamsThemeChange(style);
+    }, [themeString]);
+
     // Figure out if we can use Teams SSO or MSAL
     const initAuth = React.useCallback(() => {
 
@@ -37,7 +52,7 @@ export const AuthContainer: React.FC<PropsWithChildren<AuthContainerProps>> = (p
                     console.log("initAuth: Teams SSO test succesfull. User info: ", info);
 
                     const loader = new TeamsSsoAxiosApiLoader(teamsUserCredential, getRootUrl(window.location.href));
-                    setApiLoader(loader);      
+                    setApiLoader(loader);
                     setLoginMethod(LoginMethod.TeamsSSO);
 
                     props.loginMethodChange(LoginMethod.TeamsSSO);
@@ -122,11 +137,15 @@ export const AuthContainer: React.FC<PropsWithChildren<AuthContainerProps>> = (p
 
     return (
         <>
-            {error ? 
-                <div>API test error: {error}. Please check authentication configuration, server-side and JavaScript. Refresh page to retry.</div> 
-            : null}
+            {error ?
+                <div>API test error: {error}. Please check authentication configuration, server-side and JavaScript. Refresh page to retry.</div>
+                : null}
 
-            {loading ? <div>Checking back-end API connectivity...</div> :
+            {loading ?
+                <div>
+                    <Spinner style={{ margin: 100 }} />
+                    Checking back-end API connectivity...
+                </div> :
                 <>
 
                     {loginMethod === undefined ?
@@ -172,4 +191,5 @@ export const AuthContainer: React.FC<PropsWithChildren<AuthContainerProps>> = (p
 export interface AuthContainerProps {
     onApiLoaderReady: Function;
     loginMethodChange: Function;
+    teamsThemeChange: Function;
 }

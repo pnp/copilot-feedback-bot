@@ -2,7 +2,7 @@
 import React from 'react';
 import 'chartjs-adapter-date-fns'
 import { Button, Input, Spinner } from '@fluentui/react-components';
-import { triggerGenerateFakeActivityForUser, triggerInstallBotForUser, triggerSendSurveys } from '../../api/ApiCalls';
+import { triggerGenerateFakeActivityForUser, triggerInstallBotForUser, triggerSendSurveys } from '../../../api/ApiCalls';
 
 import {
   Play24Regular
@@ -16,7 +16,7 @@ import {
   TableHeaderCell,
   TableCellLayout
 } from "@fluentui/react-components";
-import { BaseAxiosApiLoader } from '../../api/AxiosApiLoader';
+import { BaseAxiosApiLoader } from '../../../api/AxiosApiLoader';
 
 export const TriggersPage: React.FC<{ loader?: BaseAxiosApiLoader }> = (props) => {
 

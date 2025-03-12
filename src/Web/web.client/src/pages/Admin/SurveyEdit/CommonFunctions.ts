@@ -1,5 +1,5 @@
-import { LogicalOperator, QuestionDatatype } from "../../apimodels/Enums";
-import { SurveyQuestionDTO } from "../../apimodels/Models";
+import { LogicalOperator, QuestionDatatype } from "../../../apimodels/Enums";
+import { SurveyQuestionDTO } from "../../../apimodels/Models";
 
 // Common logic for assuming optional values
 // That way we can do object comparisons without having to worry about undefined values

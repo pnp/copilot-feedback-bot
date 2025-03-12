@@ -1,5 +1,5 @@
 import React from "react";
-import { SurveyPageDTO } from "../../apimodels/Models";
+import { SurveyPageDTO } from "../../../apimodels/Models";
 import { Checkbox, Field, Input, Textarea } from "@fluentui/react-components";
 import { EditSurveyPageProps } from "./PropModels";
 

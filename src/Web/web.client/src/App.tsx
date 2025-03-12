@@ -4,10 +4,11 @@ import { AppRoutes, LoginMethod } from './AppRoutes';
 import React, { useState } from 'react';
 
 import { BaseAxiosApiLoader } from './api/AxiosApiLoader';
+import { teamsLightTheme, Theme } from '@fluentui/react-components';
 
 export const App: React.FC <{}> = () => {
 
-
+    const [theme, setTheme] = useState<Theme>(teamsLightTheme);
     const [apiLoader, setApiLoader] = useState<BaseAxiosApiLoader | undefined>();
     const [loginMethod, setLoginMethod] = useState<LoginMethod | undefined>();
 
@@ -25,8 +26,8 @@ export const App: React.FC <{}> = () => {
 
     return (
         <>
-            <AuthContainer onApiLoaderReady={(l: BaseAxiosApiLoader) => setApiLoader(l)} loginMethodChange={loginMethodChange}>
-                <AppRoutes apiLoader={apiLoader} onAuthReload={forceRerender} loginMethod={loginMethod} />
+            <AuthContainer teamsThemeChange={(style : Theme) => setTheme(style)} onApiLoaderReady={(l: BaseAxiosApiLoader) => setApiLoader(l)} loginMethodChange={loginMethodChange}>
+                <AppRoutes theme={theme} apiLoader={apiLoader} onAuthReload={forceRerender} loginMethod={loginMethod} />
             </AuthContainer>
         </>
     );
