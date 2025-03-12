@@ -30,6 +30,9 @@ public class SqlUsageDataLoader(ProfilingContext context) : IUsageDataLoader
                 .ThenInclude(x => x.Department)
             .Include(x => x.User)
                 .ThenInclude(x => x.UserCountry)
+            .Include(x=> x.User)
+                .ThenInclude(x => x.LicenseLookups)
+                    .ThenInclude(x => x.License)
             .ByFilter(filter)
             .ToListAsync();
         return data.Cast<IActivitiesWeeklyRecord>();
@@ -38,8 +41,8 @@ public class SqlUsageDataLoader(ProfilingContext context) : IUsageDataLoader
 
 public class LoaderUsageStatsReportFilter : UsageStatsReportFilter
 {
-    public DateOnly From { get; set; }
-    public DateOnly To { get; set; }
+    public DateTime From { get; set; }
+    public DateTime To { get; set; }
 }
 
 
@@ -47,8 +50,10 @@ public static class SqlUsageDataLoaderFunc
 {
     public static IQueryable<ActivitiesWeekly> ByFilter(this IQueryable<ActivitiesWeekly> source, LoaderUsageStatsReportFilter filter)
     {
+        var dateFrom = DateOnly.FromDateTime(filter.From);
+        var dateTo = DateOnly.FromDateTime(filter.To);
         return source
-            .Where(d=> d.MetricDate >= filter.From && d.MetricDate <= filter.To)
+            .Where(d => d.MetricDate >= dateFrom && d.MetricDate <= dateTo)
             .ByDepartments(filter.InDepartments)
             .ByCountries(filter.InCountries);
     }

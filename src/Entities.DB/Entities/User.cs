@@ -88,7 +88,7 @@ public class User : AbstractEFEntity, ITrackedUser
 
     public UserJobTitle? JobTitle { get; set; } = null!;
 
-    public List<string> Licenses => throw new NotImplementedException();
+    public List<string> Licenses => LicenseLookups.Select(l=> l.License.Name).ToList();
 
     ITrackedUser? ITrackedUser.Manager => Manager;
 

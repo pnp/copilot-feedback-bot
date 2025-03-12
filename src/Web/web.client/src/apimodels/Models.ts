@@ -32,15 +32,16 @@ export interface BasicStats {
   usersNotResponded: number;
   usersFound: number;
 }
-
 export interface UsageStatsReport {
   uniqueActivities: string[];
   dates: Date[];
-  users: IUserWithScore[];
+  usersLeague: EntityWithScore<ITrackedUser>[];
+  departmentsLeague: EntityWithScore<string>[];
+  countriesLeague: EntityWithScore<string>[];
 }
 
-export interface IUserWithScore {
-  user: ITrackedUser;
+export interface EntityWithScore<T> {
+  entity: T;
   score: number;
 }
 

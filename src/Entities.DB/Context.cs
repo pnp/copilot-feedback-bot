@@ -197,6 +197,10 @@ public class ProfilingContext : CommonContext
         modelBuilder.Entity<StateOrProvince>().ToTable("state_or_provinces", "dbo");
         modelBuilder.Entity<CountryOrRegion>().ToTable("user_country_or_region", "dbo");
         modelBuilder.Entity<CompanyName>().ToTable("company_names", "dbo");
+        modelBuilder.Entity<UserOfficeLocation>().ToTable("user_office_locations", "dbo");
+        modelBuilder.Entity<UserJobTitle>().ToTable("user_job_titles", "dbo");
+        modelBuilder.Entity<UserLicenseTypeLookup>().ToTable("user_license_type_lookups", "dbo");
+        modelBuilder.Entity<LicenseType>().ToTable("license_types", "dbo");
 
         modelBuilder.HasDefaultSchema("profiling");
     }

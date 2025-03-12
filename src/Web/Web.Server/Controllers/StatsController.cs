@@ -47,7 +47,7 @@ public class StatsController(ILogger<SurveyQuestionsController> logger, DataCont
 
     // POST: api/Stats/GetUsageStatsReport
     [HttpPost(nameof(GetUsageStatsReport))]
-    public async Task<UsageStatsReport> GetUsageStatsReport([FromBody] LoaderUsageStatsReportFilter filter)
+    public async Task<UsageStatsReport> GetUsageStatsReport(LoaderUsageStatsReportFilter filter)
     {
         return await reportManager.GetReport(filter);
     }

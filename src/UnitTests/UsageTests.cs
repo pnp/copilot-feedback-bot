@@ -41,8 +41,8 @@ public class UsageTests : AbstractTest
     {
         var filter = new LoaderUsageStatsReportFilter
         {
-            From = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-7)),
-            To = DateOnly.FromDateTime(DateTime.UtcNow)
+            From = DateTime.UtcNow.AddDays(-7),
+            To = DateTime.UtcNow
         };
 
 
@@ -79,7 +79,7 @@ public class UsageTests : AbstractTest
 
         Assert.AreEqual(2, report.UsersLeague.Count);
 
-        filter.From = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-1));
+        filter.From = DateTime.UtcNow.AddDays(-1);
         var reportWithNewDateFilter = await reportManager.GetReport(filter);
         Assert.IsNotNull(reportWithNewDateFilter);
         Assert.AreEqual(1, reportWithNewDateFilter.UsersLeague.Count);
@@ -206,6 +206,9 @@ public class UsageTests : AbstractTest
     {
         var activityLoader = new FakeUserActivityLoader();
         var loader = new TeamsUserDeviceLoader(activityLoader, new SqlUsageReportPersistence(_db, _logger), _logger);
+        _db.TeamsUserDeviceUsageLog.RemoveRange(_db.TeamsUserDeviceUsageLog);
+        await _db.SaveChangesAsync();
+
         var p = await loader.LoadAndSaveUsagePages();
         Assert.AreEqual(TeamsUserDeviceLoader.MAX_DAYS_BACK - 1, p.Count);
     }
