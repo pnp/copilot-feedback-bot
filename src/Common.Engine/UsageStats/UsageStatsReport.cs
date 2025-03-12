@@ -9,7 +9,6 @@ public class UsageStatsReport
     }
     public UsageStatsReport(IEnumerable<IActivitiesWeeklyRecord> fromData, UsageStatsReportFilter filter)
     {
-
         var filteredUsers = fromData
             .Select(x => x.User)
             .Distinct()
@@ -20,12 +19,10 @@ public class UsageStatsReport
             .Where(x => filteredUsers.Contains(x.User))
             .ToList();
 
-
         this.UniqueActivities = filteredData
             .Select(x => x.Metric)
             .Distinct()
             .ToList();
-
 
         this.Dates = filteredData
             .Select(x => x.MetricDate)
@@ -37,24 +34,30 @@ public class UsageStatsReport
             var score = filteredData
                 .Where(x => x.User == user)
                 .Sum(x => x.Sum);
-            this.Users.Add(new UserWithScore(user, score));
+            this.UsersLeague.Add(new EntityWithScore<ITrackedUser>(user, score));
         }
+
+        this.CountriesLeague = UsersLeague.BuildLeagueForLookup(x => x.UserCountry);
+        this.DepartmentsLeague = UsersLeague.BuildLeagueForLookup(x => x.Department);
+
     }
 
     public List<string> UniqueActivities { get; set; } = new();
 
     public List<DateOnly> Dates { get; set; } = new();
 
-    public List<UserWithScore> Users { get; set; } = new();
+    public List<EntityWithScore<ITrackedUser>> UsersLeague { get; set; } = new();
+    public List<EntityWithScore<string>> DepartmentsLeague { get; set; } = new();
+    public List<EntityWithScore<string>> CountriesLeague { get; set; } = new();
 }
 
-public class UserWithScore
+public class EntityWithScore<T>
 {
-    public UserWithScore(ITrackedUser user, int score)
+    public EntityWithScore(T entity, int score)
     {
-        User = user;
+        Entity = entity;
         Score = score;
     }
-    public ITrackedUser User { get; set; }
+    public T Entity { get; set; }
     public int Score { get; set; }
 }

@@ -33,6 +33,39 @@ export interface BasicStats {
   usersFound: number;
 }
 
+export interface UsageStatsReport {
+  uniqueActivities: string[];
+  dates: Date[];
+  users: IUserWithScore[];
+}
+
+export interface IUserWithScore {
+  user: ITrackedUser;
+  score: number;
+}
+
+export interface ITrackedUser {
+  companyName?: string;
+  department?: string;
+  jobTitle?: string;
+  officeLocation?: string;
+  stateOrProvince?: string;
+  usageLocation?: string;
+  userCountry?: string;
+  licenses: string[];
+  manager?: ITrackedUser;
+  userPrincipalName: string;
+}
+
+export interface ILoaderUsageStatsReportFilter extends IUsageStatsReportFilter {
+  from: Date; // Equivalent of DateOnly in C#
+  to: Date;   // Equivalent of DateOnly in C#
+}
+
+export interface IUsageStatsReportFilter {
+  inDepartments: string[];
+  inCountries: string[];
+}
 
 export interface ServiceConfiguration {
   storageInfo: StorageInfo;

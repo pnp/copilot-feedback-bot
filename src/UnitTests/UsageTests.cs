@@ -58,8 +58,8 @@ public class UsageTests : AbstractTest
             Metric = "Teams Meetings Attended",
             MetricDate = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-2)),
             Sum = 1,
-            User = new User 
-            { 
+            User = new User
+            {
                 UserPrincipalName = "user1-" + DateTime.Now.Ticks,
                 UserCountry = new CountryOrRegion { Name = testUSName }
             }
@@ -77,12 +77,12 @@ public class UsageTests : AbstractTest
         var report = await reportManager.GetReport(filter);
         Assert.IsNotNull(report);
 
-        Assert.AreEqual(2, report.Users.Count);
+        Assert.AreEqual(2, report.UsersLeague.Count);
 
         filter.From = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-1));
         var reportWithNewDateFilter = await reportManager.GetReport(filter);
         Assert.IsNotNull(reportWithNewDateFilter);
-        Assert.AreEqual(1, reportWithNewDateFilter.Users.Count);
+        Assert.AreEqual(1, reportWithNewDateFilter.UsersLeague.Count);
     }
 
     [TestMethod]
@@ -104,28 +104,55 @@ public class UsageTests : AbstractTest
                 Sum = 2,
                 User = user2
             },
+            new TestActivitiesWeeklyRecord
+            {
+                Metric = "Random Office activity",
+                MetricDate = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-2)),
+                Sum = 1,
+                User = new TestUser
+                {
+                    UserPrincipalName = "randomExtraItUser",        // IT department
+                    CompanyName = "Contoso",
+                    StateOrProvince = "WA",
+                    UserCountry = "US",
+                    OfficeLocation = "Seattle",
+                    UsageLocation = "US",
+                    Department = "IT",
+                    JobTitle = "Developer"
+                }
+            },
         };
 
         var reportAllData = new UsageStatsReport(testData.Cast<IActivitiesWeeklyRecord>());
 
-        Assert.AreEqual(2, reportAllData.Users.Count);
-        Assert.AreEqual(2, reportAllData.UniqueActivities.Count);
-        Assert.AreEqual(2, reportAllData.Dates.Count);
+        Assert.AreEqual(3, reportAllData.UsersLeague.Count);
+        Assert.AreEqual(3, reportAllData.UniqueActivities.Count);
+        Assert.AreEqual(3, reportAllData.Dates.Count);
         Assert.AreEqual("Teams Meetings Attended", reportAllData.UniqueActivities[0]);
         Assert.AreEqual("Teams Team Chats", reportAllData.UniqueActivities[1]);
         Assert.AreEqual(DateOnly.FromDateTime(DateTime.UtcNow), reportAllData.Dates[0]);
         Assert.AreEqual(DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-1)), reportAllData.Dates[1]);
-        Assert.AreEqual(1, reportAllData.Users[0].Score);
-        Assert.AreEqual(2, reportAllData.Users[1].Score);
+        Assert.AreEqual(1, reportAllData.UsersLeague[0].Score);
+        Assert.AreEqual(2, reportAllData.UsersLeague[1].Score);
+        Assert.AreEqual(1, reportAllData.UsersLeague[2].Score);
 
-        var reportFilteredData = new UsageStatsReport(testData.Cast<IActivitiesWeeklyRecord>(), new UsageStatsReportFilter { InDepartments = new List<string> { "IT" } });
-        Assert.AreEqual(1, reportFilteredData.Users.Count);
-        Assert.AreEqual(1, reportFilteredData.UniqueActivities.Count);
-        Assert.AreEqual(1, reportFilteredData.Dates.Count);
-        Assert.AreEqual("Teams Meetings Attended", reportFilteredData.UniqueActivities[0]);
-        Assert.AreEqual(DateOnly.FromDateTime(DateTime.UtcNow), reportFilteredData.Dates[0]);
-        Assert.AreEqual(1, reportFilteredData.Users[0].Score);
-        Assert.AreEqual(user1.UserPrincipalName, reportFilteredData.Users[0].User.UserPrincipalName);
+        // Check department league
+        Assert.AreEqual(2, reportAllData.DepartmentsLeague.Count);
+        Assert.AreEqual("IT", reportAllData.DepartmentsLeague[0].Entity);
+        Assert.AreEqual(2, reportAllData.DepartmentsLeague[0].Score);
+        Assert.AreEqual("Engineering", reportAllData.DepartmentsLeague[1].Entity);
+        Assert.AreEqual(2, reportAllData.DepartmentsLeague[1].Score);
+        Assert.AreEqual(user1.UserPrincipalName, reportAllData.UsersLeague[0].Entity.UserPrincipalName);
+        Assert.AreEqual(user2.UserPrincipalName, reportAllData.UsersLeague[1].Entity.UserPrincipalName);
+
+        var reportDepartmentFilteredData = new UsageStatsReport(testData.Cast<IActivitiesWeeklyRecord>(), new UsageStatsReportFilter { InDepartments = new List<string> { "IT" } });
+        Assert.AreEqual(2, reportDepartmentFilteredData.UsersLeague.Count);
+        Assert.AreEqual(2, reportDepartmentFilteredData.UniqueActivities.Count);
+        Assert.AreEqual(2, reportDepartmentFilteredData.Dates.Count);
+        Assert.AreEqual("Teams Meetings Attended", reportDepartmentFilteredData.UniqueActivities[0]);
+        Assert.AreEqual(DateOnly.FromDateTime(DateTime.UtcNow), reportDepartmentFilteredData.Dates[0]);
+        Assert.AreEqual(1, reportDepartmentFilteredData.UsersLeague[0].Score);
+        Assert.AreEqual(user1.UserPrincipalName, reportDepartmentFilteredData.UsersLeague[0].Entity.UserPrincipalName);
     }
 
     [TestMethod]
@@ -138,6 +165,40 @@ public class UsageTests : AbstractTest
 
         var resultsNoFilter = users.ByFilter(new UsageStatsReportFilter { InDepartments = new List<string>() });
         Assert.AreEqual(2, resultsNoFilter.Count());
+    }
+
+
+    [TestMethod]
+    public void BuildLeagueForLookupTests()
+    {
+        var testData = new List<EntityWithScore<ITrackedUser>>
+        {
+            new EntityWithScore<ITrackedUser>(user1, 1),
+            new EntityWithScore<ITrackedUser>(user2, 2),
+            new EntityWithScore<ITrackedUser>(new TestUser
+            {
+                UserPrincipalName = "randomExtraItUser",
+                CompanyName = "Contoso",
+                StateOrProvince = "WA",
+                UserCountry = "US",
+                OfficeLocation = "Seattle",
+                UsageLocation = "US",
+                Department = "IT",
+                JobTitle = "Developer"
+            }, 3)
+        };
+
+        var leagueOfCountries = testData.BuildLeagueForLookup(x => x.UserCountry);
+        Assert.AreEqual(1, leagueOfCountries.Count);
+        Assert.AreEqual("US", leagueOfCountries[0].Entity);
+        Assert.AreEqual(6, leagueOfCountries[0].Score);
+
+        var leagueOfDepartments = testData.BuildLeagueForLookup(x => x.Department);
+        Assert.AreEqual(2, leagueOfDepartments.Count);
+        Assert.AreEqual("IT", leagueOfDepartments[0].Entity);
+        Assert.AreEqual(4, leagueOfDepartments[0].Score);
+        Assert.AreEqual("Engineering", leagueOfDepartments[1].Entity);
+        Assert.AreEqual(2, leagueOfDepartments[1].Score);
     }
 
     [TestMethod]
