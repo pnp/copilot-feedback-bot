@@ -37,7 +37,7 @@ public class UsageTests : AbstractTest
     };
 
     [TestMethod]
-    public async Task ReportManagerTests()
+    public async Task ReportManagerSqlTests()
     {
         var filter = new LoaderUsageStatsReportFilter
         {
@@ -51,6 +51,7 @@ public class UsageTests : AbstractTest
 
         var db = new ProfilingContext(optionsBuilder.Options);
 
+        // Manually add processed profiling data
         var testUSName = "US-" + DateTime.Now.Ticks;
         db.ActivitiesWeekly.RemoveRange(db.ActivitiesWeekly);
         db.ActivitiesWeekly.Add(new ActivitiesWeekly
@@ -73,7 +74,11 @@ public class UsageTests : AbstractTest
         });
         await db.SaveChangesAsync();
 
-        var reportManager = new ReportManager(new SqlUsageDataLoader(db), GetLogger<ReportManager>());
+
+        var dataLoader = new SqlUsageDataLoader(db, _logger);
+        await dataLoader.RefreshProfilingStats();
+
+        var reportManager = new ReportManager(dataLoader, GetLogger<ReportManager>());
         var report = await reportManager.GetReport(filter);
         Assert.IsNotNull(report);
 
@@ -83,6 +88,64 @@ public class UsageTests : AbstractTest
         var reportWithNewDateFilter = await reportManager.GetReport(filter);
         Assert.IsNotNull(reportWithNewDateFilter);
         Assert.AreEqual(1, reportWithNewDateFilter.UsersLeague.Count);
+    }
+
+
+    [TestMethod]
+    public async Task ReportManagerRefreshSqlTests()
+    {
+        var filter = new LoaderUsageStatsReportFilter
+        {
+            From = DateTime.UtcNow.AddDays(-7),
+            To = DateTime.UtcNow
+        };
+
+        var optionsBuilder = new DbContextOptionsBuilder<DataContext>();
+        optionsBuilder.UseSqlServer(_config.ConnectionStrings.SQL);
+        var db = new DataContext(optionsBuilder.Options);
+
+        var optionsBuilderProfiling = new DbContextOptionsBuilder<ProfilingContext>();
+        optionsBuilderProfiling.UseSqlServer(_config.ConnectionStrings.SQL);
+        var dbProfiling = new ProfilingContext(optionsBuilderProfiling.Options);
+
+        // Clear down the data
+        db.TeamUserActivityLogs.RemoveRange(db.TeamUserActivityLogs);
+        dbProfiling.ActivitiesWeekly.RemoveRange(dbProfiling.ActivitiesWeekly);
+        await db.SaveChangesAsync();
+        await dbProfiling.SaveChangesAsync();
+
+        var dataLoader = new SqlUsageDataLoader(dbProfiling, _logger);
+
+        var reportManager = new ReportManager(dataLoader, GetLogger<ReportManager>());
+
+        // Check empty
+        var emptyReport = await reportManager.GetReport(filter);
+        Assert.IsNotNull(emptyReport);
+        Assert.AreEqual(0, emptyReport.UsersLeague.Count);
+
+        // Add new usage data and refresh
+        db.TeamUserActivityLogs.Add(new Entities.DB.Entities.UsageReports.GlobalTeamsUserUsageLog
+        {
+            DateOfActivity = DateTime.UtcNow.AddDays(-17),
+            AdHocMeetingsAttendedCount = 1,
+            User = new User { UserPrincipalName = "user" + DateTime.Now.Ticks },
+        });
+        db.AppPlatformUserUsageLog.Add(new Entities.DB.Entities.UsageReports.AppPlatformUserActivityLog
+        {
+            DateOfActivity = DateTime.UtcNow.AddDays(-17),
+            User = new User { UserPrincipalName = "user" + DateTime.Now.Ticks },
+            Excel = true,
+        });
+        await db.SaveChangesAsync();
+
+        await dataLoader.RefreshProfilingStats();
+
+        // Check the data again. After refresh we should have 2 records
+        var report = await reportManager.GetReport(filter);
+        Assert.IsNotNull(report);
+
+        Assert.AreEqual(2, report.UsersLeague.Count);
+
     }
 
     [TestMethod]

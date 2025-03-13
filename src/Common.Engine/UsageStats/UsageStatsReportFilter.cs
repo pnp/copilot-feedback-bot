@@ -15,6 +15,7 @@ public static class Functions
     public static IEnumerable<ITrackedUser> ByFilter(this IEnumerable<ITrackedUser> source, UsageStatsReportFilter filter)
     {
         return source
+            .Where(user => user != null)
             .ByDepartments(filter.InDepartments)
             .ByCountries(filter.InCountries);
     }

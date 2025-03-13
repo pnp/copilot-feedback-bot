@@ -11,19 +11,20 @@ public class ReportManager(IUsageDataLoader loader, ILogger<ReportManager> logge
     public async Task<UsageStatsReport> GetReport(LoaderUsageStatsReportFilter filter)
     {
         logger.LogInformation("Loading usage stats report with filter: {@filter}", filter);
-        var data = await loader.Load(filter);
+        var data = await loader.LoadRecords(filter);
         return new UsageStatsReport(data, filter);
     }
 }
 
 public interface IUsageDataLoader
 {
-    Task<IEnumerable<IActivitiesWeeklyRecord>> Load(LoaderUsageStatsReportFilter filter);
+    Task<IEnumerable<IActivitiesWeeklyRecord>> LoadRecords(LoaderUsageStatsReportFilter filter);
+    Task RefreshProfilingStats();
 }
 
-public class SqlUsageDataLoader(ProfilingContext context) : IUsageDataLoader
+public class SqlUsageDataLoader(ProfilingContext context, ILogger logger) : IUsageDataLoader
 {
-    public async Task<IEnumerable<IActivitiesWeeklyRecord>> Load(LoaderUsageStatsReportFilter filter)
+    public async Task<IEnumerable<IActivitiesWeeklyRecord>> LoadRecords(LoaderUsageStatsReportFilter filter)
     {
         var data = await context.ActivitiesWeekly
             .Include(x => x.User)
@@ -35,7 +36,15 @@ public class SqlUsageDataLoader(ProfilingContext context) : IUsageDataLoader
                     .ThenInclude(x => x.License)
             .ByFilter(filter)
             .ToListAsync();
+
+        logger.LogInformation("Loaded {Count} records", data.Count);
         return data.Cast<IActivitiesWeeklyRecord>();
+    }
+
+    public async Task RefreshProfilingStats()
+    {
+        logger.LogInformation("Refreshing profiling stats");
+        await context.Database.ExecuteSqlRawAsync("EXEC [profiling].[usp_CompileWeekly] @WeeksToKeep = 52");
     }
 }
 
