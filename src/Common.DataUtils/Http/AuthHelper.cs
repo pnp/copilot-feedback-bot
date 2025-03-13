@@ -51,8 +51,7 @@ namespace Common.DataUtils.Http
                 }
                 else
                 {
-                    debugTracer.LogInformation($"Certificate {certName} not found in KeyVault {keyVaultUrl}",
-                        Microsoft.ApplicationInsights.DataContracts.SeverityLevel.Critical);
+                    debugTracer.LogCritical($"Certificate {certName} not found in KeyVault {keyVaultUrl}");
                     throw new Exception($"Auth error: Certificate {certName} not found in KeyVault {keyVaultUrl}");
                 }
             }

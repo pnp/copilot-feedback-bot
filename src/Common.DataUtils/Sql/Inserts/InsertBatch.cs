@@ -138,7 +138,7 @@ public class InsertBatch<T> where T : class
                 }
                 catch (SqlException ex)
                 {
-                    _telemetry.LogTrace($"Failed to insert record into {tempTableName} - {sqlInsert}: {ex.Message}", Microsoft.ApplicationInsights.DataContracts.SeverityLevel.Critical);
+                    _telemetry.LogCritical($"Failed to insert record into {tempTableName} - {sqlInsert}: {ex.Message}");
                     throw;
                 }
             }

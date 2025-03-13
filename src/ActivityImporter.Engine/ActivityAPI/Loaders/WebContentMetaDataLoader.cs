@@ -70,8 +70,7 @@ public class WebContentMetaDataLoader : ContentMetaDataLoader<ActivityReportInfo
         }
         catch (HttpRequestException ex)
         {
-            _telemetry.LogInformation($"\nError downloading metadata {changeReportUri} with error '{ex.Message}'. If this happens every time, this may be an issue. Ignoring for now.",
-                Microsoft.ApplicationInsights.DataContracts.SeverityLevel.Error);
+            _telemetry.LogError($"Error downloading metadata {changeReportUri} with error '{ex.Message}'. If this happens every time, this may be an issue. Ignoring for now.");
 #if DEBUG
             _telemetry.LogInformation("DEBUG: Response body was:\n" + responseFromServer);
 #endif

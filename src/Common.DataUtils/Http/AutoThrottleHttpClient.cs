@@ -95,8 +95,7 @@ namespace Common.DataUtils.Http
                     if (!ignoreRetryHeader && waitValue.HasValue)
                     {
                         secondsToWait = waitValue.Value;
-                        _debugTracer.LogInformation($"{THROTTLE_ERROR} for {url}. Waiting to retry for attempt #{retries}, {secondsToWait} seconds (from 'retry-after' header)...",
-                            Microsoft.ApplicationInsights.DataContracts.SeverityLevel.Information);
+                        _debugTracer.LogInformation($"{THROTTLE_ERROR} for {url}. Waiting to retry for attempt #{retries}, {secondsToWait} seconds (from 'retry-after' header)...");
                     }
                     else
                     {
@@ -104,16 +103,14 @@ namespace Common.DataUtils.Http
                         if (retries == MaxRetries)
                         {
                             // Don't try forever
-                            _debugTracer.LogInformation($"{THROTTLE_ERROR}. Maximum retry attempts {MaxRetries} has been attempted for {url}.",
-                                Microsoft.ApplicationInsights.DataContracts.SeverityLevel.Error);
+                            _debugTracer.LogError($"{THROTTLE_ERROR}. Maximum retry attempts {MaxRetries} has been attempted for {url}.");
 
                             // Allow normal HTTP exception & abort download
                             response.EnsureSuccessStatusCode();
                         }
 
                         // We've not reached throttling max retries...keep retrying
-                        _debugTracer.LogInformation($"{THROTTLE_ERROR} downloading from REST. Waiting {retries} seconds to try again...",
-                            Microsoft.ApplicationInsights.DataContracts.SeverityLevel.Information);
+                        _debugTracer.LogInformation($"{THROTTLE_ERROR} downloading from REST. Waiting {retries} seconds to try again...");
 
                         secondsToWait = retries * 2;
                     }
