@@ -96,7 +96,7 @@ public class UsageTests : AbstractTest
     {
         var filter = new LoaderUsageStatsReportFilter
         {
-            From = DateTime.UtcNow.AddDays(-7),
+            From = DateTime.UtcNow.AddDays(-21),        // Week starting
             To = DateTime.UtcNow
         };
 
@@ -108,13 +108,12 @@ public class UsageTests : AbstractTest
         optionsBuilderProfiling.UseSqlServer(_config.ConnectionStrings.SQL);
         var dbProfiling = new ProfilingContext(optionsBuilderProfiling.Options);
 
+        var dataLoader = new SqlUsageDataLoader(dbProfiling, _logger);
+
         // Clear down the data
         db.TeamUserActivityLogs.RemoveRange(db.TeamUserActivityLogs);
-        dbProfiling.ActivitiesWeekly.RemoveRange(dbProfiling.ActivitiesWeekly);
         await db.SaveChangesAsync();
-        await dbProfiling.SaveChangesAsync();
-
-        var dataLoader = new SqlUsageDataLoader(dbProfiling, _logger);
+        await dataLoader.ClearProfilingStats();
 
         var reportManager = new ReportManager(dataLoader, GetLogger<ReportManager>());
 
@@ -126,15 +125,15 @@ public class UsageTests : AbstractTest
         // Add new usage data and refresh
         db.TeamUserActivityLogs.Add(new Entities.DB.Entities.UsageReports.GlobalTeamsUserUsageLog
         {
-            DateOfActivity = DateTime.UtcNow.AddDays(-17),
+            DateOfActivity = DateTime.UtcNow.AddDays(-14),
             AdHocMeetingsAttendedCount = 1,
-            User = new User { UserPrincipalName = "user" + DateTime.Now.Ticks },
+            User = new User { UserPrincipalName = "user-1-" + DateTime.Now.Ticks },
         });
-        db.AppPlatformUserUsageLog.Add(new Entities.DB.Entities.UsageReports.AppPlatformUserActivityLog
+        db.OutlookUsageActivityLogs.Add(new Entities.DB.Entities.UsageReports.OutlookUsageActivityLog
         {
-            DateOfActivity = DateTime.UtcNow.AddDays(-17),
-            User = new User { UserPrincipalName = "user" + DateTime.Now.Ticks },
-            Excel = true,
+            DateOfActivity = DateTime.UtcNow.AddDays(-14),
+            User = new User { UserPrincipalName = "user-2-" + DateTime.Now.Ticks },
+            ReadCount = 1,
         });
         await db.SaveChangesAsync();
 
