@@ -1,10 +1,11 @@
-﻿using Entities.DB.Entities;
+﻿using BCrypt.Net;
+using Common.DataUtils;
+using Entities.DB.Entities;
 using Entities.DB.Entities.AuditLog;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
-using System.Data.Entity;
-using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 
 namespace Entities.DB;
 
@@ -68,6 +69,15 @@ public class DbInitialiser
                 await FakeDataGen.GenerateFakeCopilotFor(defaultUserUPN, context, logger);
 #endif
                 await context.SaveChangesAsync();
+
+                // Install profiling extensions
+                logger.LogInformation("Adding profiling extension");
+
+                await ExecEmbeddedSql("Entities.DB.Profiling.CreateSchema.Profiling-01-CommandExecute.sql", context, logger);
+                await ExecEmbeddedSql("Entities.DB.Profiling.CreateSchema.Profiling-02-IndexOptimize.sql", context, logger);
+                await ExecEmbeddedSql("Entities.DB.Profiling.CreateSchema.Profiling-03-CreateSchema.sql", context, logger);
+
+                logger.LogInformation("Profiling SQL extension installed");
             }
             else
             {
@@ -76,6 +86,36 @@ public class DbInitialiser
         }
     }
 
+    private static async Task ExecEmbeddedSql(string resourceName, DataContext context, ILogger logger)
+    {
+        logger.LogInformation($"Executing SQL from {resourceName}");
+        var script = ResourceUtils.ReadResource(typeof(DbInitialiser).Assembly, resourceName);
+
+        var statements = SplitSqlStatements(script);
+        foreach (var statement in statements)
+            await context.Database.ExecuteSqlRawAsync(statement);
+    }
+
+
+    // https://stackoverflow.com/questions/18596876/go-statements-blowing-up-sql-execution-in-net
+    private static IEnumerable<string> SplitSqlStatements(string sqlScript)
+    {
+        // Make line endings standard to match RegexOptions.Multiline
+        sqlScript = Regex.Replace(sqlScript, @"(\r\n|\n\r|\n|\r)", "\n");
+
+        // Split by "GO" statements
+        var statements = Regex.Split(
+                sqlScript,
+                @"^[\t ]*GO[\t ]*\d*[\t ]*(?:--.*)?$",
+                RegexOptions.Multiline |
+                RegexOptions.IgnorePatternWhitespace |
+                RegexOptions.IgnoreCase);
+
+        // Remove empties, trim, and return
+        return statements
+            .Where(x => !string.IsNullOrWhiteSpace(x))
+            .Select(x => x.Trim(' ', '\n'));
+    }
 
     private static async Task DirtyTestDataHackInserts(DataContext context, ILogger logger, CopilotActivity editDocCopilotActivity, CopilotActivity getHighlightsCopilotActivity)
     {
@@ -116,9 +156,12 @@ public class DbInitialiser
             allUsers.Add(testUser);
         }
         context.Users.AddRange(allUsers);
+        await context.SaveChangesAsync();
+
         foreach (var u in allUsers)
         {
             await FakeDataGen.GenerateFakeOfficeActivityFor(u.UserPrincipalName, DateTime.Now, context, logger);
+            await context.SaveChangesAsync();
         }
 
         // Add fake meetings
@@ -178,7 +221,15 @@ public class DbInitialiser
                 };
 
         // Fake file events
-        var site = new Entities.SP.Site { UrlBase = "https://devbox.sharepoint.com" };
+        const string SITE_URL = "https://devbox.sharepoint.com";
+        var site = await context.Sites.Where(s => s.UrlBase == SITE_URL).FirstOrDefaultAsync();
+        if (site == null)
+        {
+            site = new Entities.SP.Site { UrlBase = SITE_URL };
+            context.Sites.Add(site);
+            await context.SaveChangesAsync();
+        }
+
         var fileOp = context.EventOperations.Where(o => o.Name.Contains("File op")).FirstOrDefault() ?? new EventOperation { Name = "File op" };
         foreach (var f in filenames)
         {

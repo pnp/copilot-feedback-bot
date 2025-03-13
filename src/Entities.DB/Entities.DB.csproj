@@ -1,6 +1,24 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
+    <Compile Remove="Profiling\NewFolder\**" />
+    <EmbeddedResource Remove="Profiling\NewFolder\**" />
+    <None Remove="Profiling\NewFolder\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Profiling\CreateSchema\Profiling-01-CommandExecute.sql" />
+    <None Remove="Profiling\CreateSchema\Profiling-02-IndexOptimize.sql" />
+    <None Remove="Profiling\CreateSchema\Profiling-03-CreateSchema.sql" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Profiling\CreateSchema\Profiling-01-CommandExecute.sql" />
+    <EmbeddedResource Include="Profiling\CreateSchema\Profiling-02-IndexOptimize.sql" />
+    <EmbeddedResource Include="Profiling\CreateSchema\Profiling-03-CreateSchema.sql" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.8" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.8" />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="8.0.1" />

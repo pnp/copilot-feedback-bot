@@ -45,7 +45,6 @@ function ValidateAndInstall ($configFileName) {
 	if ($firewallConfigured -eq $true) {
 		# Add the URL filters to the database
 		AddUrlFiltersToDB $config
-		ProvisionProfilingExtension $config
 
 		WriteS -message "Database provisioning completed successfully. All setup tasks have been completed."
 		WriteS -message "Please verify the solution is working as expected."
@@ -93,31 +92,6 @@ function AddUrlFiltersToDB {
 
 	$connection.Close()
 	WriteS -message "URL filters added."
-}
-
-
-function ProvisionProfilingExtension {
-	param (
-		[Parameter(Mandatory = $true)] $config
-	)
-	
-	WriteI -message "Provisioning profiling extentions..."
-
-	$connectionString = GetConnectionString $config
-
-	WriteI -Message "Profiling-01-CommandExecute..."
-	$query = Get-Content -Path ($scriptPath + "\profiling\CreateSchema\Profiling-01-CommandExecute.sql") -Raw
-	Invoke-Sqlcmd -Query $query -ConnectionString $connectionString -ErrorAction Stop | Out-Null
-
-	WriteI -Message "Profiling-02-IndexOptimize..."
-	$query = Get-Content -Path ($scriptPath + "\profiling\CreateSchema\Profiling-02-IndexOptimize.sql") -Raw
-	Invoke-Sqlcmd -Query $query -ConnectionString $connectionString | Out-Null
-
-	WriteI -Message "Profiling-03-CreateSchema..."
-	$query = Get-Content -Path ($scriptPath + "\profiling\CreateSchema\Profiling-03-CreateSchema.sql") -Raw
-	Invoke-Sqlcmd -Query $query -ConnectionString $connectionString | Out-Null
-
-	WriteS -message "Profiling extentions provisioned."
 }
 
 function GetConnectionString {
@@ -211,12 +185,6 @@ $scriptContent = Get-Content -Path ($scriptPath + "\SharedFunctions.ps1") -Raw
 Invoke-Expression $scriptContent
 
 # Check if we can install
-$SqlServerPsInstalled = LoadModuleGetAzContext -moduleName "SqlServer" -loadContext $false
-if ($SqlServerPsInstalled -eq $false) {
-	WriteE -message "Error: The SqlServer module is not installed. Please install it using the command 'Install-Module SqlServer'."
-	# https://learn.microsoft.com/en-us/powershell/sql-server/sql-server-powershell?view=sqlserver-ps
-	return
-}
 $canInstall = LoadAzModuleGetAzContext
 if ($canInstall) {
 	ValidateAndInstall($ConfigFileName)

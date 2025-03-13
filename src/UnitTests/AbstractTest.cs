@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 
 namespace UnitTests;
 
@@ -34,9 +35,9 @@ public abstract class AbstractTest
 
 
     [TestInitialize]
-    public void TestInitialize()
+    public async Task TestInitialize()
     {
-        _db.Database.EnsureCreated();
+        await DbInitialiser.EnsureInitialised(_db, _logger, _config.TestUPN);
     }
 
     protected ILogger<T> GetLogger<T>()
