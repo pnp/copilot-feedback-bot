@@ -3,7 +3,7 @@ import React from 'react';
 import 'chartjs-adapter-date-fns'
 import { getBasicStats } from '../../api/ApiCalls';
 import { BasicStats } from '../../apimodels/Models';
-import { Button, Caption1, Card, CardHeader, makeStyles, Spinner, Text, tokens } from '@fluentui/react-components';
+import { Button, Caption1, Card, CardHeader, Spinner, Text } from '@fluentui/react-components';
 import { SurveyStatsChart } from './SurveyStatsChart';
 import { ChartContainer } from '../../components/app/ChartContainer';
 import { UserStatsChart } from './UserStatsChart';

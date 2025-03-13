@@ -1,5 +1,5 @@
 import moment, { Moment } from 'moment';
-import { BaseDTO, BasicStats, ILoaderUsageStatsReportFilter, IUsageStatsReport, ServiceConfiguration, SurveyPageDTO } from "../apimodels/Models";
+import { BaseDTO, BasicStats, ILoaderUsageStatsReportFilter, UsageStatsReport, ServiceConfiguration, SurveyPageDTO } from "../apimodels/Models";
 import { BaseAxiosApiLoader } from "./AxiosApiLoader";
 
 
@@ -7,11 +7,11 @@ export const getClientConfig = async (loader: BaseAxiosApiLoader): Promise<Servi
   return loader.loadFromApi('api/AppInfo/GetClientConfig', 'POST');
 }
 
-export const getUsageStatsReport = async (loader: BaseAxiosApiLoader): Promise<IUsageStatsReport> => {
+export const getUsageStatsReport = async (loader: BaseAxiosApiLoader): Promise<UsageStatsReport> => {
 
-  const from : Moment = moment(new Date()).add(-1, 'years');
+  const from: Moment = moment(new Date()).add(-1, 'years');
   const loaderUsageStatsReportFilter: ILoaderUsageStatsReportFilter = {
-    from: moment(from).toDate(), 
+    from: moment(from).toDate(),
     to: new Date(),
     inDepartments: [],
     inCountries: []
@@ -46,4 +46,7 @@ export const triggerInstallBotForUser = async (loader: BaseAxiosApiLoader, upn: 
 }
 export const triggerGenerateFakeActivityForUser = async (loader: BaseAxiosApiLoader, upn: string): Promise<null> => {
   return loader.loadFromApi('/api/Triggers/GenerateFakeActivity?upn=' + upn, 'POST');
+}
+export const triggerGenerateFakeActivityForAllUsers = async (loader: BaseAxiosApiLoader): Promise<null> => {
+  return loader.loadFromApi('/api/Triggers/GenerateFakeActivityForAllUsers', 'POST');
 }

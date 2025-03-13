@@ -33,6 +33,12 @@ public abstract class AbstractTest
     }
 
 
+    [TestInitialize]
+    public void TestInitialize()
+    {
+        _db.Database.EnsureCreated();
+    }
+
     protected ILogger<T> GetLogger<T>()
     {
         return LoggerFactory.Create(config =>
