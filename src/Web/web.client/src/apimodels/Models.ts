@@ -32,7 +32,41 @@ export interface BasicStats {
   usersNotResponded: number;
   usersFound: number;
 }
+export interface UsageStatsReport {
+  uniqueActivities: string[];
+  dates: Date[];
+  usersLeague: EntityWithScore<ITrackedUser>[];
+  departmentsLeague: EntityWithScore<string>[];
+  countriesLeague: EntityWithScore<string>[];
+}
 
+export interface EntityWithScore<T> {
+  entity: T;
+  score: number;
+}
+
+export interface ITrackedUser {
+  companyName?: string;
+  department?: string;
+  jobTitle?: string;
+  officeLocation?: string;
+  stateOrProvince?: string;
+  usageLocation?: string;
+  userCountry?: string;
+  licenses: string[];
+  manager?: ITrackedUser;
+  userPrincipalName: string;
+}
+
+export interface ILoaderUsageStatsReportFilter extends IUsageStatsReportFilter {
+  from: Date; // Equivalent of DateOnly in C#
+  to: Date;   // Equivalent of DateOnly in C#
+}
+
+export interface IUsageStatsReportFilter {
+  inDepartments: string[];
+  inCountries: string[];
+}
 
 export interface ServiceConfiguration {
   storageInfo: StorageInfo;

@@ -1,7 +1,7 @@
 import React, { ChangeEvent } from "react";
-import { SurveyQuestionDTO } from "../../apimodels/Models";
+import { SurveyQuestionDTO } from "../../../apimodels/Models";
 import { Checkbox, Field, Input, Link, Select, SelectOnChangeData } from "@fluentui/react-components";
-import { LogicalOperator, QuestionDatatype } from "../../apimodels/Enums";
+import { LogicalOperator, QuestionDatatype } from "../../../apimodels/Enums";
 import isEqual from 'lodash.isequal';
 import { GetSurveyQuestionDTO } from "./CommonFunctions";
 import { SurveyQuestionProps } from "./PropModels";

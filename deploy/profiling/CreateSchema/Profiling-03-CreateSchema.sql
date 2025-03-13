@@ -320,7 +320,7 @@ IF OBJECT_ID(N'profiling.ActivitiesWeekly') IS NULL
 BEGIN
   CREATE TABLE profiling.ActivitiesWeekly
   (
-    "user_id" BIGINT NOT NULL,
+    "user_id" INT NOT NULL,
     MetricDate DATE NOT NULL,
     Metric VARCHAR(250) NOT NULL,
     Sum INT NOT NULL,
@@ -354,7 +354,7 @@ IF OBJECT_ID(N'profiling.ActivitiesWeeklyColumns') IS NULL
 BEGIN
   CREATE TABLE profiling.ActivitiesWeeklyColumns
   (
-    "user_id" BIGINT,
+    "user_id" INT,
     "date" DATE,
     "OneDrive Viewed/Edited" BIGINT NOT NULL DEFAULT 0,
     "OneDrive Synced" BIGINT NOT NULL DEFAULT 0,

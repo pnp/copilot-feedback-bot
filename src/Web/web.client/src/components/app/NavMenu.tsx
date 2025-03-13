@@ -1,42 +1,45 @@
-import { Component } from 'react';
-import { NavLink } from 'react-router-dom';
+import { useHistory } from 'react-router-dom';
 import { BaseAxiosApiLoader } from '../../api/AxiosApiLoader';
+import { TabValue, TabList, Tab, SelectTabData, SelectTabEvent } from '@fluentui/react-components';
+import { useState } from 'react';
 
-export class NavMenu extends Component<{ apiLoader?: BaseAxiosApiLoader }> {
-  static displayName = NavMenu.name;
+export function NavMenu(props: { apiLoader?: BaseAxiosApiLoader }) {
 
-  render() {
-    return (
-      <div className='nav'>
-        <ul>
-          <NavLink to="/tabhome">
-            <li>
-              <div className="menu-item"><span>Home</span></div>
-            </li>
-          </NavLink>
+  const [selectedValue, setSelectedValue] = useState<TabValue>("home");
+  const history = useHistory();
+  const onTabSelect = (_: SelectTabEvent, data: SelectTabData) => {
+    setSelectedValue(data.value);
+    if (data.value === "home") {
+      history.push('/tabhome');
+    }
+    else if (data.value === "adoption") {
+      history.push('/adoption');
+    }
+    else if (data.value === "onboarding") {
+      history.push('/onboarding');
+    }
+    else if (data.value === "admin") {
+      history.push('/admin');
+    }
+  };
 
-          <NavLink to="/surveyedit">
-            <li>
-              <div className="menu-item"><span>Survey Editor</span></div>
-            </li>
-          </NavLink>
-          
-          <NavLink to="/triggers">
-            <li>
-              <div className="menu-item"><span>Triggers</span></div>
-            </li>
-          </NavLink>
+  return (
+    <div className='nav'>
+      <TabList selectedValue={selectedValue} onTabSelect={onTabSelect}>
+        <Tab id="Home" value="home">
+          Home
+        </Tab>
+        <Tab id="Onboarding" value="onboarding">
+          Onboarding
+        </Tab>
+        <Tab id="Adoption" value="adoption">
+          Adoption
+        </Tab>
+        <Tab id="Admin" value="admin">
+          Administration
+        </Tab>
+      </TabList>
+    </div>
+  );
 
-          {this.props.apiLoader &&
-            <button onClick={this.props.apiLoader.logOut} style={{ backgroundColor: 'transparent', borderColor: 'transparent', width: '100%' }}>
-              <li>
-                <div className="menu-item"><span>Logout</span></div>
-              </li>
-            </button>
-          }
-
-        </ul>
-      </div>
-    );
-  }
 }

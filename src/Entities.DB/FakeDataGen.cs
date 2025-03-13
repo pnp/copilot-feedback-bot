@@ -50,14 +50,14 @@ public class FakeDataGen
                 }
             },
             FileName = new SPEventFileName { Name = fileName },
-            FileExtension = await context.SharePointFileExtensions.SingleOrDefaultAsync(e => e.Name == "docx"),
+            FileExtension = await context.SharePointFileExtensions.SingleOrDefaultAsync(e => e.Name == "docx") ?? new SPEventFileExtension { Name = "docx" },
             Url = new Entities.SP.Url { FullUrl = $"https://devbox.sharepoint.com/Docs/{fileName}" },
-            Site = context.Sites.FirstOrDefault()!,
+            Site = context.Sites.FirstOrDefault() ?? new Entities.SP.Site { UrlBase="https://copilot.sharepoint.com" },
         });
     }
 
 
-    public static async Task GenerateFakeActivityFor(string forUpn, DataContext context, ILogger logger)
+    public static async Task GenerateFakeOfficeActivityFor(string forUpn, DateTime forWhen, DataContext context, ILogger logger)
     {
 
         var user = context.Users.FirstOrDefault(u => u.UserPrincipalName == forUpn);
@@ -66,31 +66,70 @@ public class FakeDataGen
             logger.LogWarning($"Creating new user with UPN {forUpn}");
             user = new User { UserPrincipalName = forUpn };
         }
+
+        // Get a random SharePoint event type or create a new one
+        var randomSPEventType = await context.SharePointEventType
+            .OrderBy(e => Guid.NewGuid())
+            .FirstOrDefaultAsync();
+        if (randomSPEventType == null)
+            randomSPEventType = new SPEventType { Name = "Test" + DateTime.Now.Ticks };
+
+        var randomSPFileExtension = await context.SharePointFileExtensions
+            .OrderBy(e => Guid.NewGuid())
+            .FirstOrDefaultAsync();
+        if (randomSPFileExtension == null)
+            randomSPFileExtension = new SPEventFileExtension { Name = "Test" + DateTime.Now.Ticks };
+        var randomSPEventFileName = await context.SharePointFileNames
+            .OrderBy(e => Guid.NewGuid())
+            .FirstOrDefaultAsync();
+        if (randomSPEventFileName == null)
+            randomSPEventFileName = new SPEventFileName { Name = "Test" + DateTime.Now.Ticks };
+        var randomSPEventUrl = await context.Urls.OrderBy(e => Guid.NewGuid())
+            .FirstOrDefaultAsync();
+        if (randomSPEventUrl == null)
+            randomSPEventUrl = new Entities.SP.Url { FullUrl = "https://devbox.sharepoint.com/Docs/TestFile" + DateTime.Now.Ticks + ".docx" };
+        var randomSite = await context.Sites.OrderBy(e => Guid.NewGuid())
+            .FirstOrDefaultAsync();
+        if (randomSite == null)
+            randomSite = new Entities.SP.Site { UrlBase = "https://devbox.sharepoint.com/" };
+        var randomSPEventOperation = await context.EventOperations
+            .OrderBy(e => Guid.NewGuid())
+            .FirstOrDefaultAsync();
+        if (randomSPEventOperation == null)
+            randomSPEventOperation = new EventOperation { Name = "Test" + DateTime.Now.Ticks };
+
+        var randomUrl = await context.Urls
+            .OrderBy(e => Guid.NewGuid())
+            .FirstOrDefaultAsync();
+        if (randomUrl == null)
+            randomUrl = new Entities.SP.Url { FullUrl = "https://devbox.sharepoint.com/Docs/TestFile" + DateTime.Now.Ticks + ".docx" };
+
+
+        var rnd = new Random();
         context.SharePointEvents.Add(new SharePointEventMetadata
         {
             AuditEvent = new CommonAuditEvent
             {
                 User = user,
                 Id = Guid.NewGuid(),
-                TimeStamp = DateTime.Now.AddDays(-1),
+                TimeStamp = forWhen,
                 Operation = new EventOperation { Name = "Operation " + DateTime.Now.Ticks }
             },
-            ItemType = new SPEventType { Name = "Test" + DateTime.Now.Ticks },
-            FileName = new SPEventFileName { Name = "Test File " + DateTime.Now.Ticks },
-            RelatedSiteId = context.Sites.FirstOrDefault()?.ID ?? 0,
-            Url = new Entities.SP.Url { FullUrl = $"https://devbox.sharepoint.com/Docs/TestFile{DateTime.Now.Ticks}.docx" },
-            Site = context.Sites.FirstOrDefault() ?? new Entities.SP.Site { UrlBase = $"https://devbox.sharepoint.com/" },
-            FileExtension = await context.SharePointFileExtensions.FirstOrDefaultAsync() ?? new SPEventFileExtension { Name = "TestExtension" },
+            ItemType = randomSPEventType,
+            FileName = randomSPEventFileName,
+            Url = randomUrl,
+            RelatedSite = randomSite,
+            FileExtension = randomSPFileExtension,
         });
 
         context.OutlookUsageActivityLogs.Add(new Entities.UsageReports.OutlookUsageActivityLog
         {
             User = user,
             DateOfActivity = DateTime.Now,
-            MeetingsCreated = 1,
-            MeetingsInteracted = 1,
-            ReadCount = 1,
-            SendCount = 1,
+            MeetingsCreated = rnd.Next(0, 1),
+            MeetingsInteracted = rnd.Next(0, 1),
+            ReadCount = rnd.Next(0, 1),
+            SendCount = rnd.Next(0, 1),
         });
 
         context.AppPlatformUserUsageLog.Add(new Entities.UsageReports.AppPlatformUserActivityLog
@@ -137,29 +176,29 @@ public class FakeDataGen
             DateOfActivity = DateTime.Now,
             User = user,
 
-            SharedExternally = 1,
-            SharedInternally = 1,
-            Synced = 1,
-            ViewedOrEdited = 1,
+            SharedExternally = rnd.Next(0, 1),
+            SharedInternally = rnd.Next(0, 1),
+            Synced = rnd.Next(0, 1),
+            ViewedOrEdited = rnd.Next(0, 1),
         });
 
         context.OneDriveUserActivityLogs.Add(new Entities.UsageReports.OneDriveUserActivityLog
         {
             DateOfActivity = DateTime.Now,
             User = user,
-            SharedExternally = 1,
-            SharedInternally = 1,
-            Synced = 1,
-            ViewedOrEdited = 1,
+            SharedExternally = rnd.Next(0, 1),
+            SharedInternally = rnd.Next(0, 1),
+            Synced = rnd.Next(0, 1),
+            ViewedOrEdited = rnd.Next(0, 1),
         });
 
         context.YammerUserActivityLogs.Add(new Entities.UsageReports.YammerUserActivityLog
         {
             DateOfActivity = DateTime.Now,
             User = user,
-            LikedCount = 1,
-            PostedCount = 1,
-            ReadCount = 1,
+            LikedCount = rnd.Next(0, 1),
+            PostedCount = rnd.Next(0, 1),
+            ReadCount = rnd.Next(0, 1),
         });
 
         context.YammerDeviceActivityLogs.Add(new Entities.UsageReports.YammerDeviceActivityLog
@@ -178,38 +217,38 @@ public class FakeDataGen
         {
             DateOfActivity = DateTime.Now,
             User = user,
-            AdHocMeetingsAttendedCount = 1,
-            AdHocMeetingsOrganizedCount = 1,
-            CallCount = 1,
-            MeetingCount = 1,
-            MeetingsAttendedCount = 1,
-            MeetingsOrganizedCount = 1,
-            PrivateChatMessageCount = 1,
-            TeamChatMessageCount = 1,
-            PostMessages = 1,   
-            ReplyMessages = 1,
-            ScheduledOneTimeMeetingsAttendedCount = 1,
-            ScheduledOneTimeMeetingsOrganizedCount = 1,
-            ScheduledRecurringMeetingsAttendedCount = 1,
-            ScheduledRecurringMeetingsOrganizedCount = 1,
-            AudioDurationSeconds = 1,
-            VideoDurationSeconds = 1,
-            ScreenShareDurationSeconds = 1,
-            UrgentMessages = 1,
+            AdHocMeetingsAttendedCount = rnd.Next(0, 1),
+            AdHocMeetingsOrganizedCount = rnd.Next(0, 1),
+            CallCount = rnd.Next(0, 1),
+            MeetingCount = rnd.Next(0, 1),
+            MeetingsAttendedCount = rnd.Next(0, 1),
+            MeetingsOrganizedCount = rnd.Next(0, 1),
+            PrivateChatMessageCount = rnd.Next(0, 1),
+            TeamChatMessageCount = rnd.Next(0, 1),
+            PostMessages = rnd.Next(0, 1),   
+            ReplyMessages = rnd.Next(0, 1),
+            ScheduledOneTimeMeetingsAttendedCount = rnd.Next(0, 1),
+            ScheduledOneTimeMeetingsOrganizedCount = rnd.Next(0, 1),
+            ScheduledRecurringMeetingsAttendedCount = rnd.Next(0, 1),
+            ScheduledRecurringMeetingsOrganizedCount = rnd.Next(0, 1),
+            AudioDurationSeconds = rnd.Next(0, 1),
+            VideoDurationSeconds = rnd.Next(0, 1),
+            ScreenShareDurationSeconds = rnd.Next(0, 1),
+            UrgentMessages = rnd.Next(0, 1),
         });
 
         context.TeamsUserDeviceUsageLog.Add(new Entities.UsageReports.GlobalTeamsUserDeviceUsageLog
         {
             DateOfActivity = DateTime.Now,
             User = user,
-            UsedAndroidPhone = true,
-            UsedChromeOS = true,
-            UsedIOS = true,
-            UsedLinux = true,
-            UsedMac = true,
-            UsedWindows = true,
-            UsedWindowsPhone = true,
-            UsedWeb = true,
+            UsedAndroidPhone = rnd.Next(0, 1) == 1 ? true : false,
+            UsedChromeOS = rnd.Next(0, 1) == 1 ? true : false,
+            UsedIOS = rnd.Next(0, 1) == 1 ? true : false,
+            UsedLinux = rnd.Next(0, 1) == 1 ? true : false,
+            UsedMac = rnd.Next(0, 1) == 1 ? true : false,
+            UsedWindows = rnd.Next(0, 1) == 1 ? true : false,
+            UsedWindowsPhone = rnd.Next(0, 1) == 1 ? true : false,
+            UsedWeb = rnd.Next(0, 1) == 1 ? true : false,
         });
     }
 }

@@ -118,7 +118,7 @@ public class DbInitialiser
         context.Users.AddRange(allUsers);
         foreach (var u in allUsers)
         {
-            await FakeDataGen.GenerateFakeActivityFor(u.UserPrincipalName, context, logger);
+            await FakeDataGen.GenerateFakeOfficeActivityFor(u.UserPrincipalName, DateTime.Now, context, logger);
         }
 
         // Add fake meetings

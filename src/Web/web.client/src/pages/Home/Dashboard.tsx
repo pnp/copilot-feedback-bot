@@ -3,51 +3,14 @@ import React from 'react';
 import 'chartjs-adapter-date-fns'
 import { getBasicStats } from '../../api/ApiCalls';
 import { BasicStats } from '../../apimodels/Models';
-import { Button, Caption1, Card, CardHeader, makeStyles, Spinner, Text, tokens } from '@fluentui/react-components';
+import { Button, Caption1, Card, CardHeader, Spinner, Text } from '@fluentui/react-components';
 import { SurveyStatsChart } from './SurveyStatsChart';
 import { ChartContainer } from '../../components/app/ChartContainer';
 import { UserStatsChart } from './UserStatsChart';
 import { MoreHorizontal20Regular } from "@fluentui/react-icons";
 import { BaseAxiosApiLoader } from '../../api/AxiosApiLoader';
+import { useStyles } from '../../utils/styles';
 
-
-const useStyles = makeStyles({
-  main: {
-    gap: "36px",
-    display: "flex",
-    flexDirection: "column",
-    flexWrap: "wrap",
-  },
-
-  card: {
-    width: "360px",
-    maxWidth: "100%",
-    height: "fit-content",
-  },
-
-  section: {
-    width: "fit-content",
-  },
-
-  title: { margin: "0 0 12px" },
-
-  horizontalCardImage: {
-    width: "64px",
-    height: "64px",
-  },
-
-  headerImage: {
-    borderRadius: "4px",
-    maxWidth: "44px",
-    maxHeight: "44px",
-  },
-
-  caption: {
-    color: tokens.colorNeutralForeground3,
-  },
-
-  text: { margin: "0" },
-});
 
 export const Dashboard: React.FC<{ loader?: BaseAxiosApiLoader }> = (props) => {
 
@@ -69,7 +32,7 @@ export const Dashboard: React.FC<{ loader?: BaseAxiosApiLoader }> = (props) => {
     <div>
       <section className="page--header">
         <div className="page-title">
-          <h1>Copilot Feedback Bot - Admin Home</h1>
+          <h1>Copilot Feedback Bot</h1>
 
           <p>Welcome to the copilot feedback bot control panel app.</p>
 
@@ -135,8 +98,6 @@ export const Dashboard: React.FC<{ loader?: BaseAxiosApiLoader }> = (props) => {
               }
             </>
           }
-
-
 
         </div >
       </section >

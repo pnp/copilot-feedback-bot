@@ -37,8 +37,24 @@ public class TriggersController(SurveyManager surveyManager, IBotConvoResumeMana
     public async Task<IActionResult> GenerateFakeActivityFor(string upn)
     {
         await FakeDataGen.GenerateFakeCopilotFor(upn, _context, _logger);
-        await FakeDataGen.GenerateFakeActivityFor(upn, _context, _logger);
+        await FakeDataGen.GenerateFakeOfficeActivityFor(upn, DateTime.Now, _context, _logger);
         await _context.SaveChangesAsync();
         return Ok($"Generated fake data for {upn}");
+    }
+
+
+    // POST: api/Triggers/GenerateFakeActivityForAllUsers
+    [HttpPost(nameof(GenerateFakeActivityForAllUsers))]
+    public async Task<IActionResult> GenerateFakeActivityForAllUsers()
+    {
+        foreach (var user in _context.Users)
+        {
+            _logger.LogInformation($"Generating fake data for {user.UserPrincipalName}");
+            await FakeDataGen.GenerateFakeCopilotFor(user.UserPrincipalName, _context, _logger);
+            await FakeDataGen.GenerateFakeOfficeActivityFor(user.UserPrincipalName, DateTime.Now, _context, _logger);
+            await _context.SaveChangesAsync();
+        }
+
+        return Ok($"Generated fake data for all users");
     }
 }

@@ -1,14 +1,15 @@
 import React, { PropsWithChildren } from 'react';
 
 import { Layout } from './components/app/Layout';
-import { Dashboard } from './pages/Dashboard/Dashboard';
+import { Dashboard } from './pages/Home/Dashboard';
 import { LoginPopupMSAL } from './pages/Login/LoginPopupMSAL';
 import { Redirect, Route } from "react-router-dom";
-import { SurveyManagerPage } from './pages/SurveyEdit/SurveyManagerPage';
-import { FluentProvider, teamsLightTheme } from '@fluentui/react-components';
-import { TriggersPage } from './pages/Triggers/TriggersPage';
+import { FluentProvider, teamsLightTheme, Theme } from '@fluentui/react-components';
 import { LoginPopupTeams } from './pages/Login/LoginPopupTeams';
 import { BaseAxiosApiLoader } from './api/AxiosApiLoader';
+import { AdminHome } from './pages/Admin/AdminHome';
+import { AdoptionHome } from './pages/Adoption/AdoptionHome';
+import { OnboardingHome } from './pages/Onboarding/OnboardingHome';
 
 export const AppRoutes: React.FC<PropsWithChildren<AppRoutesProps>> = (props) => {
 
@@ -21,8 +22,9 @@ export const AppRoutes: React.FC<PropsWithChildren<AppRoutesProps>> = (props) =>
                             <Redirect to="/tabhome" />
                         </Route>
                         <Route exact path='/tabhome' render={() => <Dashboard loader={props.apiLoader} />} />
-                        <Route exact path='/surveyedit' render={() => <SurveyManagerPage loader={props.apiLoader} />} />
-                        <Route exact path='/triggers' render={() => <TriggersPage loader={props.apiLoader} />} />
+                        <Route exact path='/adoption' render={() => <AdoptionHome loader={props.apiLoader} />} />
+                        <Route exact path='/onboarding' render={() => <OnboardingHome loader={props.apiLoader} />} />
+                        <Route exact path='/admin' render={() => <AdminHome loader={props.apiLoader} />} />
                     </Layout>
                 )
                 :
@@ -41,7 +43,12 @@ export const AppRoutes: React.FC<PropsWithChildren<AppRoutesProps>> = (props) =>
         </FluentProvider>
     );
 }
-interface AppRoutesProps { apiLoader?: BaseAxiosApiLoader, loginMethod?: LoginMethod, onAuthReload: Function }
+interface AppRoutesProps {
+    apiLoader?: BaseAxiosApiLoader,
+    loginMethod?: LoginMethod,
+    onAuthReload: Function,
+    theme: Theme
+}
 
 export enum LoginMethod {
     MSAL,

@@ -1,8 +1,8 @@
 import React from "react";
 import { Button } from "@fluentui/react-components";
-import { SurveyQuestionDTO } from "../../apimodels/Models";
-import { SurveyPage } from "../../components/common/controls/SurveyPage";
-import { ConfirmDialogue } from "../../components/common/controls/ConfirmDialogue";
+import { SurveyQuestionDTO } from "../../../apimodels/Models";
+import { SurveyPage } from "../../../components/common/controls/SurveyPage";
+import { ConfirmDialogue } from "../../../components/common/controls/ConfirmDialogue";
 import { SurveyPageViewProps } from "./PropModels";
 
 export const SurveyPageView: React.FC<SurveyPageViewProps> = (props) => {

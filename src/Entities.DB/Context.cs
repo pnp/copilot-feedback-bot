@@ -1,5 +1,6 @@
 ﻿using Entities.DB.Entities;
 using Entities.DB.Entities.AuditLog;
+using Entities.DB.Entities.Profiling;
 using Entities.DB.Entities.SP;
 using Entities.DB.Entities.UsageReports;
 using Microsoft.EntityFrameworkCore;
@@ -7,11 +8,28 @@ using Microsoft.EntityFrameworkCore.Design;
 
 namespace Entities.DB;
 
-public class DataContext : DbContext
+public abstract class CommonContext : DbContext
+{
+    public CommonContext(DbContextOptions options) : base(options)
+    {
+    }
+
+    public DbSet<UserDepartment> UserDepartments { get; set; }
+
+    public DbSet<StateOrProvince> StateOrProvinces { get; set; }
+    public DbSet<User> Users { get; set; }
+    public DbSet<CountryOrRegion> CountryOrRegions { get; set; }
+    public DbSet<CompanyName> CompanyNames { get; set; }
+    public DbSet<UserOfficeLocation> UserOfficeLocations { get; set; }
+    public DbSet<UserJobTitle> UserJobTitles { get; set; }
+    public DbSet<LicenseType> LicenseTypes { get; set; }
+    public DbSet<UserLicenseTypeLookup> UserLicenseTypeLookups { get; set; }
+}
+
+public class DataContext : CommonContext
 {
     #region Props
 
-    public DbSet<User> Users { get; set; }
     public DbSet<IgnoredEvent> IgnoredAuditEvents { get; set; }
 
     public DbSet<SharePointEventMetadata> SharePointEvents { get; set; }
@@ -26,17 +44,10 @@ public class DataContext : DbContext
     public DbSet<EventOperation> EventOperations { get; set; }
     public DbSet<SPEventType> SharePointEventType { get; set; }
 
-    public DbSet<UserJobTitle> UserJobTitles { get; set; }
     public DbSet<Site> Sites { get; set; }
     public DbSet<Url> Urls { get; set; }
-    public DbSet<UserDepartment> UserDepartments { get; set; }
-
-    public DbSet<StateOrProvince> StateOrProvinces { get; set; }
     public DbSet<OnlineMeeting> OnlineMeetings { get; set; }
 
-    public DbSet<CountryOrRegion> CountryOrRegions { get; set; }
-    public DbSet<CompanyName> CompanyNames { get; set; }
-    public DbSet<UserOfficeLocation> UserOfficeLocations { get; set; }
     public DbSet<GlobalTeamsUserUsageLog> TeamUserActivityLogs { get; set; }
     public DbSet<GlobalTeamsUserDeviceUsageLog> TeamsUserDeviceUsageLog { get; set; }
     public DbSet<YammerUserActivityLog> YammerUserActivityLogs { get; set; }
@@ -52,8 +63,6 @@ public class DataContext : DbContext
     public DbSet<CopilotEventMetadataFile> CopilotEventMetadataFiles { get; set; }
     public DbSet<CopilotEventMetadataMeeting> CopilotEventMetadataMeetings { get; set; }
 
-    public DbSet<LicenseType> LicenseTypes { get; set; }
-    public DbSet<UserLicenseTypeLookup> UserLicenseTypeLookups { get; set; }
 
 
     public DbSet<UserSurveyResponseDB> SurveyResponses { get; set; }
@@ -159,7 +168,7 @@ public class DataContext : DbContext
 }
 
 
-public class ServiceSqlDbContextFactory : IDesignTimeDbContextFactory<DataContext>
+public class DataContextFactory : IDesignTimeDbContextFactory<DataContext>
 {
     public DataContext CreateDbContext(string[] args)
     {
@@ -167,5 +176,32 @@ public class ServiceSqlDbContextFactory : IDesignTimeDbContextFactory<DataContex
         optionsBuilder.UseSqlServer("Server=(localdb)\\mssqllocaldb;Database=CopilotFeedbackDev;Trusted_Connection=True;MultipleActiveResultSets=true");
 
         return new DataContext(optionsBuilder.Options);
+    }
+}
+
+public class ProfilingContext : CommonContext
+{
+    public ProfilingContext(DbContextOptions options) : base(options)
+    {
+    }
+
+    public DbSet<ActivitiesWeekly> ActivitiesWeekly { get; set; }
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<ActivitiesWeekly>()
+            .ToTable("ActivitiesWeekly", "profiling")
+            .HasKey(a => new { a.Metric, a.MetricDate, a.UserID });
+
+        modelBuilder.Entity<User>().ToTable("users", "dbo");
+        modelBuilder.Entity<UserDepartment>().ToTable("user_departments", "dbo");
+        modelBuilder.Entity<StateOrProvince>().ToTable("state_or_provinces", "dbo");
+        modelBuilder.Entity<CountryOrRegion>().ToTable("user_country_or_region", "dbo");
+        modelBuilder.Entity<CompanyName>().ToTable("company_names", "dbo");
+        modelBuilder.Entity<UserOfficeLocation>().ToTable("user_office_locations", "dbo");
+        modelBuilder.Entity<UserJobTitle>().ToTable("user_job_titles", "dbo");
+        modelBuilder.Entity<UserLicenseTypeLookup>().ToTable("user_license_type_lookups", "dbo");
+        modelBuilder.Entity<LicenseType>().ToTable("license_types", "dbo");
+
+        modelBuilder.HasDefaultSchema("profiling");
     }
 }

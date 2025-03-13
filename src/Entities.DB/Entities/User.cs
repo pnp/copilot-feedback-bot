@@ -1,3 +1,4 @@
+using Entities.DB.Models;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -7,7 +8,7 @@ namespace Entities.DB.Entities;
 /// User lookup for a session
 /// </summary>
 [Table("users")]
-public class User : AbstractEFEntity
+public class User : AbstractEFEntity, ITrackedUser
 {
     [Column("upn")]
     public string UserPrincipalName { get; set; } = null!;
@@ -30,7 +31,6 @@ public class User : AbstractEFEntity
     [MaxLength(50)]
     [Column("postalcode")]
     public string? PostalCode { get; set; } = string.Empty;
-
 
     public List<UserLicenseTypeLookup> LicenseLookups { get; set; } = new List<UserLicenseTypeLookup>();
 
@@ -87,6 +87,24 @@ public class User : AbstractEFEntity
     public int? JobTitleId { get; set; } = null;
 
     public UserJobTitle? JobTitle { get; set; } = null!;
+
+    public List<string> Licenses => LicenseLookups.Select(l=> l.License.Name).ToList();
+
+    ITrackedUser? ITrackedUser.Manager => Manager;
+
+    string? ITrackedUser.CompanyName => CompanyName?.Name;
+
+    string? ITrackedUser.Department => Department?.Name;
+
+    string? ITrackedUser.JobTitle => JobTitle?.Name;
+
+    string? ITrackedUser.OfficeLocation => OfficeLocation?.Name;
+
+    string? ITrackedUser.StateOrProvince => StateOrProvince?.Name;
+
+    string? ITrackedUser.UsageLocation => UsageLocation?.Name;
+
+    string? ITrackedUser.UserCountry => UserCountry?.Name;
 
     #endregion
 

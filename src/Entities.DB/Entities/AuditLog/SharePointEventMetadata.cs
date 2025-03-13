@@ -23,10 +23,10 @@ public class SharePointEventMetadata : BaseOfficeEvent
     public Url Url { get; set; } = null!;
 
 
-    [ForeignKey(nameof(Site))]
+    [ForeignKey(nameof(RelatedSite))]
     [Column("related_site_id")]
     public int? RelatedSiteId { get; set; } = 0;
-    public Site? Site { get; set; } = null;
+    public Site? RelatedSite { get; set; } = null;
 
     [ForeignKey(nameof(ItemType))]
     [Column("item_type_id")]

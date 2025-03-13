@@ -2,7 +2,7 @@
 import React from 'react';
 import 'chartjs-adapter-date-fns'
 import { Button, Input, Spinner } from '@fluentui/react-components';
-import { triggerGenerateFakeActivityForUser, triggerInstallBotForUser, triggerSendSurveys } from '../../api/ApiCalls';
+import { triggerGenerateFakeActivityForUser, triggerInstallBotForUser, triggerSendSurveys } from '../../../api/ApiCalls';
 
 import {
   Play24Regular
@@ -16,7 +16,7 @@ import {
   TableHeaderCell,
   TableCellLayout
 } from "@fluentui/react-components";
-import { BaseAxiosApiLoader } from '../../api/AxiosApiLoader';
+import { BaseAxiosApiLoader } from '../../../api/AxiosApiLoader';
 
 export const TriggersPage: React.FC<{ loader?: BaseAxiosApiLoader }> = (props) => {
 
@@ -30,7 +30,7 @@ export const TriggersPage: React.FC<{ loader?: BaseAxiosApiLoader }> = (props) =
     triggerSendSurveys(props.loader).then(() => { setLoading(false); });
   }, []);
 
-  const installBot = React.useCallback(() => {  
+  const installBot = React.useCallback(() => {
     console.debug("Installing Bot");
     if (!props.loader) {
       console.error("No loader available");
@@ -39,7 +39,17 @@ export const TriggersPage: React.FC<{ loader?: BaseAxiosApiLoader }> = (props) =
     triggerInstallBotForUser(props.loader, installUser).then(() => { setLoading(false); });
   }, []);
 
-  const generateData = React.useCallback(() => {
+  const generateDataForUser = React.useCallback(() => {
+    console.debug("Generating data for user");
+    if (!props.loader) {
+      console.error("No loader available");
+      return;
+    }
+    triggerGenerateFakeActivityForUser(props.loader, generateDataUser).then(() => { setLoading(false); });
+  }, []);
+
+
+  const generateDataForAllUsers = React.useCallback(() => {
     console.debug("Generating Data");
     if (!props.loader) {
       console.error("No loader available");
@@ -83,29 +93,42 @@ export const TriggersPage: React.FC<{ loader?: BaseAxiosApiLoader }> = (props) =
                   <TableCellLayout media={<Play24Regular />}>Install bot for user</TableCellLayout>
                 </TableCell>
                 <TableCell>
-                  <Input placeholder="UPN" onChange={(e)=> setInstallUser(e.currentTarget.value)} value={installUser} disabled={loading} />
+                  <Input placeholder="UPN" onChange={(e) => setInstallUser(e.currentTarget.value)} value={installUser} disabled={loading} />
                 </TableCell>
                 <TableCell>
                   <Button appearance="primary" onClick={installBot} disabled={loading}>Trigger Install</Button>
                 </TableCell>
               </TableRow>
-              
+
               <TableRow>
                 <TableCell>
-                  <TableCellLayout media={<Play24Regular />}>Generate fake copilot activity for user</TableCellLayout>
+                  <TableCellLayout media={<Play24Regular />}>Generate fake activity for user</TableCellLayout>
                 </TableCell>
                 <TableCell>
-                  <Input placeholder="UPN" onChange={(e)=> setGenerateDataUser(e.currentTarget.value)} value={generateDataUser} disabled={loading} />
+                  <Input placeholder="UPN" onChange={(e) => setGenerateDataUser(e.currentTarget.value)} value={generateDataUser} disabled={loading} />
                 </TableCell>
                 <TableCell>
-                  <Button appearance="primary" onClick={generateData} disabled={loading}>Generate Data</Button>
+                  <Button appearance="primary" onClick={generateDataForUser} disabled={loading}>Generate Data</Button>
+                </TableCell>
+              </TableRow>
+
+
+              <TableRow>
+                <TableCell>
+                  <TableCellLayout media={<Play24Regular />}>Generate fake activity for all users</TableCellLayout>
+                </TableCell>
+                <TableCell>
+                  --
+                </TableCell>
+                <TableCell>
+                  <Button appearance="primary" onClick={generateDataForAllUsers} disabled={loading}>Generate Data</Button>
                 </TableCell>
               </TableRow>
 
             </TableBody>
           </Table>
 
-          
+
           {loading && <Spinner label="Sending command..." />}
 
         </div >

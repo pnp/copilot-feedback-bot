@@ -1,4 +1,5 @@
-import { BaseDTO, BasicStats, ServiceConfiguration, SurveyPageDTO } from "../apimodels/Models";
+import moment, { Moment } from 'moment';
+import { BaseDTO, BasicStats, ILoaderUsageStatsReportFilter, UsageStatsReport, ServiceConfiguration, SurveyPageDTO } from "../apimodels/Models";
 import { BaseAxiosApiLoader } from "./AxiosApiLoader";
 
 
@@ -6,9 +7,23 @@ export const getClientConfig = async (loader: BaseAxiosApiLoader): Promise<Servi
   return loader.loadFromApi('api/AppInfo/GetClientConfig', 'POST');
 }
 
+export const getUsageStatsReport = async (loader: BaseAxiosApiLoader): Promise<UsageStatsReport> => {
+
+  const from: Moment = moment(new Date()).add(-1, 'years');
+  const loaderUsageStatsReportFilter: ILoaderUsageStatsReportFilter = {
+    from: moment(from).toDate(),
+    to: new Date(),
+    inDepartments: [],
+    inCountries: []
+  };
+
+  return loader.loadFromApi('api/Stats/GetUsageStatsReport', 'POST', loaderUsageStatsReportFilter);
+}
+
 export const getBasicStats = async (loader: BaseAxiosApiLoader): Promise<BasicStats> => {
   return loader.loadFromApi('api/Stats/GetBasicStats', 'GET');
 }
+
 
 export const getSurveyPages = async (loader: BaseAxiosApiLoader): Promise<SurveyPageDTO[]> => {
   return loader.loadFromApi('api/SurveyQuestions', 'GET');
@@ -31,4 +46,7 @@ export const triggerInstallBotForUser = async (loader: BaseAxiosApiLoader, upn: 
 }
 export const triggerGenerateFakeActivityForUser = async (loader: BaseAxiosApiLoader, upn: string): Promise<null> => {
   return loader.loadFromApi('/api/Triggers/GenerateFakeActivity?upn=' + upn, 'POST');
+}
+export const triggerGenerateFakeActivityForAllUsers = async (loader: BaseAxiosApiLoader): Promise<null> => {
+  return loader.loadFromApi('/api/Triggers/GenerateFakeActivityForAllUsers', 'POST');
 }
