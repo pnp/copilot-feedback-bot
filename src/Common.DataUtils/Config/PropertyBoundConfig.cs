@@ -31,7 +31,56 @@ public abstract class PropertyBoundConfig
                 {
                     throw new ConfigurationMissingException(prop.Name);
                 }
-                prop.SetValue(this, configVal);
+                if (prop.PropertyType == typeof(string))
+                {
+                    prop.SetValue(this, configVal);
+                }
+                else if (prop.PropertyType == typeof(bool))
+                {
+                    if (bool.TryParse(configVal, out var boolVal))
+                    {
+                        prop.SetValue(this, boolVal);
+                    }
+                    else
+                    {
+                        if (!configValAtt.Optional)
+                        {
+                            throw new ConfigurationMissingException(prop.Name);
+                        }
+                    }
+                }
+                else if (prop.PropertyType == typeof(int))
+                {
+                    if (int.TryParse(configVal, out var intVal))
+                    {
+                        prop.SetValue(this, intVal);
+                    }
+                    else
+                    {
+                        if (!configValAtt.Optional)
+                        {
+                            throw new ConfigurationMissingException(prop.Name);
+                        }
+                    }
+                }
+                else if (prop.PropertyType == typeof(long))
+                {
+                    if (long.TryParse(configVal, out var longVal))
+                    {
+                        prop.SetValue(this, longVal);
+                    }
+                    else
+                    {
+                        if (!configValAtt.Optional)
+                        {
+                            throw new ConfigurationMissingException(prop.Name);
+                        }
+                    }
+                }
+                else
+                {
+                    throw new NotSupportedException($"Property type {prop.PropertyType} is not supported");
+                }
             }
 
             // Set config sub-sections

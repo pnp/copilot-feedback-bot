@@ -28,6 +28,10 @@ public class AppConfig : PropertyBoundConfig
     [ConfigValue(true)]
     public string TestUPN { get; set; } = null!;
 
+
+    [ConfigValue(true)]
+    public bool DevMode { get; set; } = false;
+
     [ConfigSection()]
     public AppConnectionStrings ConnectionStrings { get; set; } = null!;
 }

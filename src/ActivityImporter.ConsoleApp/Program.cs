@@ -45,6 +45,11 @@ using (var db = new DataContext(optionsBuilder.Options))
 {
     await DbInitialiser.EnsureInitialised(db, _logger, config.TestUPN);
 
+    if (config.DevMode)
+    {
+        await FakeDataGen.GenerateFakeActivityForAllUsers(db, _logger);
+    }
+
     // Import things
     var t = new ProgramTasks(config, _logger);
     await t.DownloadAndSaveActivityData();

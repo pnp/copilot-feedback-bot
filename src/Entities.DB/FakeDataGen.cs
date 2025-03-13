@@ -7,6 +7,17 @@ namespace Entities.DB;
 
 public class FakeDataGen
 {
+    public static async Task GenerateFakeActivityForAllUsers(DataContext context, ILogger logger)
+    {
+        logger.LogInformation("Generating fake activity for all users");
+        foreach (var user in await context.Users.ToListAsync())
+        {
+            await FakeDataGen.GenerateFakeCopilotFor(user.UserPrincipalName, context, logger);
+            await FakeDataGen.GenerateFakeOfficeActivityFor(user.UserPrincipalName, DateTime.Now, context, logger);
+            await context.SaveChangesAsync();
+        }
+        logger.LogInformation("Finished generating fake activity for all users");
+    }
     public static async Task GenerateFakeCopilotFor(string forUpn, DataContext context, ILogger logger)
     {
         var editDoc = context.CopilotActivities.FirstOrDefault(a => a.Name == DbInitialiser.ACTIVITY_NAME_EDIT_DOC)!;
@@ -55,7 +66,6 @@ public class FakeDataGen
             Site = context.Sites.FirstOrDefault() ?? new Entities.SP.Site { UrlBase="https://copilot.sharepoint.com" },
         });
     }
-
 
     public static async Task GenerateFakeOfficeActivityFor(string forUpn, DateTime forWhen, DataContext context, ILogger logger)
     {
