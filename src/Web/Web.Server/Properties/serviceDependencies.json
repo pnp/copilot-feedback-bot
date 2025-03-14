@@ -4,11 +4,6 @@
       "type": "storage",
       "connectionId": "ConnectionStrings:Storage",
       "dynamicId": null
-    },
-    "storage2": {
-      "type": "storage",
-      "connectionId": "StorageConnection",
-      "dynamicId": null
     }
   }
 }

@@ -6,7 +6,7 @@ using Entities.DB.Entities.Profiling;
 
 namespace Common.Engine.UsageStats;
 
-public class SqlUsageDataLoader(ProfilingContext context, ILogger logger) : IUsageDataLoader
+public class SqlUsageDataLoader(ProfilingContext context, ILogger<SqlUsageDataLoader> logger) : IUsageDataLoader
 {
     public async Task ClearProfilingStats()
     {

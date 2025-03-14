@@ -75,7 +75,7 @@ public class UsageTests : AbstractTest
         await db.SaveChangesAsync();
 
 
-        var dataLoader = new SqlUsageDataLoader(db, _logger);
+        var dataLoader = new SqlUsageDataLoader(db, GetLogger<SqlUsageDataLoader>());
         await dataLoader.RefreshProfilingStats();
 
         var reportManager = new ReportManager(dataLoader, GetLogger<ReportManager>());
@@ -108,7 +108,7 @@ public class UsageTests : AbstractTest
         optionsBuilderProfiling.UseSqlServer(_config.ConnectionStrings.SQL);
         var dbProfiling = new ProfilingContext(optionsBuilderProfiling.Options);
 
-        var dataLoader = new SqlUsageDataLoader(dbProfiling, _logger);
+        var dataLoader = new SqlUsageDataLoader(dbProfiling, GetLogger<SqlUsageDataLoader>());
 
         // Clear down the data
         db.TeamUserActivityLogs.RemoveRange(db.TeamUserActivityLogs);

@@ -143,7 +143,6 @@ export const AuthContainer: React.FC<PropsWithChildren<AuthContainerProps>> = (p
 
             {loading ?
                 <div>
-                    <Spinner style={{ margin: 100 }} />
                     Checking back-end API connectivity...
                 </div> :
                 <>
