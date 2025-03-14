@@ -1,4 +1,4 @@
-import { LogicalOperator, QuestionDatatype } from "./Enums";
+import { QuestionDatatype } from "./Enums";
 
 interface BaseDTOWithName extends BaseDTO { name: string }
 export interface BaseDTO { id?: string }
@@ -75,4 +75,43 @@ export interface ServiceConfiguration {
 export interface StorageInfo {
   accountURI: string;
   sharedAccessToken: string;
+}
+
+
+
+interface SurveyQuestion<T> {
+  optimalAnswer: T;
+  optimalAnswerLogicalOp: LogicalOperator;
+}
+
+enum LogicalOperator {
+  Unknown,
+  Equals,
+  NotEquals,
+  GreaterThan,
+  LessThan,
+}
+
+interface SurveyAnswer<T> {
+  id: number;
+  valueGiven: T;
+  question: SurveyQuestion<T>;
+
+  isPositiveResult: boolean;
+}
+
+interface StringSurveyAnswer extends SurveyAnswer<string> {
+}
+
+interface IntSurveyAnswer extends SurveyAnswer<number> {
+}
+
+interface BooleanSurveyAnswer extends SurveyAnswer<boolean> {
+  
+}
+
+export interface SurveyAnswersCollection {
+  intSurveyAnswers: IntSurveyAnswer[];
+  stringSurveyAnswers: StringSurveyAnswer[];
+  booleanSurveyAnswers: BooleanSurveyAnswer[];
 }

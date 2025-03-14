@@ -1,4 +1,6 @@
-﻿using Common.Engine.UsageStats;
+﻿using Common.Engine.Surveys;
+using Common.Engine.Surveys.Model;
+using Common.Engine.UsageStats;
 using Entities.DB.DbContexts;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -13,7 +15,7 @@ namespace Web.Server.Controllers;
 [Authorize]
 [Route("api/[controller]")]
 [ApiController]
-public class StatsController(ILogger<SurveyQuestionsController> logger, DataContext context, ReportManager reportManager) : ControllerBase
+public class StatsController(ILogger<SurveyQuestionsController> logger, DataContext context, ReportManager reportManager, SurveyManager surveyManager) : ControllerBase
 {
     // GET: api/Stats/GetBasicStats
     [HttpGet(nameof(GetBasicStats))]
@@ -21,12 +23,12 @@ public class StatsController(ILogger<SurveyQuestionsController> logger, DataCont
     {
         logger.LogInformation("Called GetBasicStats");
 
-        var usersSurveyed = await context.SurveyResponses
+        var usersSurveyed = await context.SurveyGeneralResponses
             .Select(r => r.User.UserPrincipalName)
             .Distinct()
             .CountAsync();
 
-        var usersResponded = await context.SurveyResponses
+        var usersResponded = await context.SurveyGeneralResponses
             .Where(r => r.Responded != null)
             .Select(r => r.User.UserPrincipalName)
             .Distinct()
@@ -50,6 +52,14 @@ public class StatsController(ILogger<SurveyQuestionsController> logger, DataCont
     public async Task<UsageStatsReport> GetUsageStatsReport(LoaderUsageStatsReportFilter filter)
     {
         return await reportManager.GetReport(filter);
+    }
+
+    // GET: api/Stats/GetSurveyAnswers
+    [HttpGet(nameof(GetSurveyAnswers))]
+    public async Task<SurveyAnswersCollection> GetSurveyAnswers()
+    {
+        logger.LogInformation("Called GetSurveyAnswers");
+        return await surveyManager.GetSurveyQuestionResponses();
     }
 }
 

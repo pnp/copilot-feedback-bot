@@ -3,8 +3,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Entities.DB.Entities;
 
-[Table("survey_responses")]
-public class UserSurveyResponseDB : UserRelatedEntity
+[Table("survey_general_responses")]
+public class SurveyGeneralResponseDB : UserRelatedEntity
 {
     [Column("responded")]
     public DateTime? Responded { get; set; }
@@ -32,7 +32,7 @@ public class UserSurveyResponseActivityType : AbstractEFEntity
     [ForeignKey(nameof(UserSurveyResponse))]
     [Column("user_response_id")]
     public int UserSurveyResponseId { get; set; }
-    public UserSurveyResponseDB UserSurveyResponse { get; set; } = null!;
+    public SurveyGeneralResponseDB UserSurveyResponse { get; set; } = null!;
 
 
     [ForeignKey(nameof(CopilotActivity))]
@@ -47,7 +47,7 @@ public class SurveyPageDB : AbstractEFEntityWithName
 {
     [Column("is_published")]
     public bool IsPublished { get; set; }
-    public List<SurveyQuestionDB> Questions { get; set; } = new();
+    public List<SurveyQuestionDefinitionDB> Questions { get; set; } = new();
 
     [Column("index")]
     public int PageIndex { get; set; }
@@ -59,8 +59,8 @@ public class SurveyPageDB : AbstractEFEntityWithName
     public DateTime? DeletedUtc { get; set; }
 }
 
-[Table("survey_questions")]
-public class SurveyQuestionDB : AbstractEFEntity
+[Table("survey_question_definitions")]
+public class SurveyQuestionDefinitionDB : AbstractEFEntity
 {
     [ForeignKey(nameof(SurveyPageDB))]
     [Column("for_SurveyPage_id")]
@@ -89,13 +89,13 @@ public class SurveyQuestionDB : AbstractEFEntity
     public int Index { get; set; }
 }
 
-[Table("survey_answers")]
-public class SurveyAnswerDB : UserRelatedEntity
+[Table("survey_question_responses")]
+public class SurveyQuestionResponseDB : UserRelatedEntity
 {
     [ForeignKey(nameof(ForQuestion))]
     [Column("for_question_id")]
     public int ForQuestionId { get; set; }
-    public SurveyQuestionDB ForQuestion { get; set; } = null!;
+    public SurveyQuestionDefinitionDB ForQuestion { get; set; } = null!;
 
     [Column("given_answer")]
     public required string GivenAnswer { get; set; }
@@ -106,7 +106,7 @@ public class SurveyAnswerDB : UserRelatedEntity
     [ForeignKey(nameof(ParentSurvey))]
     [Column("parent_survey_response_id")]
     public int ParentSurveyId { get; set; }
-    public UserSurveyResponseDB ParentSurvey { get; set; } = null!;
+    public SurveyGeneralResponseDB ParentSurvey { get; set; } = null!;
 }
 
 

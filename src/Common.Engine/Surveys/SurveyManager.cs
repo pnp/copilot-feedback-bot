@@ -71,14 +71,15 @@ public class SurveyManager
             return null;
     }
 
-    public async Task<AnswersCollection> GetSurveyResponses()
+    public async Task<SurveyAnswersCollection> GetSurveyQuestionResponses()
     {
-        var savedAnswers = await _dataLoader.GetAnswers();
-        return new AnswersCollection(savedAnswers);
-
+        _logger.LogInformation("Loading all survey question responses");
+        var savedAnswers = await _dataLoader.GetAllPublishedSurveyQuestionResponses();
+        _logger.LogInformation($"Loaded {savedAnswers.Count} survey question responses");
+        return new SurveyAnswersCollection(savedAnswers);
     }
 
-    public async Task<AnswersCollection> SaveCustomSurveyResponse(SurveyPageUserResponse response, int existingSurveyId)
+    public async Task<SurveyAnswersCollection> SaveCustomSurveyResponse(SurveyPageUserResponse response, int existingSurveyId)
     {
         if (!response.IsValid)
         {
@@ -93,7 +94,7 @@ public class SurveyManager
             var savedAnswers = await _dataLoader.SaveAnswers(user, response.Answers, existingSurveyId);
             _logger.LogInformation($"Survey response saved for user {response.UserPrincipalName}");
 
-            return new AnswersCollection(savedAnswers);
+            return new SurveyAnswersCollection(savedAnswers);
         }
         else
         {

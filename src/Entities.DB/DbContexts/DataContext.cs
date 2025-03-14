@@ -46,7 +46,6 @@ public class DataContext : CommonContext
 
 
 
-    public DbSet<UserSurveyResponseDB> SurveyResponses { get; set; }
     public DbSet<UserSurveyResponseActivityType> SurveyResponseActivities { get; set; }
 
     public DbSet<UserSurveyResponseActivityType> SurveyResponseActivityTypes { get; set; }
@@ -55,8 +54,9 @@ public class DataContext : CommonContext
 
 
     public DbSet<SurveyPageDB> SurveyPages { get; set; }
-    public DbSet<SurveyQuestionDB> SurveyQuestions { get; set; }
-    public DbSet<SurveyAnswerDB> SurveyAnswers { get; set; }
+    public DbSet<SurveyQuestionDefinitionDB> SurveyQuestionDefinitions { get; set; }
+    public DbSet<SurveyQuestionResponseDB> SurveyQuestionResponses { get; set; }
+    public DbSet<SurveyGeneralResponseDB> SurveyGeneralResponses { get; set; }
 
     #endregion
 
@@ -114,7 +114,7 @@ public class DataContext : CommonContext
          .HasIndex(t => new { t.LicenseTypeId, t.UserId })
          .IsUnique();
 
-        modelBuilder.Entity<SurveyQuestionDB>()
+        modelBuilder.Entity<SurveyQuestionDefinitionDB>()
          .HasIndex(t => new { t.QuestionId })
          .IsUnique();
 
@@ -130,7 +130,7 @@ public class DataContext : CommonContext
          .HasIndex(t => t.UrlBase)
          .IsUnique();
 
-        modelBuilder.Entity<UserSurveyResponseDB>()
+        modelBuilder.Entity<SurveyGeneralResponseDB>()
          .HasOne(f => f.User)
          .WithMany()
          .OnDelete(DeleteBehavior.Restrict);

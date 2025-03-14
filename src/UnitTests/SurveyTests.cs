@@ -35,7 +35,7 @@ public class SurveyTests : AbstractTest
                   ],
                   ""$schema"": ""http://adaptivecards.io/schemas/adaptive-card.json""
                 }",
-            Questions = new List<SurveyQuestionDB>()
+            Questions = new List<SurveyQuestionDefinitionDB>()
             {
                 new() {
                     ID = 1,
@@ -109,12 +109,12 @@ public class SurveyTests : AbstractTest
     [TestMethod]
     public void AnswersCollectionModelTests()
     {
-        var answers = new List<SurveyAnswerDB>
+        var answers = new List<SurveyQuestionResponseDB>
         {
-            new SurveyAnswerDB
+            new SurveyQuestionResponseDB
             {
                 ID = 1,
-                ForQuestion = new SurveyQuestionDB
+                ForQuestion = new SurveyQuestionDefinitionDB
                 {
                     DataType = QuestionDatatype.String,
                     OptimalAnswerValue = "Don't hurt me",
@@ -124,10 +124,10 @@ public class SurveyTests : AbstractTest
                 },
                 GivenAnswer = "Don't hurt me"
             },
-            new SurveyAnswerDB
+            new SurveyQuestionResponseDB
             {
                 ID = 2,
-                ForQuestion = new SurveyQuestionDB
+                ForQuestion = new SurveyQuestionDefinitionDB
                 {
                     DataType = QuestionDatatype.Int,
                     OptimalAnswerValue = "2",
@@ -137,10 +137,10 @@ public class SurveyTests : AbstractTest
                 },
                 GivenAnswer = "2"
             },
-            new SurveyAnswerDB
+            new SurveyQuestionResponseDB
             {
                 ID = 3,
-                ForQuestion = new SurveyQuestionDB
+                ForQuestion = new SurveyQuestionDefinitionDB
                 {
                     DataType = QuestionDatatype.Bool,
                     OptimalAnswerValue = "True",
@@ -152,7 +152,7 @@ public class SurveyTests : AbstractTest
             }
         };
 
-        var ac = new AnswersCollection(answers);
+        var ac = new SurveyAnswersCollection(answers);
         Assert.AreEqual(3, ac.AllAnswerIds.Count);
         Assert.AreEqual(1, ac.StringSurveyAnswers.Count);
         Assert.AreEqual(1, ac.IntSurveyAnswers.Count);
@@ -161,7 +161,7 @@ public class SurveyTests : AbstractTest
 
 
     [TestMethod]
-    public async Task SurveySave()
+    public async Task SurveySaveAndLoadTests()
     {
 
         var sm = new SurveyManager(
@@ -175,7 +175,19 @@ public class SurveyTests : AbstractTest
         var firstUserInDb = new User { UserPrincipalName = "unittesting" + DateTime.Now.Ticks };
         _db.Users.Add(firstUserInDb);
 
-        var newStringQ = new SurveyQuestionDB
+        // Clear question survey responses
+        var existingSurveys = await _db.SurveyQuestionResponses.ToListAsync();
+        if (existingSurveys.Count > 0)
+        {
+            _db.SurveyQuestionResponses.RemoveRange(existingSurveys);
+        }
+        await _db.SaveChangesAsync();
+
+        // Check that there are no existing survey responses
+        var allResponses = await sm.GetSurveyQuestionResponses();
+        Assert.IsTrue(allResponses.AllAnswerIds.Count == 0);
+
+        var newStringQ = new SurveyQuestionDefinitionDB
         {
             DataType = QuestionDatatype.String,
             OptimalAnswerValue = "Don't hurt me",
@@ -183,7 +195,7 @@ public class SurveyTests : AbstractTest
             Question = "What is love?",
             Index = 0,
         };
-        var newIntQ = new SurveyQuestionDB
+        var newIntQ = new SurveyQuestionDefinitionDB
         {
             DataType = QuestionDatatype.Int,
             OptimalAnswerValue = "2",
@@ -191,7 +203,7 @@ public class SurveyTests : AbstractTest
             Question = "What is 1+1?",
             Index = 2,
         };
-        var newBoolQ = new SurveyQuestionDB
+        var newBoolQ = new SurveyQuestionDefinitionDB
         {
             DataType = QuestionDatatype.Bool,
             OptimalAnswerValue = "True",
@@ -199,7 +211,7 @@ public class SurveyTests : AbstractTest
             Question = "True?",
             Index = 4,
         };
-        _db.SurveyQuestions.AddRange(newStringQ, newIntQ, newBoolQ);
+        _db.SurveyQuestionDefinitions.AddRange(newStringQ, newIntQ, newBoolQ);
 
 
         var newPage = new SurveyPageDB
@@ -207,7 +219,7 @@ public class SurveyTests : AbstractTest
             Name = "unit test",
             IsPublished = true,
             AdaptiveCardTemplateJson = "{}",
-            Questions = new List<SurveyQuestionDB>
+            Questions = new List<SurveyQuestionDefinitionDB>
             {
                 newStringQ,
                 newIntQ,
@@ -216,14 +228,14 @@ public class SurveyTests : AbstractTest
         };
         _db.SurveyPages.Add(newPage);
 
-        var newSurvey = new UserSurveyResponseDB
+        var newSurvey = new SurveyGeneralResponseDB
         {
             OverrallRating = 5,
             Requested = DateTime.UtcNow,
             User = firstUserInDb,
             RelatedEvent = null,
         };
-        _db.SurveyResponses.Add(newSurvey);
+        _db.SurveyGeneralResponses.Add(newSurvey);
 
         await _db.SaveChangesAsync();
 
@@ -235,8 +247,12 @@ public class SurveyTests : AbstractTest
             ["autoQuestionId-" + newBoolQ.ID] = newBoolQ.OptimalAnswerValue,
         };
 
+        // Save the survey response
         var r = await sm.SaveCustomSurveyResponse(new SurveyPageUserResponse(jsonSurveyPageUserResponse.ToString(),
             firstUserInDb.UserPrincipalName), newSurvey.ID);
+
+        allResponses = await sm.GetSurveyQuestionResponses();
+        Assert.IsTrue(allResponses.AllAnswerIds.Count == 3);        // jsonSurveyPageUserResponse has 3
 
         Assert.IsTrue(r.AllAnswerIds.Count == 3);
         Assert.IsTrue(r.StringSurveyAnswers.Count == 1);
@@ -244,7 +260,7 @@ public class SurveyTests : AbstractTest
         Assert.IsTrue(r.BooleanSurveyAnswers.Count == 1);
 
         // Find same answers in DB
-        var dbAnwsers = await _db.SurveyAnswers
+        var dbAnwsers = await _db.SurveyQuestionResponses
             .Where(a => r.AllAnswerIds.Contains(a.ID))
             .ToListAsync();
 

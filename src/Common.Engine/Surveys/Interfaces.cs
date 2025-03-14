@@ -27,8 +27,8 @@ public interface ISurveyManagerDataLoader
     /// First response to the survey. Returns the ID of the survey response created
     /// </summary>
     Task<int> UpdateSurveyResultWithInitialScore(CommonAuditEvent @event, int score);
-    Task<List<SurveyAnswerDB>> SaveAnswers(User user, List<SurveyPageUserResponse.RawResponse> answers, int existingSurveyId);
-    Task<List<SurveyAnswerDB>> GetAnswers();
+    Task<List<SurveyQuestionResponseDB>> SaveAnswers(User user, List<SurveyPageUserResponse.RawResponse> answers, int existingSurveyId);
+    Task<List<SurveyQuestionResponseDB>> GetAllPublishedSurveyQuestionResponses();
 }
 
 public interface ISurveyEventsProcessor

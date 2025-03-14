@@ -299,13 +299,13 @@ public class DbInitialiser
         };
         var page1 = new SurveyPageDB { Name = "Page 1", PageIndex = 1, IsPublished = true, AdaptiveCardTemplateJson = cardContent.ToString() };
         page1.Questions.AddRange([
-            new SurveyQuestionDB
+            new SurveyQuestionDefinitionDB
             {
                 Question = "One word to describe copilot?",
                 ForSurveyPage = page1, DataType = QuestionDatatype.String,
                 OptimalAnswerValue = null
             },
-            new SurveyQuestionDB
+            new SurveyQuestionDefinitionDB
             {
                 Question = "How many minutes has copilot saved you this time?",
                 ForSurveyPage = page1, DataType = QuestionDatatype.Int,
@@ -327,7 +327,7 @@ public class DbInitialiser
         };
         var page2 = new SurveyPageDB { Name = "Page 2", PageIndex = 2, IsPublished = true, AdaptiveCardTemplateJson = cardContent.ToString() };
         page2.Questions.AddRange([
-            new SurveyQuestionDB
+            new SurveyQuestionDefinitionDB
             {
                 Question = "Does copilot help you be more productive generally?",
                 ForSurveyPage = page2, DataType = QuestionDatatype.Bool,
@@ -357,17 +357,17 @@ public class DbInitialiser
         CommonAuditEvent related)
     {
         var dt = from.AddDays(i * -1);
-        var testFileOpResponse = new UserSurveyResponseDB
+        var testFileOpResponse = new SurveyGeneralResponseDB
         {
             OverrallRating = rnd.Next(ratingFrom, ratingTo),
             Requested = dt,
             Responded = dt.AddMinutes(i),
             User = allUsers[rnd.Next(0, allUsers.Count)],
         };
-        context.SurveyResponses.Add(testFileOpResponse);
+        context.SurveyGeneralResponses.Add(testFileOpResponse);
         context.SurveyResponseActivityTypes.Add(new UserSurveyResponseActivityType { CopilotActivity = docActivity, UserSurveyResponse = testFileOpResponse });
 
-        var testMeetingResponse = new UserSurveyResponseDB
+        var testMeetingResponse = new SurveyGeneralResponseDB
         {
             OverrallRating = rnd.Next(1, 5),
             Requested = dt,
@@ -375,7 +375,7 @@ public class DbInitialiser
             User = allUsers[rnd.Next(0, allUsers.Count)],
             RelatedEvent = related
         };
-        context.SurveyResponses.Add(testMeetingResponse);
+        context.SurveyGeneralResponses.Add(testMeetingResponse);
         context.SurveyResponseActivityTypes.Add(new UserSurveyResponseActivityType { CopilotActivity = meetingActivity, UserSurveyResponse = testMeetingResponse });
     }
 }

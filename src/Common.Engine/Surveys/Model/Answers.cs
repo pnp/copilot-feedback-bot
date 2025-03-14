@@ -7,7 +7,7 @@ public abstract class SurveyAnswer<T> where T : notnull
     public SurveyAnswer()
     {
     }
-    protected SurveyAnswer(SurveyAnswerDB a) : this()
+    protected SurveyAnswer(SurveyQuestionResponseDB a) : this()
     {
         this.Id = a.ID;
     }
@@ -53,7 +53,7 @@ public class StringSurveyAnswer : SurveyAnswer<string>
     public StringSurveyAnswer() : base()
     {
     }
-    public StringSurveyAnswer(SurveyAnswerDB a) : base(a)
+    public StringSurveyAnswer(SurveyQuestionResponseDB a) : base(a)
     {
         Question = new StringSurveyQuestion(a.ForQuestion, 0) { OptimalAnswer = a.ForQuestion.OptimalAnswerValue };
         ValueGiven = a.GivenAnswer;
@@ -70,7 +70,7 @@ public class IntSurveyAnswer : SurveyAnswer<int>
     public IntSurveyAnswer() : base()
     {
     }
-    public IntSurveyAnswer(SurveyAnswerDB a) : base(a)
+    public IntSurveyAnswer(SurveyQuestionResponseDB a) : base(a)
     {
         Question = new IntSurveyQuestion(a.ForQuestion, 0);
 
@@ -108,7 +108,7 @@ public class BooleanSurveyAnswer : SurveyAnswer<bool>
     {
     }
 
-    public BooleanSurveyAnswer(SurveyAnswerDB a) : base(a)
+    public BooleanSurveyAnswer(SurveyQuestionResponseDB a) : base(a)
     {
         Question = new BooleanSurveyQuestion(a.ForQuestion, 0);
 
@@ -128,13 +128,14 @@ public class BooleanSurveyAnswer : SurveyAnswer<bool>
     }
 }
 
-public class AnswersCollection
+/// <summary>
+/// A list of survey answers by user(s)
+/// </summary>
+public class SurveyAnswersCollection
 {
-    public AnswersCollection()
-    {
-    }
+    public SurveyAnswersCollection() { }        // Serialization constructor
 
-    public AnswersCollection(List<SurveyAnswerDB> answers)
+    public SurveyAnswersCollection(List<SurveyQuestionResponseDB> answers)
     {
         foreach (var a in answers)
         {
@@ -157,6 +158,8 @@ public class AnswersCollection
         }
     }
 
+    [System.Text.Json.Serialization.JsonIgnore]
+    [Newtonsoft.Json.JsonIgnore]
     public List<int> AllAnswerIds =>
         StringSurveyAnswers.Select(a => a.Id)
         .Concat(IntSurveyAnswers.Select(a => a.Id))

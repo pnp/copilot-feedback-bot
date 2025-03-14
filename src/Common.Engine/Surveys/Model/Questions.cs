@@ -10,7 +10,7 @@ public class StringSurveyQuestion : SurveyQuestion<string>
     {
     }
 
-    public StringSurveyQuestion(SurveyQuestionDB q, int index) : base(q, index)
+    public StringSurveyQuestion(SurveyQuestionDefinitionDB q, int index) : base(q, index)
     {
     }
 
@@ -26,7 +26,7 @@ public class IntSurveyQuestion : SurveyQuestion<int>
     public IntSurveyQuestion() : base()
     {
     }
-    public IntSurveyQuestion(SurveyQuestionDB q, int index) : base(q, index)
+    public IntSurveyQuestion(SurveyQuestionDefinitionDB q, int index) : base(q, index)
     {
     }
     internal override JObject GetAdaptiveCardJson()
@@ -41,7 +41,7 @@ public class BooleanSurveyQuestion : SurveyQuestion<bool>
     public BooleanSurveyQuestion() : base()
     {
     }
-    public BooleanSurveyQuestion(SurveyQuestionDB q, int index) : base(q, index)
+    public BooleanSurveyQuestion(SurveyQuestionDefinitionDB q, int index) : base(q, index)
     {
         if (bool.TryParse(q.OptimalAnswerValue, out var r))
         {
@@ -69,7 +69,7 @@ public abstract class BaseSurveyQuestion : BaseDTO
     {
         Question = string.Empty;
     }
-    protected BaseSurveyQuestion(SurveyQuestionDB q, int index) : base(q)
+    protected BaseSurveyQuestion(SurveyQuestionDefinitionDB q, int index) : base(q)
     {
         Question = q.Question;
         OptimalAnswerLogicalOp = q.OptimalAnswerLogicalOp ?? LogicalOperator.Unknown;
@@ -101,7 +101,7 @@ public class SurveyQuestionDTO : BaseDTO
     public SurveyQuestionDTO()
     {
     }
-    public SurveyQuestionDTO(SurveyQuestionDB q) : base(q)
+    public SurveyQuestionDTO(SurveyQuestionDefinitionDB q) : base(q)
     {
         this.Question = q.Question;
         this.Index = q.Index;
@@ -135,7 +135,7 @@ public abstract class SurveyQuestion<T> : BaseSurveyQuestion
     public SurveyQuestion() : base()
     {
     }
-    protected SurveyQuestion(SurveyQuestionDB q, int index) : base(q, index)
+    protected SurveyQuestion(SurveyQuestionDefinitionDB q, int index) : base(q, index)
     {
     }
 

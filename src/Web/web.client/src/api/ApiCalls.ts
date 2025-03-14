@@ -1,5 +1,5 @@
 import moment, { Moment } from 'moment';
-import { BaseDTO, BasicStats, ILoaderUsageStatsReportFilter, UsageStatsReport, ServiceConfiguration, SurveyPageDTO } from "../apimodels/Models";
+import { BaseDTO, BasicStats, ILoaderUsageStatsReportFilter, UsageStatsReport, ServiceConfiguration, SurveyPageDTO, SurveyAnswersCollection } from "../apimodels/Models";
 import { BaseAxiosApiLoader } from "./AxiosApiLoader";
 
 
@@ -7,6 +7,7 @@ export const getClientConfig = async (loader: BaseAxiosApiLoader): Promise<Servi
   return loader.loadFromApi('api/AppInfo/GetClientConfig', 'POST');
 }
 
+// Stats
 export const getUsageStatsReport = async (loader: BaseAxiosApiLoader): Promise<UsageStatsReport> => {
 
   const from: Moment = moment(new Date()).add(-1, 'years');
@@ -22,6 +23,10 @@ export const getUsageStatsReport = async (loader: BaseAxiosApiLoader): Promise<U
 
 export const getBasicStats = async (loader: BaseAxiosApiLoader): Promise<BasicStats> => {
   return loader.loadFromApi('api/Stats/GetBasicStats', 'GET');
+}
+
+export const getSurveyAnswers = async (loader: BaseAxiosApiLoader): Promise<SurveyAnswersCollection> => {
+  return loader.loadFromApi('api/Stats/GetSurveyAnswers', 'GET');
 }
 
 

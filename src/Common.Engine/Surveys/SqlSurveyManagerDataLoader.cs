@@ -23,7 +23,7 @@ public class SqlSurveyManagerDataLoader(DataContext db, ILogger<SqlSurveyManager
 
     public async Task<DateTime?> GetLastUserSurveyDate(User user)
     {
-        var latestUserRespondedSurvey = await db.SurveyResponses
+        var latestUserRespondedSurvey = await db.SurveyGeneralResponses
             .Where(e => e.User == user)
             .OrderBy(e => e.Responded).Take(1)
             .FirstOrDefaultAsync();
@@ -37,7 +37,7 @@ public class SqlSurveyManagerDataLoader(DataContext db, ILogger<SqlSurveyManager
 
     public async Task<List<BaseCopilotSpecificEvent>> GetUnsurveyedActivities(User user, DateTime? from)
     {
-        var useRespondedEvents = await db.SurveyResponses
+        var useRespondedEvents = await db.SurveyGeneralResponses
             .Include(e => e.RelatedEvent)
             .Where(e => e.RelatedEvent != null && e.RelatedEvent.User == user && (!from.HasValue || e.Requested > from))
             .Select(e => e.RelatedEvent)
@@ -62,14 +62,14 @@ public class SqlSurveyManagerDataLoader(DataContext db, ILogger<SqlSurveyManager
 
     public async Task<int> LogSurveyRequested(CommonAuditEvent @event)
     {
-        var survey = new UserSurveyResponseDB
+        var survey = new SurveyGeneralResponseDB
         {
             RelatedEventId = @event.Id,
             Requested = DateTime.UtcNow,
             Responded = null,
             UserID = @event.UserId
         };
-        db.SurveyResponses.Add(survey);
+        db.SurveyGeneralResponses.Add(survey);
         await db.SaveChangesAsync();
         return survey.ID;
     }
@@ -88,7 +88,7 @@ public class SqlSurveyManagerDataLoader(DataContext db, ILogger<SqlSurveyManager
     /// <exception cref="ArgumentOutOfRangeException">If for some reason we can't find the existing survey by the copilot event</exception>
     public async Task<int> UpdateSurveyResultWithInitialScore(CommonAuditEvent @event, int score)
     {
-        var response = await db.SurveyResponses.Where(e => e.RelatedEvent == @event).FirstOrDefaultAsync();
+        var response = await db.SurveyGeneralResponses.Where(e => e.RelatedEvent == @event).FirstOrDefaultAsync();
         if (response != null)
         {
             response.OverrallRating = score;
@@ -107,8 +107,8 @@ public class SqlSurveyManagerDataLoader(DataContext db, ILogger<SqlSurveyManager
             user = new User { UserPrincipalName = userUpn };
         }
 
-        var survey = new UserSurveyResponseDB { OverrallRating = scoreGiven, Requested = DateTime.UtcNow, User = user };
-        db.SurveyResponses.Add(survey);
+        var survey = new SurveyGeneralResponseDB { OverrallRating = scoreGiven, Requested = DateTime.UtcNow, User = user };
+        db.SurveyGeneralResponses.Add(survey);
         await db.SaveChangesAsync();
         return survey.ID;
     }
@@ -128,14 +128,14 @@ public class SqlSurveyManagerDataLoader(DataContext db, ILogger<SqlSurveyManager
         }
     }
 
-    public async Task<List<SurveyAnswerDB>> SaveAnswers(User user, List<SurveyPageUserResponse.RawResponse> answers, int existingSurveyId)
+    public async Task<List<SurveyQuestionResponseDB>> SaveAnswers(User user, List<SurveyPageUserResponse.RawResponse> answers, int existingSurveyId)
     {
         if (answers.Select(a => a.QuestionId).Contains(0))
         {
             throw new ArgumentOutOfRangeException("Cannot save answers for question ID 0");
         }
         var responses = answers
-            .Select(a => new SurveyAnswerDB
+            .Select(a => new SurveyQuestionResponseDB
             {
                 ForQuestionId = a.QuestionId,
                 GivenAnswer = a.Response,
@@ -143,10 +143,10 @@ public class SqlSurveyManagerDataLoader(DataContext db, ILogger<SqlSurveyManager
                 TimestampUtc = DateTime.UtcNow,
                 ParentSurveyId = existingSurveyId
             }).ToList();
-        db.SurveyAnswers.AddRange(responses);
+        db.SurveyQuestionResponses.AddRange(responses);
         await db.SaveChangesAsync();
 
-        var savedAnswers = await db.SurveyAnswers
+        var savedAnswers = await db.SurveyQuestionResponses
             .Include(a => a.ForQuestion)
             .Where(a => responses.Select(r => r.ID).Contains(a.ID))
             .ToListAsync();
@@ -200,7 +200,7 @@ public class SqlSurveyManagerDataLoader(DataContext db, ILogger<SqlSurveyManager
         dbPage.Questions.Clear();
         foreach (var q in pageUpdate.Questions)
         {
-            var dbQ = new SurveyQuestionDB
+            var dbQ = new SurveyQuestionDefinitionDB
             {
                 Question = q.Question,
                 DataType = q.DataType,
@@ -215,10 +215,10 @@ public class SqlSurveyManagerDataLoader(DataContext db, ILogger<SqlSurveyManager
         await db.SaveChangesAsync();
     }
 
-    public async Task<List<SurveyAnswerDB>> GetAnswers()
+    public async Task<List<SurveyQuestionResponseDB>> GetAllPublishedSurveyQuestionResponses()
     {
         // Deep load questions
-        var allAnswersForQuestionsOnPublishedPages = await db.SurveyAnswers
+        var allAnswersForQuestionsOnPublishedPages = await db.SurveyQuestionResponses
             .Include(a => a.ForQuestion)
                 .ThenInclude(a => a.ForSurveyPage)
             .Where(a => a.ForQuestion.ForSurveyPage.IsPublished)

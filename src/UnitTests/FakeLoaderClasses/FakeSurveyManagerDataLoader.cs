@@ -109,10 +109,10 @@ internal class FakeSurveyManagerDataLoader : ISurveyManagerDataLoader
         return Task.FromResult(1);
     }
 
-    public Task<List<SurveyAnswerDB>> SaveAnswers(User user, List<SurveyPageUserResponse.RawResponse> answers, int existingSurveyId)
+    public Task<List<SurveyQuestionResponseDB>> SaveAnswers(User user, List<SurveyPageUserResponse.RawResponse> answers, int existingSurveyId)
     {
         Console.WriteLine($"Fake user saved answers for {user.UserPrincipalName}");
-        return Task.FromResult(new List<SurveyAnswerDB>());
+        return Task.FromResult(new List<SurveyQuestionResponseDB>());
     }
 
     public Task<List<SurveyPageDB>> GetSurveyPages(bool publishedOnly)
@@ -121,15 +121,15 @@ internal class FakeSurveyManagerDataLoader : ISurveyManagerDataLoader
         {
             new SurveyPageDB
             {
-                Questions = new List<SurveyQuestionDB>
+                Questions = new List<SurveyQuestionDefinitionDB>
                 {
-                    new SurveyQuestionDB
+                    new SurveyQuestionDefinitionDB
                     {
                         ID = 1,
                         Question = "Question 1",
                         DataType = QuestionDatatype.Int
                     },
-                    new SurveyQuestionDB
+                    new SurveyQuestionDefinitionDB
                     {
                         ID = 2,
                         Question = "Question 2",
@@ -150,7 +150,7 @@ internal class FakeSurveyManagerDataLoader : ISurveyManagerDataLoader
         throw new NotImplementedException();
     }
 
-    public Task<List<SurveyAnswerDB>> GetAnswers()
+    public Task<List<SurveyQuestionResponseDB>> GetAllPublishedSurveyQuestionResponses()
     {
         throw new NotImplementedException();
     }
