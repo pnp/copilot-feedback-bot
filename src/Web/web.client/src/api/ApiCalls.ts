@@ -51,3 +51,6 @@ export const triggerGenerateFakeActivityForUser = async (loader: BaseAxiosApiLoa
 export const triggerGenerateFakeActivityForAllUsers = async (loader: BaseAxiosApiLoader): Promise<null> => {
   return loader.loadFromApi('/api/Triggers/GenerateFakeActivityForAllUsers', 'POST');
 }
+export const triggerRefreshProfilingStats = async (loader: BaseAxiosApiLoader, weeksToKeep: number): Promise<null> => {
+  return loader.loadFromApi('/api/Triggers/RefreshProfilingStats?weeksToKeep=' + weeksToKeep, 'POST');
+}

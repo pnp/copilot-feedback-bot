@@ -33,10 +33,14 @@ public class SqlUsageDataLoader(ProfilingContext context, ILogger<SqlUsageDataLo
         return data.Cast<IActivitiesWeeklyRecord>();
     }
 
-    public async Task RefreshProfilingStats()
+    public async Task RefreshProfilingStats(int weeksToKeep)
     {
+        if (weeksToKeep < 1)
+        {
+            throw new ArgumentOutOfRangeException(nameof(weeksToKeep), "Weeks to keep must be greater than 0");
+        }
         logger.LogInformation("Refreshing profiling stats");
-        await context.Database.ExecuteSqlRawAsync("EXEC [profiling].[usp_CompileWeekly] @WeeksToKeep = 52");
+        await context.Database.ExecuteSqlRawAsync("EXEC [profiling].[usp_CompileWeekly] @WeeksToKeep = " + weeksToKeep);
     }
 }
 

@@ -1,8 +1,8 @@
 
 import React from 'react';
 import 'chartjs-adapter-date-fns'
-import { Button, Input, Spinner } from '@fluentui/react-components';
-import { triggerGenerateFakeActivityForUser, triggerInstallBotForUser, triggerSendSurveys } from '../../../api/ApiCalls';
+import { Button, Input, Spinner, tokens } from '@fluentui/react-components';
+import { triggerGenerateFakeActivityForAllUsers, triggerGenerateFakeActivityForUser, triggerInstallBotForUser, triggerRefreshProfilingStats, triggerSendSurveys } from '../../../api/ApiCalls';
 
 import {
   Play24Regular
@@ -21,6 +21,13 @@ import { BaseAxiosApiLoader } from '../../../api/AxiosApiLoader';
 export const TriggersPage: React.FC<{ loader?: BaseAxiosApiLoader }> = (props) => {
 
   const [error, setError] = React.useState<string | undefined>(undefined);
+  const [commandSuccess, setCommandSuccess] = React.useState<boolean>(false);
+
+
+  const [loading, setLoading] = React.useState<boolean>(false);
+  const [installUser, setInstallUser] = React.useState<string>('');
+  const [generateDataUser, setGenerateDataUser] = React.useState<string>('');
+  const [weekToKeep, setWeekToKeep] = React.useState<number>(4);
 
   const sendSurveys = React.useCallback(() => {
     console.debug("Sending Surveys");
@@ -28,7 +35,6 @@ export const TriggersPage: React.FC<{ loader?: BaseAxiosApiLoader }> = (props) =
       console.error("No loader available");
       return;
     }
-    setLoading(true);
     executeTrigger(triggerSendSurveys(props.loader));
   }, []);
 
@@ -57,24 +63,36 @@ export const TriggersPage: React.FC<{ loader?: BaseAxiosApiLoader }> = (props) =
       console.error("No loader available");
       return;
     }
-    executeTrigger(triggerGenerateFakeActivityForUser(props.loader, generateDataUser));
+    executeTrigger(triggerGenerateFakeActivityForAllUsers(props.loader));
+  }, []);
+
+
+  const refreshProfilingStats = React.useCallback(() => {
+    console.debug("Refreshing Profiling Stats");  
+    if (!props.loader) {
+      console.error("No loader available");
+      return;
+    }
+    executeTrigger(triggerRefreshProfilingStats(props.loader, 4));
   }, []);
 
   const executeTrigger = React.useCallback((call: Promise<null>) => {
     console.debug("Executing trigger");
+    setCommandSuccess(false);
     setLoading(true);
+    setError(undefined);
     call
-      .then(() => { setLoading(false); })
+      .then(() => 
+        { 
+          setLoading(false); 
+          setCommandSuccess(true);
+        })
       .catch((err) => {
         console.error("Error executing trigger: ", err);
         setError(err.message);
         setLoading(false);
       });
   }, []);
-
-  const [loading, setLoading] = React.useState<boolean>(false);
-  const [installUser, setInstallUser] = React.useState<string>('');
-  const [generateDataUser, setGenerateDataUser] = React.useState<string>('');
 
   return (
     <div>
@@ -139,10 +157,25 @@ export const TriggersPage: React.FC<{ loader?: BaseAxiosApiLoader }> = (props) =
                 </TableCell>
               </TableRow>
 
+              
+              <TableRow>
+                <TableCell>
+                  <TableCellLayout media={<Play24Regular />}>Refresh usage stats from data</TableCellLayout>
+                </TableCell>
+                <TableCell>
+                  <Input placeholder="Weeks to keep" onChange={(e) => setWeekToKeep(Number(e.currentTarget.value))} 
+                  value={weekToKeep.toString()} disabled={loading} type='number' />
+                </TableCell>
+                <TableCell>
+                  <Button appearance="primary" onClick={refreshProfilingStats} disabled={loading}>Refresh Stats</Button>
+                </TableCell>
+              </TableRow>
+
             </TableBody>
           </Table>
 
           {error && <div className="error">{error}</div>}
+          {commandSuccess && <div style={{color: tokens.colorPaletteGreenForeground1}}>Command executed successfully!</div>}
 
           {loading && <Spinner label="Sending command..." />}
 

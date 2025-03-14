@@ -1,7 +1,4 @@
-﻿using Entities.DB;
-using Entities.DB.Entities.Profiling;
-using Entities.DB.Models;
-using Microsoft.EntityFrameworkCore;
+﻿using Entities.DB.Models;
 using Microsoft.Extensions.Logging;
 
 namespace Common.Engine.UsageStats;
@@ -19,7 +16,7 @@ public class ReportManager(IUsageDataLoader loader, ILogger<ReportManager> logge
 public interface IUsageDataLoader
 {
     Task<IEnumerable<IActivitiesWeeklyRecord>> LoadRecords(LoaderUsageStatsReportFilter filter);
-    Task RefreshProfilingStats();
+    Task RefreshProfilingStats(int weeksToKeep);
     Task ClearProfilingStats();
 }
 

@@ -22,20 +22,24 @@ public class UsageStatsReport
         this.UniqueActivities = filteredData
             .Select(x => x.Metric)
             .Distinct()
+            .OrderDescending()
             .ToList();
 
         this.Dates = filteredData
             .Select(x => x.MetricDate)
             .Distinct()
+            .OrderDescending()
             .ToList();
 
+        var usersResults = new List<EntityWithScore<ITrackedUser>>();
         foreach (var user in filteredUsers)
         {
             var score = filteredData
                 .Where(x => x.User == user)
                 .Sum(x => x.Sum);
-            this.UsersLeague.Add(new EntityWithScore<ITrackedUser>(user, score));
+            usersResults.Add(new EntityWithScore<ITrackedUser>(user, score));
         }
+        this.UsersLeague = usersResults.OrderByDescending(u => u.Score).ToList();
 
         this.CountriesLeague = UsersLeague.BuildLeagueForLookup(x => x.UserCountry);
         this.DepartmentsLeague = UsersLeague.BuildLeagueForLookup(x => x.Department);

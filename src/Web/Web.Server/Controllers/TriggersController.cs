@@ -1,5 +1,6 @@
 ﻿using Common.Engine.Notifications;
 using Common.Engine.Surveys;
+using Common.Engine.UsageStats;
 using Entities.DB;
 using Microsoft.AspNetCore.Mvc;
 
@@ -7,7 +8,7 @@ namespace Web.Server.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class TriggersController(SurveyManager surveyManager, IBotConvoResumeManager botConvoResumeManager, DataContext context, ILogger<TriggersController> logger) : ControllerBase
+public class TriggersController(SurveyManager surveyManager, IBotConvoResumeManager botConvoResumeManager, IUsageDataLoader usageDataLoader, DataContext context, ILogger<TriggersController> logger) : ControllerBase
 {
     private readonly SurveyManager _surveyManager = surveyManager;
     private readonly IBotConvoResumeManager _botConvoResumeManager = botConvoResumeManager;
@@ -50,5 +51,22 @@ public class TriggersController(SurveyManager surveyManager, IBotConvoResumeMana
         await FakeDataGen.GenerateFakeActivityForAllUsers(_context, _logger);
 
         return Ok($"Generated fake data for all users");
+    }
+
+
+
+    // POST: api/Triggers/RefreshProfilingStats?weeksToKeep=
+    [HttpPost(nameof(RefreshProfilingStats))]
+    public async Task<IActionResult> RefreshProfilingStats(int weeksToKeep)
+    {
+        try
+        {
+            await usageDataLoader.RefreshProfilingStats(weeksToKeep);
+        }
+        catch (ArgumentOutOfRangeException)
+        {
+            return BadRequest("Weeks to keep must be greater than 0");
+        }
+        return Ok($"Profiling stats refreshed, keeping {weeksToKeep} weeks of data");
     }
 }
