@@ -10,7 +10,7 @@ import { useTeamsUserCredential } from '@microsoft/teamsfx-react';
 import { BaseAxiosApiLoader, MsalAxiosApiLoader, TeamsSsoAxiosApiLoader } from './api/AxiosApiLoader';
 import { getBasicStats } from './api/ApiCalls';
 import { getRootUrl } from './utils/DataUtils';
-import { Spinner, teamsDarkTheme, teamsHighContrastTheme, teamsLightTheme, Theme } from '@fluentui/react-components';
+import { teamsDarkTheme, teamsHighContrastTheme, teamsLightTheme, Theme } from '@fluentui/react-components';
 
 export const AuthContainer: React.FC<PropsWithChildren<AuthContainerProps>> = (props) => {
 

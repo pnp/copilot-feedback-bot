@@ -20,6 +20,8 @@ import { BaseAxiosApiLoader } from '../../../api/AxiosApiLoader';
 
 export const TriggersPage: React.FC<{ loader?: BaseAxiosApiLoader }> = (props) => {
 
+  const [error, setError] = React.useState<string | undefined>(undefined);
+
   const sendSurveys = React.useCallback(() => {
     console.debug("Sending Surveys");
     if (!props.loader) {
@@ -27,7 +29,7 @@ export const TriggersPage: React.FC<{ loader?: BaseAxiosApiLoader }> = (props) =
       return;
     }
     setLoading(true);
-    triggerSendSurveys(props.loader).then(() => { setLoading(false); });
+    executeTrigger(triggerSendSurveys(props.loader));
   }, []);
 
   const installBot = React.useCallback(() => {
@@ -36,7 +38,7 @@ export const TriggersPage: React.FC<{ loader?: BaseAxiosApiLoader }> = (props) =
       console.error("No loader available");
       return;
     }
-    triggerInstallBotForUser(props.loader, installUser).then(() => { setLoading(false); });
+    executeTrigger(triggerInstallBotForUser(props.loader, installUser));
   }, []);
 
   const generateDataForUser = React.useCallback(() => {
@@ -45,7 +47,7 @@ export const TriggersPage: React.FC<{ loader?: BaseAxiosApiLoader }> = (props) =
       console.error("No loader available");
       return;
     }
-    triggerGenerateFakeActivityForUser(props.loader, generateDataUser).then(() => { setLoading(false); });
+    executeTrigger(triggerGenerateFakeActivityForUser(props.loader, generateDataUser));
   }, []);
 
 
@@ -55,7 +57,19 @@ export const TriggersPage: React.FC<{ loader?: BaseAxiosApiLoader }> = (props) =
       console.error("No loader available");
       return;
     }
-    triggerGenerateFakeActivityForUser(props.loader, generateDataUser).then(() => { setLoading(false); });
+    executeTrigger(triggerGenerateFakeActivityForUser(props.loader, generateDataUser));
+  }, []);
+
+  const executeTrigger = React.useCallback((call: Promise<null>) => {
+    console.debug("Executing trigger");
+    setLoading(true);
+    call
+      .then(() => { setLoading(false); })
+      .catch((err) => {
+        console.error("Error executing trigger: ", err);
+        setError(err.message);
+        setLoading(false);
+      });
   }, []);
 
   const [loading, setLoading] = React.useState<boolean>(false);
@@ -128,6 +142,7 @@ export const TriggersPage: React.FC<{ loader?: BaseAxiosApiLoader }> = (props) =
             </TableBody>
           </Table>
 
+          {error && <div className="error">{error}</div>}
 
           {loading && <Spinner label="Sending command..." />}
 

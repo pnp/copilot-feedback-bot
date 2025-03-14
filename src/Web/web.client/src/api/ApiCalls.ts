@@ -38,6 +38,7 @@ export const deleteSurveyPage = async (loader: BaseAxiosApiLoader, pageId: strin
   return loader.loadFromApi('api/SurveyQuestions/DeletePage', 'POST', body);
 }
 
+// Triggers
 export const triggerSendSurveys = async (loader: BaseAxiosApiLoader): Promise<null> => {
   return loader.loadFromApi('/api/Triggers/SendSurveys', 'POST');
 }
