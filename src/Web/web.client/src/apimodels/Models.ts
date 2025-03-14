@@ -110,8 +110,19 @@ interface BooleanSurveyAnswer extends SurveyAnswer<boolean> {
   
 }
 
-export interface SurveyAnswersCollection {
+interface SurveyAnswersCollection {
   intSurveyAnswers: IntSurveyAnswer[];
   stringSurveyAnswers: StringSurveyAnswer[];
   booleanSurveyAnswers: BooleanSurveyAnswer[];
+}
+
+export interface SurveysReport {
+  answers: SurveyAnswersCollection;
+  percentageOfAnswersWithPositiveResult: number;
+  stats: QuestionStats;
+}
+
+interface QuestionStats {
+  highestPositiveAnswerQuestion: EntityWithScore<string>;
+  highestNegativeAnswerQuestion: EntityWithScore<string>;
 }

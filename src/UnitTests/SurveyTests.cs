@@ -11,6 +11,74 @@ namespace UnitTests;
 public class SurveyTests : AbstractTest
 {
     [TestMethod]
+    public void SurveysReportTests()
+    {
+        var emptyStats = new QuestionStats();
+        Assert.IsTrue(emptyStats.IsEmpty);
+
+        var surveyReport = new SurveysReport(new SurveyAnswersCollection
+        {
+            StringSurveyAnswers = new List<StringSurveyAnswer>
+            {
+                new StringSurveyAnswer
+                {
+                    Question = new StringSurveyQuestion
+                    {
+                        QuestionText = "What is love?",
+                        OptimalAnswer = "Don't hurt me",
+                        OptimalAnswerLogicalOp = LogicalOperator.Equals,
+                    },
+                    ValueGiven = "Don't hurt me"
+                }
+            },
+            IntSurveyAnswers = new List<IntSurveyAnswer>
+            {
+                new IntSurveyAnswer
+                {
+                    Question = new IntSurveyQuestion
+                    {
+                        QuestionText = "What is 1+1?",
+                        OptimalAnswer = 2,
+                        OptimalAnswerLogicalOp = LogicalOperator.Equals,
+                    },
+                    ValueGiven = 2
+                }
+            },
+            BooleanSurveyAnswers = new List<BooleanSurveyAnswer>
+            {
+                new BooleanSurveyAnswer
+                {
+                    Question = new BooleanSurveyQuestion
+                    {
+                        QuestionText = "Is this true?",
+                        OptimalAnswer = true,
+                        OptimalAnswerLogicalOp = LogicalOperator.Equals,
+                    },
+                    ValueGiven = true
+                },
+                new BooleanSurveyAnswer
+                {
+                    Question = new BooleanSurveyQuestion
+                    {
+                        QuestionText = "Is this also true?",
+                        OptimalAnswer = true,           
+                        OptimalAnswerLogicalOp = LogicalOperator.Equals,
+                    },
+                    ValueGiven = false          // Wrong answer
+                }
+            }
+        }
+        );
+
+        Assert.AreEqual(75, surveyReport.PercentageOfAnswersWithPositiveResult);
+        Assert.AreEqual("What is love?",        surveyReport.Stats.HighestPositiveAnswerQuestion.Entity);
+        Assert.AreEqual("Is this also true?",   surveyReport.Stats.HighestNegativeAnswerQuestion.Entity);
+
+        Assert.IsTrue(surveyReport.Stats.HighestPositiveAnswerQuestion.Score == 1);
+        Assert.IsTrue(surveyReport.Stats.HighestNegativeAnswerQuestion.Score == 1);
+    }
+
+    [TestMethod]
     public void SurveyModelTests()
     {
         var pageDb = new SurveyPageDB
@@ -42,7 +110,7 @@ public class SurveyTests : AbstractTest
                     DataType = QuestionDatatype.String,
                     OptimalAnswerValue = "Don't hurt me",
                     OptimalAnswerLogicalOp = LogicalOperator.Equals,
-                    Question = "What is love?",
+                    QuestionText = "What is love?",
                     Index = 0,
                 },
                 new() {
@@ -50,7 +118,7 @@ public class SurveyTests : AbstractTest
                     DataType = QuestionDatatype.Int,
                     OptimalAnswerValue = "2",
                     OptimalAnswerLogicalOp = LogicalOperator.Equals,
-                    Question = "What is 1+1?",
+                    QuestionText = "What is 1+1?",
                     Index = 2,
                 },
                 new() {
@@ -58,7 +126,7 @@ public class SurveyTests : AbstractTest
                     DataType = QuestionDatatype.Bool,
                     OptimalAnswerValue = "True",
                     OptimalAnswerLogicalOp = LogicalOperator.Equals,
-                    Question = "True?",
+                    QuestionText = "True?",
                     Index = 4,
                 },
             }
@@ -119,7 +187,7 @@ public class SurveyTests : AbstractTest
                     DataType = QuestionDatatype.String,
                     OptimalAnswerValue = "Don't hurt me",
                     OptimalAnswerLogicalOp = LogicalOperator.Equals,
-                    Question = "What is love?",
+                    QuestionText = "What is love?",
                     Index = 0,
                 },
                 GivenAnswer = "Don't hurt me"
@@ -132,7 +200,7 @@ public class SurveyTests : AbstractTest
                     DataType = QuestionDatatype.Int,
                     OptimalAnswerValue = "2",
                     OptimalAnswerLogicalOp = LogicalOperator.Equals,
-                    Question = "What is 1+1?",
+                    QuestionText = "What is 1+1?",
                     Index = 2,
                 },
                 GivenAnswer = "2"
@@ -145,7 +213,7 @@ public class SurveyTests : AbstractTest
                     DataType = QuestionDatatype.Bool,
                     OptimalAnswerValue = "True",
                     OptimalAnswerLogicalOp = LogicalOperator.Equals,
-                    Question = "True?",
+                    QuestionText = "True?",
                     Index = 4,
                 },
                 GivenAnswer = "True"
@@ -192,7 +260,7 @@ public class SurveyTests : AbstractTest
             DataType = QuestionDatatype.String,
             OptimalAnswerValue = "Don't hurt me",
             OptimalAnswerLogicalOp = LogicalOperator.Equals,
-            Question = "What is love?",
+            QuestionText = "What is love?",
             Index = 0,
         };
         var newIntQ = new SurveyQuestionDefinitionDB
@@ -200,7 +268,7 @@ public class SurveyTests : AbstractTest
             DataType = QuestionDatatype.Int,
             OptimalAnswerValue = "2",
             OptimalAnswerLogicalOp = LogicalOperator.Equals,
-            Question = "What is 1+1?",
+            QuestionText = "What is 1+1?",
             Index = 2,
         };
         var newBoolQ = new SurveyQuestionDefinitionDB
@@ -208,7 +276,7 @@ public class SurveyTests : AbstractTest
             DataType = QuestionDatatype.Bool,
             OptimalAnswerValue = "True",
             OptimalAnswerLogicalOp = LogicalOperator.Equals,
-            Question = "True?",
+            QuestionText = "True?",
             Index = 4,
         };
         _db.SurveyQuestionDefinitions.AddRange(newStringQ, newIntQ, newBoolQ);
@@ -281,7 +349,7 @@ public class SurveyTests : AbstractTest
             {
                 Question = new StringSurveyQuestion
                 {
-                    Question = "What is love?",
+                    QuestionText = "What is love?",
                     OptimalAnswer = "Don't hurt me",
                     OptimalAnswerLogicalOp = LogicalOperator.Unknown,
                 },
@@ -293,7 +361,7 @@ public class SurveyTests : AbstractTest
         {
             Question = new StringSurveyQuestion
             {
-                Question = "What is love?",
+                QuestionText = "What is love?",
                 OptimalAnswer = "Don't hurt me",
                 OptimalAnswerLogicalOp = LogicalOperator.Equals,
             },
@@ -311,7 +379,7 @@ public class SurveyTests : AbstractTest
         {
             Question = new IntSurveyQuestion
             {
-                Question = "What is 1+1?",
+                QuestionText = "What is 1+1?",
                 OptimalAnswer = 2,
                 OptimalAnswerLogicalOp = LogicalOperator.Equals,
             },
@@ -327,7 +395,7 @@ public class SurveyTests : AbstractTest
         {
             Question = new IntSurveyQuestion
             {
-                Question = "What is greater than 1+1?",
+                QuestionText = "What is greater than 1+1?",
                 OptimalAnswer = 2,
                 OptimalAnswerLogicalOp = LogicalOperator.GreaterThan,
             },
@@ -343,7 +411,7 @@ public class SurveyTests : AbstractTest
         {
             Question = new IntSurveyQuestion
             {
-                Question = "What is less than 10+1?",
+                QuestionText = "What is less than 10+1?",
                 OptimalAnswer = 10,
                 OptimalAnswerLogicalOp = LogicalOperator.LessThan,
             },
@@ -360,7 +428,7 @@ public class SurveyTests : AbstractTest
         {
             Question = new BooleanSurveyQuestion
             {
-                Question = "Is this true?",
+                QuestionText = "Is this true?",
                 OptimalAnswer = true,
                 OptimalAnswerLogicalOp = LogicalOperator.Equals,
             },

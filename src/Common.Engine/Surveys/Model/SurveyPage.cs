@@ -1,35 +1,8 @@
-﻿using Entities.DB.Entities;
+﻿using Common.Engine.Models;
+using Entities.DB.Entities;
 using System.Text.Json.Serialization;
 
 namespace Common.Engine.Surveys.Model;
-
-public class BaseDTO
-{
-    public BaseDTO()
-    {
-    }
-    public BaseDTO(AbstractEFEntity entity)
-    {
-        Id = entity.ID.ToString();
-    }
-
-    [JsonPropertyName("id")]
-    public string? Id { get; set; }
-}
-
-public abstract class BaseDTOWithName : BaseDTO
-{
-    public BaseDTOWithName()
-    {
-    }
-    public BaseDTOWithName(AbstractEFEntityWithName entity) : base(entity)
-    {
-        Name = entity.Name;
-    }
-
-    [JsonPropertyName("name")]
-    public string Name { get; set; } = string.Empty;
-}
 
 public class SurveyPageDTO : BaseDTOWithName
 {

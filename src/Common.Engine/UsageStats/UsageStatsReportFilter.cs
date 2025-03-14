@@ -1,4 +1,5 @@
-﻿using Entities.DB.Models;
+﻿using Common.Engine.Models;
+using Entities.DB.Models;
 
 namespace Common.Engine.UsageStats;
 

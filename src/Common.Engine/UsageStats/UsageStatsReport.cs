@@ -1,4 +1,5 @@
-﻿using Entities.DB.Models;
+﻿using Common.Engine.Models;
+using Entities.DB.Models;
 
 namespace Common.Engine.UsageStats;
 
@@ -53,15 +54,4 @@ public class UsageStatsReport
     public List<EntityWithScore<ITrackedUser>> UsersLeague { get; set; } = new();
     public List<EntityWithScore<string>> DepartmentsLeague { get; set; } = new();
     public List<EntityWithScore<string>> CountriesLeague { get; set; } = new();
-}
-
-public class EntityWithScore<T>
-{
-    public EntityWithScore(T entity, int score)
-    {
-        Entity = entity;
-        Score = score;
-    }
-    public T Entity { get; set; }
-    public int Score { get; set; }
 }

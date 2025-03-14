@@ -1,4 +1,5 @@
-﻿using Entities.DB.Entities;
+﻿using Common.Engine.Models;
+using Entities.DB.Entities;
 using Newtonsoft.Json.Linq;
 using System.Text.Json.Serialization;
 
@@ -67,16 +68,16 @@ public abstract class BaseSurveyQuestion : BaseDTO
 {
     public BaseSurveyQuestion()
     {
-        Question = string.Empty;
+        QuestionText = string.Empty;
     }
     protected BaseSurveyQuestion(SurveyQuestionDefinitionDB q, int index) : base(q)
     {
-        Question = q.Question;
+        QuestionText = q.QuestionText;
         OptimalAnswerLogicalOp = q.OptimalAnswerLogicalOp ?? LogicalOperator.Unknown;
         Index = index;
     }
 
-    public string Question { get; set; }
+    public string QuestionText { get; set; }
     public int Index { get; set; }
     public LogicalOperator OptimalAnswerLogicalOp { get; set; } = LogicalOperator.Unknown;
 
@@ -91,7 +92,7 @@ public abstract class BaseSurveyQuestion : BaseDTO
         return new JObject
         {
             ["id"] = $"autoQuestionId-{Id}",
-            ["label"] = this.Question
+            ["label"] = this.QuestionText
         };
     }
 }
@@ -103,7 +104,7 @@ public class SurveyQuestionDTO : BaseDTO
     }
     public SurveyQuestionDTO(SurveyQuestionDefinitionDB q) : base(q)
     {
-        this.Question = q.Question;
+        this.Question = q.QuestionText;
         this.Index = q.Index;
         this.OptimalAnswerLogicalOp = q.OptimalAnswerLogicalOp;
         this.OptimalAnswerValue = q.OptimalAnswerValue;

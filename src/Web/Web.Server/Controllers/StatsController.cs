@@ -54,12 +54,12 @@ public class StatsController(ILogger<SurveyQuestionsController> logger, DataCont
         return await reportManager.GetReport(filter);
     }
 
-    // GET: api/Stats/GetSurveyAnswers
-    [HttpGet(nameof(GetSurveyAnswers))]
-    public async Task<SurveyAnswersCollection> GetSurveyAnswers()
+    // GET: api/Stats/GetSurveysReport
+    [HttpGet(nameof(GetSurveysReport))]
+    public async Task<SurveysReport> GetSurveysReport()
     {
-        logger.LogInformation("Called GetSurveyAnswers");
-        return await surveyManager.GetSurveyQuestionResponses();
+        var data = await surveyManager.GetSurveyQuestionResponses();
+        return new SurveysReport(data);
     }
 }
 

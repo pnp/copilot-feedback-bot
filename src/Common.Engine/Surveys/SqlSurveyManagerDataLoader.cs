@@ -202,7 +202,7 @@ public class SqlSurveyManagerDataLoader(DataContext db, ILogger<SqlSurveyManager
         {
             var dbQ = new SurveyQuestionDefinitionDB
             {
-                Question = q.Question,
+                QuestionText = q.Question,
                 DataType = q.DataType,
                 Index = q.Index,
                 OptimalAnswerValue = q.OptimalAnswerValue,

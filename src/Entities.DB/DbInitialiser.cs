@@ -301,13 +301,13 @@ public class DbInitialiser
         page1.Questions.AddRange([
             new SurveyQuestionDefinitionDB
             {
-                Question = "One word to describe copilot?",
+                QuestionText = "One word to describe copilot?",
                 ForSurveyPage = page1, DataType = QuestionDatatype.String,
                 OptimalAnswerValue = null
             },
             new SurveyQuestionDefinitionDB
             {
-                Question = "How many minutes has copilot saved you this time?",
+                QuestionText = "How many minutes has copilot saved you this time?",
                 ForSurveyPage = page1, DataType = QuestionDatatype.Int,
                 OptimalAnswerValue = "0",
                 OptimalAnswerLogicalOp = LogicalOperator.GreaterThan,
@@ -329,7 +329,7 @@ public class DbInitialiser
         page2.Questions.AddRange([
             new SurveyQuestionDefinitionDB
             {
-                Question = "Does copilot help you be more productive generally?",
+                QuestionText = "Does copilot help you be more productive generally?",
                 ForSurveyPage = page2, DataType = QuestionDatatype.Bool,
                 OptimalAnswerValue = "true",
                 OptimalAnswerLogicalOp = LogicalOperator.Equals,

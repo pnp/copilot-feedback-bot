@@ -1,4 +1,5 @@
-﻿using Common.Engine.Surveys;
+﻿using Common.Engine.Models;
+using Common.Engine.Surveys;
 using Common.Engine.Surveys.Model;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

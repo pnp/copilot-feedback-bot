@@ -126,13 +126,13 @@ internal class FakeSurveyManagerDataLoader : ISurveyManagerDataLoader
                     new SurveyQuestionDefinitionDB
                     {
                         ID = 1,
-                        Question = "Question 1",
+                        QuestionText = "Question 1",
                         DataType = QuestionDatatype.Int
                     },
                     new SurveyQuestionDefinitionDB
                     {
                         ID = 2,
-                        Question = "Question 2",
+                        QuestionText = "Question 2",
                         DataType = QuestionDatatype.String
                     }
                 },

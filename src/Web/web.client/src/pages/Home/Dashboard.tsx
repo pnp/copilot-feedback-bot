@@ -14,14 +14,14 @@ import { useStyles } from '../../utils/styles';
 
 export const Dashboard: React.FC<{ loader?: BaseAxiosApiLoader }> = (props) => {
 
-  const [basicStats, setBasicStats] = React.useState<BasicStats | null>(null);
+  const [stats, setStats] = React.useState<BasicStats | null>(null);
   const [error, setError] = React.useState<string | null>(null);
   const styles = useStyles();
 
   React.useEffect(() => {
     if (props.loader)
       getBasicStats(props.loader).then((d) => {
-        setBasicStats(d);
+        setStats(d);
       }).catch((e: Error) => {
         console.error("Error: ", e);
         setError(e.toString());
@@ -39,7 +39,7 @@ export const Dashboard: React.FC<{ loader?: BaseAxiosApiLoader }> = (props) => {
           {error ? <p className='error'>{error}</p>
             :
             <>
-              {basicStats ?
+              {stats ?
                 <div>
                   <ChartContainer>
 
@@ -65,7 +65,7 @@ export const Dashboard: React.FC<{ loader?: BaseAxiosApiLoader }> = (props) => {
                               Users are surveyed for copilot interactions. They don't necesarily reply.
                             </p>
 
-                            <SurveyStatsChart stats={basicStats} />
+                            <SurveyStatsChart stats={stats} />
                           </Card>
                         </li>
                         <li>
@@ -88,7 +88,7 @@ export const Dashboard: React.FC<{ loader?: BaseAxiosApiLoader }> = (props) => {
                               Some users are more active than others. This chart shows the distribution.
                             </p>
 
-                            <UserStatsChart stats={basicStats} />
+                            <UserStatsChart stats={stats} />
                           </Card>
                         </li>
                       </ul>

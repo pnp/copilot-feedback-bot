@@ -2,7 +2,16 @@
 
 namespace Common.Engine.Surveys.Model;
 
-public abstract class SurveyAnswer<T> where T : notnull
+/// <summary>
+/// Non-generic base class for survey answers.
+/// </summary>
+public abstract class BaseSurveyAnswer
+{
+    public abstract bool IsPositiveResult { get; }
+    public abstract string GetAnswerString();
+}
+
+public abstract class SurveyAnswer<T> : BaseSurveyAnswer where T : notnull
 {
     public SurveyAnswer()
     {
@@ -17,7 +26,12 @@ public abstract class SurveyAnswer<T> where T : notnull
 
     public SurveyQuestion<T> Question { get; set; } = default!;
 
-    public bool IsPositiveResult
+    public override string GetAnswerString()
+    {
+        return Question.QuestionText;
+    }
+
+    public override bool IsPositiveResult
     {
         get
         {

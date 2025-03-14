@@ -9,8 +9,6 @@ namespace Entities.DB.DbContexts;
 
 public class DataContext : CommonContext
 {
-    #region Props
-
     public DbSet<IgnoredEvent> IgnoredAuditEvents { get; set; }
 
     public DbSet<SharePointEventMetadata> SharePointEvents { get; set; }
@@ -44,8 +42,6 @@ public class DataContext : CommonContext
     public DbSet<CopilotEventMetadataFile> CopilotEventMetadataFiles { get; set; }
     public DbSet<CopilotEventMetadataMeeting> CopilotEventMetadataMeetings { get; set; }
 
-
-
     public DbSet<UserSurveyResponseActivityType> SurveyResponseActivities { get; set; }
 
     public DbSet<UserSurveyResponseActivityType> SurveyResponseActivityTypes { get; set; }
@@ -58,7 +54,6 @@ public class DataContext : CommonContext
     public DbSet<SurveyQuestionResponseDB> SurveyQuestionResponses { get; set; }
     public DbSet<SurveyGeneralResponseDB> SurveyGeneralResponses { get; set; }
 
-    #endregion
 
     /// <summary>
     /// Define model schema
@@ -128,6 +123,11 @@ public class DataContext : CommonContext
 
         modelBuilder.Entity<ImportSiteFilter>()
          .HasIndex(t => t.UrlBase)
+         .IsUnique();
+
+
+        modelBuilder.Entity<SurveyQuestionDefinitionDB>()
+         .HasIndex(t => t.QuestionText)
          .IsUnique();
 
         modelBuilder.Entity<SurveyGeneralResponseDB>()

@@ -74,7 +74,7 @@ public class SurveyQuestionDefinitionDB : AbstractEFEntity
     public string? QuestionId { get; set; }
 
     [Column("question")]
-    public required string Question { get; set; }
+    public required string QuestionText { get; set; }
 
     [Column("optimal_answer_value")]
     public string? OptimalAnswerValue { get; set; } = null;
