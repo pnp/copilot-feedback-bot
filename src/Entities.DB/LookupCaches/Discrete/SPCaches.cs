@@ -1,4 +1,5 @@
-﻿using Entities.DB.Entities.AuditLog;
+﻿using Entities.DB.DbContexts;
+using Entities.DB.Entities.AuditLog;
 using Entities.DB.Entities.SP;
 using Microsoft.EntityFrameworkCore;
 

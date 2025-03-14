@@ -58,7 +58,6 @@ public class SurveyManager
         return result;
     }
 
-
     public async Task<SurveyPage?> GetSurveyPage(int pageIndex)
     {
         // Load survey questions from the database

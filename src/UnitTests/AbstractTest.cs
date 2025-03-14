@@ -1,8 +1,8 @@
 ﻿using Entities.DB;
+using Entities.DB.DbContexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 
 namespace UnitTests;
 

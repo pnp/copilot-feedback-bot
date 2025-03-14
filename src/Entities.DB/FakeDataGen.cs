@@ -2,6 +2,7 @@
 using Entities.DB.Entities;
 using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
+using Entities.DB.DbContexts;
 
 namespace Entities.DB;
 

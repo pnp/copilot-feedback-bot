@@ -251,6 +251,9 @@ public class SurveyTests : AbstractTest
         Assert.IsTrue(dbAnwsers.Count == 3);
     }
 
+    /// <summary>
+    /// Checks that the IsPositiveResult property of the survey answer is working correctly.
+    /// </summary>
     [TestMethod]
     public void AnswerIsPositiveResultTests()
     {
@@ -264,8 +267,9 @@ public class SurveyTests : AbstractTest
                 {
                     Question = "What is love?",
                     OptimalAnswer = "Don't hurt me",
+                    OptimalAnswerLogicalOp = LogicalOperator.Unknown,
                 },
-                ValueGiven = "Don't hurt me"
+                ValueGiven = "Don't hurt me",
             }.IsPositiveResult;
         });
 

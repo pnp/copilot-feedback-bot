@@ -1,5 +1,6 @@
 ﻿using BCrypt.Net;
 using Common.DataUtils;
+using Entities.DB.DbContexts;
 using Entities.DB.Entities;
 using Entities.DB.Entities.AuditLog;
 using Microsoft.EntityFrameworkCore;

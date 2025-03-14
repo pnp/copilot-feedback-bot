@@ -1,5 +1,5 @@
 ﻿using Common.Engine.Surveys.Model;
-using Entities.DB;
+using Entities.DB.DbContexts;
 using Entities.DB.Entities;
 using Entities.DB.Entities.AuditLog;
 using Microsoft.EntityFrameworkCore;
