@@ -146,7 +146,6 @@ public class SqlSurveyManagerDataLoader(DataContext db, ILogger<SqlSurveyManager
         db.SurveyAnswers.AddRange(responses);
         await db.SaveChangesAsync();
 
-        // Deep load questions
         var savedAnswers = await db.SurveyAnswers
             .Include(a => a.ForQuestion)
             .Where(a => responses.Select(r => r.ID).Contains(a.ID))
@@ -214,5 +213,17 @@ public class SqlSurveyManagerDataLoader(DataContext db, ILogger<SqlSurveyManager
         }
 
         await db.SaveChangesAsync();
+    }
+
+    public async Task<List<SurveyAnswerDB>> GetAnswers()
+    {
+        // Deep load questions
+        var allAnswersForQuestionsOnPublishedPages = await db.SurveyAnswers
+            .Include(a => a.ForQuestion)
+                .ThenInclude(a => a.ForSurveyPage)
+            .Where(a => a.ForQuestion.ForSurveyPage.IsPublished)
+            .ToListAsync();
+
+        return allAnswersForQuestionsOnPublishedPages;
     }
 }

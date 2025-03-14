@@ -1,5 +1,5 @@
 ﻿using Common.DataUtils;
-using Entities.DB;
+using Entities.DB.DbContexts;
 using Entities.DB.Entities.SP;
 using Microsoft.EntityFrameworkCore;
 

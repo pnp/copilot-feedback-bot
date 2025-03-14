@@ -1,6 +1,6 @@
 ﻿using ActivityImporter.Engine.ActivityAPI.Models;
 using Common.DataUtils;
-using Entities.DB;
+using Entities.DB.DbContexts;
 using Microsoft.Extensions.Logging;
 
 namespace ActivityImporter.Engine.ActivityAPI;

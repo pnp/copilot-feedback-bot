@@ -71,6 +71,13 @@ public class SurveyManager
             return null;
     }
 
+    public async Task<AnswersCollection> GetSurveyResponses()
+    {
+        var savedAnswers = await _dataLoader.GetAnswers();
+        return new AnswersCollection(savedAnswers);
+
+    }
+
     public async Task<AnswersCollection> SaveCustomSurveyResponse(SurveyPageUserResponse response, int existingSurveyId)
     {
         if (!response.IsValid)

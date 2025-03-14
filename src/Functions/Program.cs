@@ -3,6 +3,7 @@ using Common.Engine.Notifications;
 using Common.Engine.Surveys;
 using Common.Engine.UsageStats;
 using Entities.DB;
+using Entities.DB.DbContexts;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;

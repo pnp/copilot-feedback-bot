@@ -2,6 +2,7 @@
 using Common.DataUtils.Config;
 using Common.Engine.Config;
 using Entities.DB;
+using Entities.DB.DbContexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;

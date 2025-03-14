@@ -1,6 +1,7 @@
 ﻿using Azure.Core;
 using Common.Engine.Config;
 using Entities.DB;
+using Entities.DB.DbContexts;
 using Entities.DB.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;

@@ -1,5 +1,5 @@
 ﻿using Common.Engine.UsageStats;
-using Entities.DB;
+using Entities.DB.DbContexts;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;

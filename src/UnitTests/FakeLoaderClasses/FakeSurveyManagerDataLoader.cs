@@ -149,4 +149,9 @@ internal class FakeSurveyManagerDataLoader : ISurveyManagerDataLoader
     {
         throw new NotImplementedException();
     }
+
+    public Task<List<SurveyAnswerDB>> GetAnswers()
+    {
+        throw new NotImplementedException();
+    }
 }

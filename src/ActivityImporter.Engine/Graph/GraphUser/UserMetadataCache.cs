@@ -1,4 +1,4 @@
-﻿using Entities.DB;
+﻿using Entities.DB.DbContexts;
 using Entities.DB.LookupCaches.Discrete;
 
 namespace ActivityImporter.Engine.Graph.GraphUser;

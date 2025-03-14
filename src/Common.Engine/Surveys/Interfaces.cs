@@ -28,6 +28,7 @@ public interface ISurveyManagerDataLoader
     /// </summary>
     Task<int> UpdateSurveyResultWithInitialScore(CommonAuditEvent @event, int score);
     Task<List<SurveyAnswerDB>> SaveAnswers(User user, List<SurveyPageUserResponse.RawResponse> answers, int existingSurveyId);
+    Task<List<SurveyAnswerDB>> GetAnswers();
 }
 
 public interface ISurveyEventsProcessor

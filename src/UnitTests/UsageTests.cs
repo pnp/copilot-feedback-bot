@@ -1,7 +1,7 @@
 ﻿using ActivityImporter.Engine.Graph.O365UsageReports;
 using ActivityImporter.Engine.Graph.O365UsageReports.ReportLoaders;
 using Common.Engine.UsageStats;
-using Entities.DB;
+using Entities.DB.DbContexts;
 using Entities.DB.Entities;
 using Entities.DB.Entities.Profiling;
 using Entities.DB.Models;

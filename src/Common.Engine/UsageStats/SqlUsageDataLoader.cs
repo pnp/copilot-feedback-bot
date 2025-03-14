@@ -1,5 +1,5 @@
 ﻿using Entities.DB.Models;
-using Entities.DB;
+using Entities.DB.DbContexts;
 using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
 using Entities.DB.Entities.Profiling;

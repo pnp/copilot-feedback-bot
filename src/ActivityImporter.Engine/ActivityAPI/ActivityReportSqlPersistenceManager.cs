@@ -2,7 +2,7 @@
 using Common.DataUtils;
 using Common.DataUtils.Sql.Inserts;
 using Common.Engine.Config;
-using Entities.DB;
+using Entities.DB.DbContexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
