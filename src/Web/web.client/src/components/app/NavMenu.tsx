@@ -1,9 +1,8 @@
 import { useHistory } from 'react-router-dom';
-import { BaseAxiosApiLoader } from '../../api/AxiosApiLoader';
 import { TabValue, TabList, Tab, SelectTabData, SelectTabEvent } from '@fluentui/react-components';
 import { useState } from 'react';
 
-export function NavMenu(props: { apiLoader?: BaseAxiosApiLoader }) {
+export function NavMenu() {
 
   const [selectedValue, setSelectedValue] = useState<TabValue>("home");
   const history = useHistory();
